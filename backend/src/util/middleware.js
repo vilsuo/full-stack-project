@@ -2,7 +2,7 @@ const { User } = require('../models');;
 
 const isAuthenticated = (req, res, next) => {
   if (!req.session.user) {
-    return res.status(401).send({ error: 'authentication required' });
+    return res.status(401).send({ message: 'authentication required' });
   }
   next();
 };
@@ -11,7 +11,7 @@ const userExtractor = async (req, res, next) => {
   const id = req.session.user.id;
   const user = await User.findByPk(id);
   if (!user) {
-    return res.status(404).send({ error: 'user does not exist' });
+    return res.status(404).send({ message: 'user does not exist' });
   }
 
   req.user = user;
@@ -27,14 +27,14 @@ const requestLogger = (req, res, next) => {
 };
 
 const unknownEndpoint = (req, res) => {
-  return res.status(404).send({ error : "unknown endpoint" });
+  return res.status(404).send({ message : "unknown endpoint" });
 };
 
 const errorHandler = (error, req, res, next) => {
   switch (error.name) {
     case 'SequelizeValidationError':
       return res.status(400).send({
-        error: error.errors.map(error => error.message)
+        message: error.errors.map(error => error.message)
       });
   }
 

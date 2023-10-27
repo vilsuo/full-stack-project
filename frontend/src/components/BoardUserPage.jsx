@@ -1,14 +1,16 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 
-import userService from "../services/user";
-import { AuthContext } from "../context/AuthContextProvider";
+import contentService from "../services/content";
+import { useDispatch } from "react-redux";
+import { logout } from "../reducers/user";
 
 const BoardUser = () => {
   const [content, setContent] = useState("");
-  const { logout } = useContext(AuthContext);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    userService.getUserBoard().then(
+    contentService.getUserBoard().then(
       (response) => {
         setContent(response.data);
       },
@@ -23,9 +25,14 @@ const BoardUser = () => {
         setContent(_content);
 
         if (error.response && error.response.status === 401) {
-          logout()
-            .then(() => console.log('logged out'))
-            .catch((error) => console.log('error loggin out', error));
+          dispatch(logout())
+            .unwrap()
+            .then((user) => {
+              console.log('logout link success', user)
+            })
+            .catch((error) => {
+              console.log('logout link error', error);
+            });
         }
       }
     );

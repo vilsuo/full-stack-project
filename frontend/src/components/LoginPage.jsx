@@ -1,26 +1,25 @@
-import { useState, useContext } from 'react'
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContextProvider';
+import { useState } from 'react'
+
+import { useDispatch } from 'react-redux';
+import { login } from '../reducers/user';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const { login } = useContext(AuthContext);
-
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async event => {
     event.preventDefault();
     
-    try {
-      await login({ username, password });
-      console.log('login successful');
-      navigate('/profile')
-      
-    } catch (error) {
-      console.log('error', error);
-    }
+    dispatch(login({ username, password }))
+      .unwrap()
+      .then((user) => {
+        console.log('login form success', user);
+      })
+      .catch((error) => {
+        console.log('login form error', error);
+      });
   };
 
   return (

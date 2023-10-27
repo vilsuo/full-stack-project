@@ -1,8 +1,7 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContextProvider";
+import { useSelector } from "react-redux";
 
 const Profile = () => {
-  const {currentUser } = useContext(AuthContext);
+  const currentUser = useSelector(state => state.user);
 
   return (
     <div>

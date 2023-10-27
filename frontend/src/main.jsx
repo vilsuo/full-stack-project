@@ -1,12 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { AuthContextProvider } from './context/AuthContextProvider';
+
+import { configureStore } from '@reduxjs/toolkit'
+import { Provider } from 'react-redux';
+
+import userReducer from './reducers/user';
+
+const store = configureStore({
+  reducer: {
+    user: userReducer,
+  },
+});
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthContextProvider>
+    <Provider store={store}>
       <App />
-    </AuthContextProvider>
+    </Provider>
   </React.StrictMode>,
 );
