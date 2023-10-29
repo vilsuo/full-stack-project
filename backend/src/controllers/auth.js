@@ -32,6 +32,10 @@ router.post('/login', async (req, res) => {
 
   const user = await User.findOne({ where: { username } });
   if (user) {
+    if (user.disabled) {
+      return res.status(401).send({ message: 'user is disabled' });
+    }
+
     const passwordMatches = await bcrypt.compare(
       password,
       user.passwordHash

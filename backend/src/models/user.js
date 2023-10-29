@@ -14,7 +14,7 @@ User.init({
   allowNull: false,
   validate: {
     notEmpty: true
-  }
+  },
  },
  username: {
   type: DataTypes.STRING,
@@ -22,14 +22,18 @@ User.init({
   unique: true,
   validate: {
     notEmpty: true
-  }
+  },
  },
  passwordHash: {
   type: DataTypes.STRING,
   allowNull: false,
   validate: {
     notEmpty: true
-  }
+  },
+ },
+ disabled: {
+  type: DataTypes.BOOLEAN,
+  defaultValue: false,
  },
 }, {
   sequelize,
