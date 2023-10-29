@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 
 const Profile = () => {
-  const currentUser = useSelector(state => state.user);
+  const currentUser = useSelector(state => state.auth.user);
 
   return (
     <div>

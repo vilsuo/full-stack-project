@@ -2,6 +2,26 @@ const router = require('express').Router();
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
 
+const encodePassword = async plainTextPassword => {
+  const saltRounds = 10;
+  return await bcrypt.hash(plainTextPassword, saltRounds);
+}
+
+router.post('/register', async (req, res) => {
+  const { password } = req.body;
+  if (!password) {
+    return res.status(400).send({ error: 'password is missing' });
+  }
+
+  const encodedPassword = await encodePassword(password);
+  const user = await User.create({
+    ...req.body,
+    passwordHash: encodedPassword
+  });
+
+  return res.status(201).send(user);
+});
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -37,11 +57,8 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', async (req, res) => {
-  console.log('in path')
   req.session.destroy((error) => {
-    console.log('in cb')
     if (error) {
-      console.log('in error')
       return res.status(400).send({
         message: error.message
       })

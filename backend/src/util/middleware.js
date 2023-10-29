@@ -36,6 +36,10 @@ const errorHandler = (error, req, res, next) => {
       return res.status(400).send({
         message: error.errors.map(error => error.message)
       });
+    case 'SequelizeUniqueConstraintError':
+      return res.status(400).send({
+        message: error.errors.map(error => error.message)
+      });
   }
 
   next(error);

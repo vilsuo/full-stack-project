@@ -1,20 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
-import contentService from "../services/content";
-import { useDispatch } from "react-redux";
-import { logout } from "../reducers/user";
+import contentService from '../services/content';
+import { useDispatch } from 'react-redux';
+import { logout } from '../reducers/auth';
 
 const BoardUser = () => {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    contentService.getUserBoard().then(
-      (response) => {
-        setContent(response.data);
-      },
-      (error) => {
+    const getData = async () => {
+      try {
+        const data = await contentService.getUserBoard();
+        setContent(data);
+
+      } catch (error) {
         const _content =
           (error.response &&
             error.response.data &&
@@ -35,7 +36,9 @@ const BoardUser = () => {
             });
         }
       }
-    );
+    };
+
+    getData();
   }, []);
 
   return (

@@ -42,7 +42,7 @@ app.use(session({
 }));
 
 app.use('/api/auth', authRouter);
-//app.use('/api/users', usersRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/test', testRouter);
 
 app.use(unknownEndpoint);

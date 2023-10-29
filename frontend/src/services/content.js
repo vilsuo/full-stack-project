@@ -1,13 +1,19 @@
-import axios from "axios";
+import axios from 'axios';
 
-const API_URL = "/api/test/";
+const BASE_URL = '/api/test/';
 
-const getPublicContent = () => {
-  return axios.get(API_URL + "all");
+const getPublicContent = async () => {
+  const { data } = await axios.get(BASE_URL + 'all');
+  return data;
 };
 
-const getUserBoard = () => {
-  return axios.get(API_URL + "user", { withCredentials: true });
+const getUserBoard = async () => {
+  const { data }  = await axios.get(
+    BASE_URL + 'user',
+    { withCredentials: true }
+  );
+
+  return data;
 };
 
 export default {

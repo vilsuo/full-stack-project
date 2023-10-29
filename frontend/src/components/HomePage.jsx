@@ -1,16 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
-import contentService from "../services/content";
+import contentService from '../services/content';
 
 const Home = () => {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
 
   useEffect(() => {
-    contentService.getPublicContent().then(
-      (response) => {
-        setContent(response.data);
-      },
-      (error) => {
+    const getData = async () => {
+      try {
+        const data = await contentService.getPublicContent();
+        setContent(data);
+
+      } catch (error) {
         const _content =
           (error.response && error.response.data) ||
           error.message ||
@@ -18,7 +19,9 @@ const Home = () => {
 
         setContent(_content);
       }
-    );
+    };
+
+    getData();
   }, []);
 
   return (
