@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+    ports:
+      #- '5433:5432'
+      # dockest requires long form:
+      - published: 5433
+        target: 5432
+        

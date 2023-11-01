@@ -10,7 +10,7 @@ const encodePassword = async plainTextPassword => {
 router.post('/register', async (req, res) => {
   const { password } = req.body;
   if (!password) {
-    return res.status(400).send({ error: 'password is missing' });
+    return res.status(400).send({ message: 'password is missing' });
   }
 
   const encodedPassword = await encodePassword(password);
