@@ -35,9 +35,9 @@ test('users are returned as json', async () => {
 describe('registering', () => {
   test('can register', async () => {
     const user = {
-      name: "ville",
-      username: "viltsu",
-      password: "secret"
+      name: 'ville',
+      username: 'viltsu',
+      password: 'secret'
     }
 
     const response = await api
@@ -58,9 +58,9 @@ describe('registering', () => {
 
   test('can not register with taken username', async () => {
     const user = {
-      name: "vili",
-      username: "viltsu",
-      password: "topSecret"
+      name: 'vili',
+      username: 'viltsu',
+      password: 'topSecret'
     }
 
     const response = await api
@@ -71,43 +71,63 @@ describe('registering', () => {
 
     const errorMessages = response.body.message;
     expect(errorMessages.length).toBeGreaterThan(0);
-    expect(errorMessages.join()).toMatch('username');
+    expect(errorMessages).toContain('username is already taken');
   });
 
-  test('missing name, username, or password is bad request', async () => {
+  test('missing/empty name is bad request', async () => {
     // missing name
-    const user1 = { username: "matsu", password: "salainen" };
+    const user1 = { username: 'matsu', password: 'salainen' };
     const response1 = await api
       .post('/api/auth/register')
       .send(user1)
       .expect(400)
       .expect('Content-Type', /application\/json/);
     const errorMessages1 = response1.body.message;
-    expect(errorMessages1.length).toBeGreaterThan(0);
-    expect(errorMessages1.join()).toMatch('name');
+    expect(errorMessages1).toContain('user.name cannot be null');
 
-    // missing username
-    const user2 = { name: "matti", password: "salainen"};
+    // empty name
+    const user2 = { name: '', username: 'matsu', password: 'salainen' };
     const response2 = await api
       .post('/api/auth/register')
       .send(user2)
       .expect(400)
       .expect('Content-Type', /application\/json/);
     const errorMessages2 = response2.body.message;
-    expect(errorMessages2.length).toBeGreaterThan(0);
-    expect(errorMessages2.join()).toMatch('username');
-
-    // missing password
-    const user3 = { name: "matti", username: "matsu" };
-    const response3 = await api
-      .post('/api/auth/register')
-      .send(user3)
-      .expect(400)
-      .expect('Content-Type', /application\/json/);
-    const errorMessages3 = response3.body.message;
-    expect(errorMessages3).toMatch('password');
+    expect(errorMessages2).toContain('name can not be empty');
   });
 
+  test('missing/empty username is bad request', async () => {
+    // missing name
+    const user1 = { name: 'matti', password: 'salainen' };
+    const response1 = await api
+      .post('/api/auth/register')
+      .send(user1)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+    const errorMessages1 = response1.body.message;
+    expect(errorMessages1).toContain('user.username cannot be null');
+
+    // empty name
+    const user2 = { name: 'matti', username: '', password: 'salainen' };
+    const response2 = await api
+      .post('/api/auth/register')
+      .send(user2)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+    const errorMessages2 = response2.body.message;
+    expect(errorMessages2).toContain('username can not be empty');
+  });
+
+  test('missing password is bad request', async () => {
+    const user = { name: 'matti', username: 'matsu' };
+    const response = await api
+      .post('/api/auth/register')
+      .send(user)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+    const errorMessage = response.body.message;
+    expect(errorMessage).toMatch('password is missing');
+  });
 });
 
 

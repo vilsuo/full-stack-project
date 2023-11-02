@@ -14,17 +14,20 @@ User.init({
   allowNull: false,
   validate: {
     notEmpty: {
-      msg: "name can not be empty"
+      msg: 'name can not be empty'
     },
   },
  },
  username: {
   type: DataTypes.STRING,
   allowNull: false,
-  unique: true,
+  unique: {
+    args: true,
+    msg: 'username is already taken',
+  },
   validate: {
     notEmpty: {
-      msg: "username can not be empty"
+      msg: 'username can not be empty'
     }
   },
  },
