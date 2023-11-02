@@ -17,6 +17,7 @@
 // extracting the error message from reponse
 
 const { connectToDatabases } = require('../../src/util/db');
+const { User } = require('../../src/models');
 
 const supertest = require('supertest');
 const app = require('../../src/app');
@@ -24,20 +25,21 @@ const app = require('../../src/app');
 const api = supertest(app);
 
 beforeAll(async () => {
- await connectToDatabases();
-});
+  console.log('beforeAll base')
 
-test('users are returned as json', async () => {
-  const response = await api
-    .get('/api/users')
-    .expect(200)
-    .expect('Content-Type', /application\/json/);
-
-  expect(response.body).toHaveLength(0);
+  await connectToDatabases();
 });
 
 describe('registering', () => {
-  test('can register', async () => {
+  // This creates the table, dropping it first if it already existed
+  beforeEach(async () => {
+    console.log('beforeEach registering')
+    await User.sync({ force: true });
+
+    // sequelize.sync({ force: true });
+  });
+
+  test('can register with valid inputs', async () => {
     const user = {
       name: 'ville',
       username: 'viltsu',
@@ -60,25 +62,7 @@ describe('registering', () => {
     expect(returnedUser.passwordHash).not.toBe(user.password);
   });
 
-  test('can not register', () => {
-    test('can not register with taken username', async () => {
-      const user = {
-        name: 'vili',
-        username: 'viltsu',
-        password: 'topSecret'
-      }
-
-      const response = await api
-        .post('/api/auth/register')
-        .send(user)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
-
-      const errorMessages = response.body.message;
-      expect(errorMessages.length).toBeGreaterThan(0);
-      expect(errorMessages).toContain('username is already taken');
-    });
-
+  describe('can not register with invalid inputs', () => {
     test('missing/empty name is bad request', async () => {
       // missing name
       const user1 = { username: 'matsu', password: 'salainen' };
@@ -145,8 +129,60 @@ describe('registering', () => {
       expect(errorMessage2).toMatch('password is missing');
     });
   });
-
 });
+
+describe('when user exists', () => {
+  const existingUser = {
+    name: 'vili',
+    username: 'viltsu',
+    passwordHash: 'topSecretHashedpassword1'
+  };
+
+  beforeEach(async () => {
+    console.log('beforeEach when user exists')
+    console.log('users in db before', await User.findAll());
+
+    // await User.sync({ force: true });
+    // sequelize.sync({ force: true });
+  
+    const created = await User.create(existingUser);
+
+    console.log('created in beforeAll', created)
+    console.log('users in db after', await User.findAll());
+  });
+
+  test('can not register with taken username', async () => {
+    const newUser = {
+      name: 'ville',
+      username: existingUser.username,
+      password: 'superSecret'
+    }
+
+    console.log('user to create')
+    
+    const response = await api
+      .post('/api/auth/register')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+    const errorMessages = response.body.message;
+    expect(errorMessages.length).toBeGreaterThan(0);
+    expect(errorMessages).toContain('username is already taken');
+  });
+
+  afterEach(async () => {
+    console.log('afterEach when user exists')
+    await User.destroy({ where: { username: existingUser.username }});
+  });
+});
+
+  /*
+  describe('login', () => {
+    test('can login after being registered', async () => {
+
+    })
+  })
+  */
 
 
 // afterAll(async () => {})

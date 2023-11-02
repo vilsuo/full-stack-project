@@ -7,7 +7,9 @@ const { DATABASE_URL, REDIS_URL } = require('./config');
 
 const { createClient } = require('redis');
 
-const sequelize = new Sequelize(DATABASE_URL);
+const sequelize = new Sequelize(
+  DATABASE_URL, { logging: process.env.NODE_ENV !== 'test' }
+);
 
 const redisClient = createClient({ url: REDIS_URL });
 redisClient.on('error', err => logger.error('Redis Client Error', err));
