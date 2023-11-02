@@ -33,10 +33,9 @@ const connectToDatabases = async () => {
     await sequelize.authenticate();
     logger.info('connected to the Postgre database');
 
-    //if (process.env.NODE_ENV !== 'test') {
-      await redisClient.connect();
-      logger.info('connected to the Redis database');
-    //}
+    await redisClient.connect();
+    logger.info('connected to the Redis database');
+
     await runMigrations();
     
   } catch (err) {

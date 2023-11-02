@@ -11,4 +11,8 @@ services:
       # dockest requires long form:
       - published: 5433
         target: 5432
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
         
