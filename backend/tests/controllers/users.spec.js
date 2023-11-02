@@ -4,7 +4,10 @@
 // 3. $ npm run test
 
 // NOTES
-// - how to automate (wait when container is ready?)
+// - how to automate 
+//    - wait when container is ready?
+//    - close containers after tests are done?
+//    - does sequelize-cli help with this?
 // - dockest command 'npm run test', where 
 //   "test": "cross-env NODE_ENV=test dockest ./dockest", 
 //   does nothing
