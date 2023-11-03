@@ -13,7 +13,7 @@ TODO
 - test cookies better
 */
 
-const { sequelize ,connectToDatabases } = require('../../src/util/db');
+//const { sequelize, connectToDatabases } = require('../../src/util/db');
 const { User } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
 
@@ -22,16 +22,18 @@ const app = require('../../src/app');
 
 const api = supertest(app);
 
-beforeAll(async () => {
-  await connectToDatabases();
-});
+const cookieKey = 'connect.sid';
+const get_SetCookie = response => {
+  const cookie = response
+    .get('set-cookie')
+    .find(value => value.startsWith(cookieKey));
+  
+  if (cookie) {
+    return cookie.split(';')[0].substring(cookieKey.length + 1);
+  }
 
-// afterAll(async () => {})
-
-// This creates the tables, dropping them first if they already existed
-beforeEach(async () => {
-  await sequelize.sync({ force: true });
-});
+  return null;
+};
 
 describe('registering', () => {
   test('succeeds with valid inputs', async () => {
@@ -39,7 +41,7 @@ describe('registering', () => {
       name: 'ville',
       username: 'viltsu',
       password: 'secret'
-    }
+    };
 
     const response = await api
       .post('/api/auth/register')
@@ -169,7 +171,10 @@ describe('when user exists', () => {
       });
 
       test('cookie is set', async () => {
-        expect(response.get('Set-Cookie')).toBeDefined();
+        const cookies = response.get('set-cookie')
+        expect(cookies).toBeDefined();
+        
+        expect(get_SetCookie(response)).toBeDefined();
       });
 
       test('id, name and username are returned', async () => {
@@ -200,9 +205,30 @@ describe('when user exists', () => {
     });
   });
 
-  /*
   describe('when loggin out', () => {
+    let cookie;
 
+    // log in and save cookie
+    beforeEach(async () => {
+      const response = await api 
+        .post('/api/auth/login')
+        .send(existingUsersCredentials);
+
+      cookie = get_SetCookie(response);
+    });
+    
+    let response;
+    test('can logout', async () => {
+      response = await api 
+        .post('/api/auth/logout')
+        .set(cookieKey, cookie)
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+    });
+
+    test('cookie is cleared', async () => {
+      expect(get_SetCookie(response)).toBe('');
+    });
   });
-  */
+
 });
