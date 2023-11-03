@@ -158,7 +158,7 @@ describe('when user exists', () => {
     expect(errorMessages).toContain('username is already taken');
   });
 
-  describe('when loggin in', () => {
+  describe('loggin in', () => {
     describe('with valid credentials', () => {
       let response;
 
@@ -202,6 +202,20 @@ describe('when user exists', () => {
 
         expect(response.body.message).toBe('invalid username or password');
       });
+    });
+
+    test('disabled user can not login', async () => {
+      await User.update({ disabled: true }, {
+        where: { username: existingUser.username }
+      });
+
+      const response = await api 
+        .post('/api/auth/login')
+        .send(existingUsersCredentials)
+        .expect(401)
+        .expect('Content-Type', /application\/json/);
+
+      expect(response.body.message).toBe('user is disabled');
     });
   });
 
