@@ -1,11 +1,7 @@
 const router = require('express').Router();
 const { User } = require('../models');
-const bcrypt = require('bcrypt');
 
-const encodePassword = async plainTextPassword => {
-  const saltRounds = 10;
-  return await bcrypt.hash(plainTextPassword, saltRounds);
-}
+const { encodePassword, comparePassword } = require('../util/auth');
 
 router.post('/register', async (req, res) => {
   const { password } = req.body;
@@ -37,11 +33,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).send({ message: 'user is disabled' });
     }
 
-    const passwordMatches = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
-
+    const passwordMatches = await comparePassword(password, user.passwordHash);
     if (passwordMatches) {
       req.session.user = {
         id: user.id,

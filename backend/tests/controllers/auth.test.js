@@ -1,23 +1,21 @@
 // setup
-// 1. $ npm run test-pg:down
-// 2. $ npm run test-pg:up
+// (
+  // 1. $ npm run test-pg:down
+  // 2. $ npm run test-pg:up
+// )
 // 3. $ npm run test
 
-// NOTES
-// - how to automate 
-//    - wait when container is ready?
-//    - close containers after tests are done?
-//    - does sequelize-cli help with this?
-// - dockest command 'npm run test', where 
-//   "test": "cross-env NODE_ENV=test dockest ./dockest", 
-//   does nothing
+/*
+TODO
+- make global jest file for setup/teardown if possible?
+- test logout with/without logged in/cookie being set
 
+- test cookies better
+*/
 
-// todo make common frame for posting invalid credentials and then
-// extracting the error message from reponse
-
-const { connectToDatabases } = require('../../src/util/db');
+const { sequelize ,connectToDatabases } = require('../../src/util/db');
 const { User } = require('../../src/models');
+const { encodePassword } = require('../../src/util/auth');
 
 const supertest = require('supertest');
 const app = require('../../src/app');
@@ -25,21 +23,18 @@ const app = require('../../src/app');
 const api = supertest(app);
 
 beforeAll(async () => {
-  console.log('beforeAll base')
-
   await connectToDatabases();
 });
 
+// afterAll(async () => {})
+
+// This creates the tables, dropping them first if they already existed
+beforeEach(async () => {
+  await sequelize.sync({ force: true });
+});
+
 describe('registering', () => {
-  // This creates the table, dropping it first if it already existed
-  beforeEach(async () => {
-    console.log('beforeEach registering')
-    await User.sync({ force: true });
-
-    // sequelize.sync({ force: true });
-  });
-
-  test('can register with valid inputs', async () => {
+  test('succeeds with valid inputs', async () => {
     const user = {
       name: 'ville',
       username: 'viltsu',
@@ -59,11 +54,11 @@ describe('registering', () => {
     expect(returnedUser.username).toBe(user.username);
     
     // plaintext password is not included in the response
-    expect(returnedUser.passwordHash).not.toBe(user.password);
+    expect(returnedUser.password).toBeUndefined()
   });
 
-  describe('can not register with invalid inputs', () => {
-    test('missing/empty name is bad request', async () => {
+  describe('fails with', () => {
+    test('missing/empty name', async () => {
       // missing name
       const user1 = { username: 'matsu', password: 'salainen' };
       const response1 = await api
@@ -85,7 +80,7 @@ describe('registering', () => {
       expect(errorMessages2).toContain('name can not be empty');
     });
 
-    test('missing/empty username is bad request', async () => {
+    test('missing/empty username', async () => {
       // missing name
       const user1 = { name: 'matti', password: 'salainen' };
       const response1 = await api
@@ -107,7 +102,7 @@ describe('registering', () => {
       expect(errorMessages2).toContain('username can not be empty');
     });
 
-    test('missing/empty password is bad request', async () => {
+    test('missing/empty password', async () => {
       // missing password
       const user1 = { name: 'matti', username: 'matsu' };
       const response1 = await api
@@ -132,23 +127,16 @@ describe('registering', () => {
 });
 
 describe('when user exists', () => {
-  const existingUser = {
-    name: 'vili',
-    username: 'viltsu',
-    passwordHash: 'topSecretHashedpassword1'
+  const existingUser = { name: 'vili', username: 'viltsu', };
+
+  const existingUsersCredentials = {
+    username: existingUser.username, 
+    password: 'topSecretPass1',
   };
 
   beforeEach(async () => {
-    console.log('beforeEach when user exists')
-    console.log('users in db before', await User.findAll());
-
-    // await User.sync({ force: true });
-    // sequelize.sync({ force: true });
-  
-    const created = await User.create(existingUser);
-
-    console.log('created in beforeAll', created)
-    console.log('users in db after', await User.findAll());
+    const encodedPassword = await encodePassword(existingUsersCredentials.password);
+    await User.create({ ...existingUser, passwordHash: encodedPassword });
   });
 
   test('can not register with taken username', async () => {
@@ -156,9 +144,7 @@ describe('when user exists', () => {
       name: 'ville',
       username: existingUser.username,
       password: 'superSecret'
-    }
-
-    console.log('user to create')
+    };
     
     const response = await api
       .post('/api/auth/register')
@@ -170,19 +156,53 @@ describe('when user exists', () => {
     expect(errorMessages).toContain('username is already taken');
   });
 
-  afterEach(async () => {
-    console.log('afterEach when user exists')
-    await User.destroy({ where: { username: existingUser.username }});
+  describe('when loggin in', () => {
+    describe('with valid credentials', () => {
+      let response;
+
+      test('login is successfull', async () => {
+        response = await api 
+          .post('/api/auth/login')
+          .send(existingUsersCredentials)
+          .expect(200)
+          .expect('Content-Type', /application\/json/);
+      });
+
+      test('cookie is set', async () => {
+        expect(response.get('Set-Cookie')).toBeDefined();
+      });
+
+      test('id, name and username are returned', async () => {
+        const body = response.body;
+        expect(body.id).toBeDefined();
+    
+        expect(body.name).toBe(existingUser.name);
+        expect(body.username).toBe(existingUser.username);
+        
+        // hashed password is not included in the response
+        expect(body.passwordHash).toBeUndefined()
+      });
+    });
+
+    describe('with invalid credentials', () => {
+      test('login fails with wrong password', async () => {
+        const response = await api 
+          .post('/api/auth/login')
+          .send({
+            username: existingUsersCredentials.username,
+            password: 'thisIsWronPwd2'
+          })
+          .expect(401)
+          .expect('Content-Type', /application\/json/);
+
+        expect(response.body.message).toBe('invalid username or password');
+      });
+    });
   });
-});
 
   /*
-  describe('login', () => {
-    test('can login after being registered', async () => {
+  describe('when loggin out', () => {
 
-    })
-  })
+  });
   */
-
-
-// afterAll(async () => {})
+});
