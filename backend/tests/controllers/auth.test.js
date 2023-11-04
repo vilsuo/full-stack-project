@@ -171,10 +171,11 @@ describe('when user exists', () => {
       });
 
       test('cookie is set', async () => {
-        const cookies = response.get('set-cookie')
-        expect(cookies).toBeDefined();
-        
-        expect(get_SetCookie(response)).toBeDefined();
+        const cookie = get_SetCookie(response);
+        console.log('cookie', cookie)
+
+        expect(cookie).toBeDefined();
+        expect(cookie).not.toBe('');
       });
 
       test('id, name and username are returned', async () => {
@@ -219,7 +220,8 @@ describe('when user exists', () => {
     });
   });
 
-  describe('when loggin out', () => {
+  // TODO!!
+  describe('can log out', () => {
     let cookie;
 
     // log in and save cookie
@@ -229,18 +231,29 @@ describe('when user exists', () => {
         .send(existingUsersCredentials);
 
       cookie = get_SetCookie(response);
+      console.log('beforeEach cookie', cookie)
     });
     
-    let response;
-    test('can logout', async () => {
-      response = await api 
+    test('can logout with cookie set (logged in)', async () => {
+      const response = await api 
         .post('/api/auth/logout')
-        .set(cookieKey, cookie)
+        .set('Cookie', `${cookieKey}=${cookie}`)
         .expect(200)
         .expect('Content-Type', /application\/json/);
+      
+      //console.log('cookie set in request', response.request.getHeader('Cookie'));
+
+      // cookie is cleared
+      expect(get_SetCookie(response)).toBe('');
     });
 
-    test('cookie is cleared', async () => {
+    test('can logout without cookie (not logged in)', async () => {
+      const response = await api 
+        .post('/api/auth/logout')
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+
+      // cookie is cleared
       expect(get_SetCookie(response)).toBe('');
     });
   });
