@@ -27,6 +27,8 @@ router.get('/', async (req, res) => {
     }
   }
 
+  where.disabled = false;
+
   let offset;
   const pageSize = 3;
   if (req.query.page) {
@@ -52,24 +54,16 @@ router.get('/', async (req, res) => {
   });
 
   return res.json(users);
-
 });
 
-router.get('/welcome', isAuthenticated, async (req, res) => {
-  //console.log('headers', req.headers);
-  //console.log('request.session', req.session)
-
-  const { id } = req.session.user;
-  const user = await User.findByPk(id, {
-    attributes: { exclude: ['passwordHash'] },
+router.get('/stats', async (req, res) => {
+  const created = await User.count({
+    attributes: ['disabled'],
+    group: 'disabled',
   });
 
-  if (!user) {
-    return res.status(404).send({
-      error: 'user does not exist'
-    });
-  }
-  return res.status(200).json(user);
+  console.log('created', created);
+  return res.status(200).json(created);
 });
 
 module.exports = router;
