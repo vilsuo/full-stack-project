@@ -220,7 +220,6 @@ describe('when user exists', () => {
     });
   });
 
-  // TODO!!
   describe('can log out', () => {
     let cookie;
 
@@ -241,7 +240,7 @@ describe('when user exists', () => {
         .expect(200)
         .expect('Content-Type', /application\/json/);
       
-      //console.log('cookie set in request', response.request.getHeader('Cookie'));
+      console.log('cookie set in request', response.request.getHeader('Cookie'));
 
       // cookie is cleared
       expect(get_SetCookie(response)).toBe('');
