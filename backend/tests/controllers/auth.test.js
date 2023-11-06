@@ -155,7 +155,7 @@ describe('when user exists', () => {
       .expect('Content-Type', /application\/json/);
     const errorMessages = response.body.message;
     expect(errorMessages.length).toBeGreaterThan(0);
-    expect(errorMessages).toContain('username is already taken');
+    expect(errorMessages).toContain('username has already been taken');
   });
 
   describe('loggin in', () => {
@@ -216,7 +216,7 @@ describe('when user exists', () => {
         .expect(401)
         .expect('Content-Type', /application\/json/);
 
-      expect(response.body.message).toBe('user is disabled');
+      expect(response.body.message).toBe('user has been disabled');
     });
   });
 

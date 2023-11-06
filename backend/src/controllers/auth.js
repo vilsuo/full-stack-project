@@ -30,7 +30,7 @@ router.post('/login', async (req, res) => {
   const user = await User.findOne({ where: { username } });
   if (user) {
     if (user.disabled) {
-      return res.status(401).send({ message: 'user is disabled' });
+      return res.status(401).send({ message: 'user has been disabled' });
     }
 
     const passwordMatches = await comparePassword(password, user.passwordHash);
@@ -63,7 +63,7 @@ router.post('/logout', async (req, res) => {
 
     return res
       .clearCookie('connect.sid')
-      .send({ message: "You've been signed out!" });
+      .send({ message: "you've been signed out" });
   });
 });
 

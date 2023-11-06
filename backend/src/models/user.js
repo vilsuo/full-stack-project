@@ -23,7 +23,7 @@ User.init({
   allowNull: false,
   unique: {
     args: true,
-    msg: 'username is already taken',
+    msg: 'username has already been taken',
   },
   validate: {
     notEmpty: {
