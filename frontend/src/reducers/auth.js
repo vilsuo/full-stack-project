@@ -2,12 +2,29 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from '../services/auth';
 
 const initialState = {
-  user: JSON.parse(localStorage.getItem('user')) || null
+  user: JSON.parse(localStorage.getItem('user')) || null,
+  /*
+  errors: {
+    //register: [],
+    login: [],
+    //logout: [],
+  },
+  */
 };
 
 const userSlice = createSlice({
   name: 'auth', // defines the prefix which is used in the action's type values
   initialState,
+  /*
+  reducers: {
+    setLoginError: (state, action) => {
+      state.errors.login.append(action.payload);
+    },
+    clearLoginError: (state, action) => {
+      state.errors.login = [];
+    },
+  },
+  */
   extraReducers: (builder) => {
     builder
       .addCase(login.fulfilled, (state, action) => {

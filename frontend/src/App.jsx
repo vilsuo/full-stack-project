@@ -1,10 +1,11 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 
-import LoginPage from './components/LoginPage';
-import RegisterPage from './components/RegisterPage';
-import HomePage from './components/HomePage';
-import ProfilePage from './components/ProfilePage';
-import BoardUserPage from './components/BoardUserPage';
+import LoginPage from './routes/LoginPage';
+import RegisterPage from './routes/RegisterPage';
+import HomePage from './routes/HomePage';
+import ProfilePage from './routes/ProfilePage';
+import BoardUserPage from './routes/BoardUserPage';
+import Footer from './components/Footer';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from './reducers/auth';
@@ -64,9 +65,7 @@ const App = () => {
           </Routes>
         </div>
 
-        <div>
-          <i>Fullstack project</i>
-        </div>
+        <Footer />
       </BrowserRouter>
     </div>
   );
