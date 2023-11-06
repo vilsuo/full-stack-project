@@ -59,7 +59,7 @@ const RegisterPage = () => {
               value={name}
               onChange={ ({ target }) => setName(target.value) }
               fullWidth
-              //required
+              required
             />
           </Grid>
           <Grid item xs={6}>
@@ -71,7 +71,7 @@ const RegisterPage = () => {
               onChange={ ({ target }) => setUsername(target.value) }
               autoComplete='username'
               fullWidth
-              //required
+              required
             />
           </Grid>
           <Grid item xs={12}>

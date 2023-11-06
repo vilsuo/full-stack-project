@@ -3,6 +3,12 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { login } from '../reducers/auth';
 import { useNavigate } from 'react-router-dom';
+
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+
 import ErrorAlert from '../components/ErrorAlert';
 
 const LoginPage = () => {
@@ -14,13 +20,15 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const clearMessage = () => setMessage(null);
+
   const handleSubmit = async event => {
     event.preventDefault();
     
+    clearMessage();
     dispatch(login({ username, password }))
       .unwrap()
       .then((user) => {
-        setMessage(null);
         navigate('/user');
       })
       .catch((error) => {
@@ -30,42 +38,46 @@ const LoginPage = () => {
   };
 
   return (
-    <>
+    <Stack spacing={2} sx={{ mt: 3 }}>
       <ErrorAlert
         title={'Login failed'}
         message={message}
-        clearMessage={() => setMessage(null)}
+        clearMessage={clearMessage}
       />
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>
-            username
-            <input
-              type='text'
-              value={username}
-              onChange={ ({ target }) => setUsername(target.value) }
-              autoComplete='username'
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            password
-            <input
-              type='password'
-              value={password}
-              onChange={ ({ target }) => setPassword(target.value) }
-              autoComplete='current-password'
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <button type='submit'>login</button>
-        </div>
-      </form>
-    </>
+      <Box component='form' onSubmit={handleSubmit}>
+        <Stack spacing={2}>
+          <TextField
+            id='username'
+            type='text'
+            label='Username'
+            value={username}
+            onChange={ ({ target }) => setUsername(target.value) }
+            autoComplete='username'
+            fullWidth
+            //required
+          />
+          <TextField
+            id='password'
+            type='password'
+            label='Password'
+            value={password}
+            onChange={ ({ target }) => setPassword(target.value) }
+            autoComplete='current-password'
+            fullWidth
+            //required
+          />
+        </Stack>
+        <Button
+          id='login'
+          type='submit'
+          fullWidth
+          variant='contained'
+          sx={{ mt: 2 }}
+        >
+          login
+        </Button>
+      </Box>
+    </Stack>
   );
 };
 
