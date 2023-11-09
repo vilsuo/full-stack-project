@@ -9,6 +9,9 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 
+import LockIcon from '@mui/icons-material/Lock';
+import { Avatar, Paper, Typography } from '@mui/material';
+
 import ErrorAlert from '../components/ErrorAlert';
 
 const LoginPage = () => {
@@ -38,7 +41,7 @@ const LoginPage = () => {
   };
 
   return (
-    <Stack spacing={2} sx={{ mt: 3 }}>
+    <Paper spacing={2} sx={{ p: 5 }}>
       <ErrorAlert
         title={'Login failed'}
         message={message}
@@ -54,7 +57,7 @@ const LoginPage = () => {
             onChange={ ({ target }) => setUsername(target.value) }
             autoComplete='username'
             fullWidth
-            //required
+            required
           />
           <TextField
             id='password'
@@ -64,7 +67,7 @@ const LoginPage = () => {
             onChange={ ({ target }) => setPassword(target.value) }
             autoComplete='current-password'
             fullWidth
-            //required
+            required
           />
         </Stack>
         <Button
@@ -77,7 +80,7 @@ const LoginPage = () => {
           login
         </Button>
       </Box>
-    </Stack>
+    </Paper>
   );
 };
 
