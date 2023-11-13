@@ -43,7 +43,8 @@ const LoginPage = () => {
   return (
     <Paper spacing={2} sx={{ p: 5 }}>
       <ErrorAlert
-        title={'Login failed'}
+        id='login-error'
+        title='Login failed'
         message={message}
         clearMessage={clearMessage}
       />

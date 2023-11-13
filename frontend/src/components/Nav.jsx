@@ -41,19 +41,21 @@ const LoggedInMenu = ({ user }) => {
   return (
     <div>
       <IconButton
+        id='nav-icon-btn'
         size='large'
         onClick={handleMenu}
         color='inherit'
       >
         <AccountCircle />
         <Typography
-          id='toolbar-username'
+          id='nav-username'
           sx={{ ml: .5 }}
         >
           {user.username}
         </Typography>
       </IconButton>
       <Menu
+        id='nav-profile-menu'
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}

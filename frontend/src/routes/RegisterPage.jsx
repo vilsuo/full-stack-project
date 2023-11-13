@@ -46,7 +46,7 @@ const RegisterPage = () => {
     <Stack spacing={2} sx={{ mt: 3 }}>
       <ErrorAlert
         id='register-error'
-        title={'Registration failed'}
+        title='Registration failed'
         message={message}
         clearMessage={clearMessage}
       />
