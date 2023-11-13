@@ -45,11 +45,12 @@ const RegisterPage = () => {
   return (
     <Stack spacing={2} sx={{ mt: 3 }}>
       <ErrorAlert
+        id='register-error'
         title={'Registration failed'}
         message={message}
         clearMessage={clearMessage}
       />
-      <Box component='form' onSubmit={handleSubmit}>
+      <Box id='register-form' component='form' onSubmit={handleSubmit}>
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <TextField

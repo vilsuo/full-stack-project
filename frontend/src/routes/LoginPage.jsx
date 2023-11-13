@@ -47,7 +47,7 @@ const LoginPage = () => {
         message={message}
         clearMessage={clearMessage}
       />
-      <Box component='form' onSubmit={handleSubmit}>
+      <Box id='login-form' component='form' onSubmit={handleSubmit}>
         <Stack spacing={2}>
           <TextField
             id='username'

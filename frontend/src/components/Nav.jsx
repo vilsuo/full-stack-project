@@ -68,10 +68,10 @@ const LoggedInMenu = ({ user }) => {
 const NotLoggedInMenu = () => {
   return (
     <Box sx={{ flexDirection: 'row' }}>
-      <Button color='inherit' component={Link} to='/login'>
+      <Button id='nav-login' color='inherit' component={Link} to='/login'>
         Login
       </Button>
-      <Button color='inherit' component={Link} to='/register'>
+      <Button id='nav-register' color='inherit' component={Link} to='/register'>
         Register
       </Button>
     </Box>
