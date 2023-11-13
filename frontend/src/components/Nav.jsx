@@ -11,8 +11,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { logout } from '../reducers/auth';
+import { Typography } from '@mui/material';
 
-const LoggedInMenu = () => {
+const LoggedInMenu = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const dispatch = useDispatch();
@@ -45,6 +46,12 @@ const LoggedInMenu = () => {
         color='inherit'
       >
         <AccountCircle />
+        <Typography
+          id='toolbar-username'
+          sx={{ ml: .5 }}
+        >
+          {user.username}
+        </Typography>
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -92,7 +99,7 @@ const Nav = () => {
           </Button>
         </Box>
 
-        { currentUser && <LoggedInMenu /> }
+        { currentUser && <LoggedInMenu user={currentUser} /> }
         { !currentUser && <NotLoggedInMenu /> }
       </Toolbar>
     </AppBar>
