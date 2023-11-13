@@ -4,7 +4,14 @@ const password = 'secret';
 
 describe('template spec', function() {
   beforeEach(function() {
+    // reset the testing databases
+    cy.request('POST', 'http://localhost:3001/api/testing/reset');
+
     cy.visit('http://localhost:5173');
+  });
+
+  afterEach(function() {
+
   });
 
   it('can view homepage', function() {
@@ -56,6 +63,10 @@ describe('template spec', function() {
 
   /*
   describe('when registered', function() {
+    it('can not register with taken username', function() {
+
+    });
+
     it('can log in with correct credentials', function() {
 
     });
