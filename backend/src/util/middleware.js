@@ -11,7 +11,7 @@ const parseNonNegative = (value, name) => {
 
 const pageParser = async (req, res, next) => {
   const defaultPageNumber = 0;
-  const defaultPageSize = 3;
+  const defaultPageSize = 10;
 
   try {
     const pageNumber = req.query.page

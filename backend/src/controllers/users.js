@@ -37,8 +37,8 @@ router.get('/', pageParser, async (req, res) => {
     order: [
       ['username', 'ASC']
     ],
-    offset: req.offset,
-    limit: req.limit,
+    //offset: req.offset,
+    //limit: req.limit,
   });
 
   return res.json(users);
