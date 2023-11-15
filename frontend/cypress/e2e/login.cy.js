@@ -3,6 +3,8 @@ TODO
 - implement global setup file? (db reset)
 - test loggin in with disabled user
 - test that all form inputs must be filled
+- test private page access (logged in && not logged in)
+- save base URL in config file
 */
 const name = 'ville';
 const username = 'viltsu';

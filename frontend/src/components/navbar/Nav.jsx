@@ -6,12 +6,13 @@ import IconButton from '@mui/material/IconButton';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { logout } from '../reducers/auth';
-import { Typography } from '@mui/material';
+import SearchBar from './SearchBar';
+import { logout } from '../../reducers/auth';
 
 const LoggedInMenu = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -30,13 +31,13 @@ const LoggedInMenu = ({ user }) => {
   const handleProfileClick = () => {
     handleClose();
     navigate('/profile');
-  }
+  };
 
   const handleLogout = () => {
     handleClose();
     dispatch(logout());
     navigate('/login');
-  }
+  };
 
   return (
     <div>
@@ -84,18 +85,31 @@ const Nav = () => {
   const currentUser = useSelector(state => state.auth.user);
 
   return (
-    <AppBar position='static'>
-      <Toolbar>
-        <Box sx={{ flexGrow: 1 }}>
-          <Button color='inherit' component={Link} to='/'>
-            Home
-          </Button>
-        </Box>
-
-        { currentUser && <LoggedInMenu user={currentUser} /> }
-        { !currentUser && <NotLoggedInMenu /> }
-      </Toolbar>
-    </AppBar>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position='static'>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+            <Button color='inherit' component={Link} to='/'>
+              Home
+            </Button>
+            <SearchBar />
+            {/*
+            <Search>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder='Search…'
+                inputProps={{ 'aria-label': 'search' }}
+              />
+            </Search>
+            */}
+          <Box sx={{ justifyContent: 'flex-end' }}>
+            { currentUser && <LoggedInMenu user={currentUser} /> }
+            { !currentUser && <NotLoggedInMenu /> }
+          </Box>
+        </Toolbar>
+      </AppBar>
+    </Box>
   );
 }
 

@@ -8,7 +8,7 @@ import HomePage from './routes/HomePage';
 import ProfilePage from './routes/ProfilePage';
 import BoardUserPage from './routes/BoardUserPage';
 import Footer from './components/Footer';
-import Nav from './components/Nav';
+import Nav from './components/navbar/Nav';
 
 const App = () => {
 
