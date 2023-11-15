@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import { TextField } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   color: 'inherit',
@@ -15,11 +16,12 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 
 const SearchBar = () => {
   const [query, setQuery] = useState('');
+  const navigate = useNavigate();
 
   const search = async event => {
     event.preventDefault();
 
-    console.log(query);
+    navigate(`/users?search=${query}`);
   };
 
   return (

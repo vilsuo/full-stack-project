@@ -6,9 +6,10 @@ import LoginPage from './routes/LoginPage';
 import RegisterPage from './routes/RegisterPage';
 import HomePage from './routes/HomePage';
 import ProfilePage from './routes/ProfilePage';
-import BoardUserPage from './routes/BoardUserPage';
+import UserPage from './routes/UserPage';
 import Footer from './components/Footer';
 import Nav from './components/navbar/Nav';
+import SearchPage from './routes/SearchPage';
 
 const App = () => {
 
@@ -23,7 +24,8 @@ const App = () => {
           <Route path='/login'    element={<LoginPage />} />
           <Route path='/register' element={<RegisterPage />} />
           <Route path='/profile'  element={<ProfilePage />} />
-          <Route path='/user'     element={<BoardUserPage />} />
+          <Route path='/user/:id' element={<UserPage />} />
+          <Route path='/users'    element={<SearchPage />} />
         </Routes>
 
         <Footer />
