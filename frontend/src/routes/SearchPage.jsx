@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import usersService from '../services/users';
 import { Backdrop, CircularProgress, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
@@ -61,8 +61,8 @@ const SearchPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
               <TableCell>Username</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>
                 <Grid container direction='row' alignItems='center' >
                   <Grid item>
@@ -82,8 +82,12 @@ const SearchPage = () => {
               <TableRow
                 key={user.id}
               >
+                <TableCell>
+                  <Link to={`/user/${user.id}`} key={user.id}>
+                    {user.username}
+                  </Link>
+                </TableCell>
                 <TableCell>{user.name}</TableCell>
-                <TableCell>{user.username}</TableCell>
                 <TableCell>{formatDate(user.createdAt)}</TableCell>
               </TableRow>
             )}
