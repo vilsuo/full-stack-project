@@ -1,14 +1,18 @@
 import { useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import usersService from '../services/users';
+import { Backdrop, CircularProgress, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 /*
 TODO
-- show loader
-- add also name and created date (age?) to users
-- implement with mui
 - add links to user pages
 */
+
+const formatDate = date => {
+  return date.split('T')[0];
+}
+
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('search');
@@ -33,9 +37,12 @@ const SearchPage = () => {
 
   if (isLoading) {
     return (
-      <>
-        loading...
-      </>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={isLoading}
+      >
+        <CircularProgress color='inherit' />
+      </Backdrop>
     );
   }
 
@@ -43,16 +50,46 @@ const SearchPage = () => {
     return <h1>give a search param</h1>;
   }
 
+  if (users.length === 0) {
+    return <h1>no results</h1>;
+  }
+
   return (
     <>
       <h1>Search Results for: {query}</h1>
-      <ul>
-        {users.map(user =>
-          <li key={user.id}>
-            {user.username}
-          </li>
-        )}
-      </ul>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Username</TableCell>
+              <TableCell>
+                <Grid container direction='row' alignItems='center' >
+                  <Grid item>
+                    Created
+                  </Grid>
+                  <Grid item sx={{ ml: 1 }}>
+                    <Tooltip title='(YYYY-MM-DD)'>
+                      <InfoOutlinedIcon fontSize='small' sx={{verticalAlign: 'sub'}} />
+                    </Tooltip>
+                  </Grid>
+                </Grid>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map(user =>
+              <TableRow
+                key={user.id}
+              >
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.username}</TableCell>
+                <TableCell>{formatDate(user.createdAt)}</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </>
   );
 };

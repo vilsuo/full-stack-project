@@ -4,7 +4,7 @@ import contentService from '../services/content';
 import { useDispatch } from 'react-redux';
 import { logout } from '../reducers/auth';
 
-const BoardUser = () => {
+const UserPage = () => {
   const [content, setContent] = useState('');
 
   const dispatch = useDispatch();
@@ -50,4 +50,4 @@ const BoardUser = () => {
   );
 };
 
-export default BoardUser;
+export default UserPage;
