@@ -1,51 +1,117 @@
 import { useState, useEffect } from 'react';
 
-import contentService from '../services/content';
-import { useDispatch } from 'react-redux';
-import { logout } from '../reducers/auth';
+import axios from 'axios';
+import { Card, CardContent, CardHeader, CardMedia, Typography } from '@mui/material';
+
+const Preview = ({ preview, name, caption }) => {
+  return (
+    <Card sx={{ maxWidth: 350, p: 2 }}>
+      <CardHeader title={name} />
+      <CardMedia
+        component='img'
+        image={preview}
+      />
+      <CardContent>
+        <Typography>
+          {caption}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+};
 
 const UserPage = () => {
-  const [content, setContent] = useState('');
+  const [selectedFile, setSelectedFile] = useState(undefined);
+  const [preview, setPreview] = useState(undefined);
 
-  const dispatch = useDispatch();
+  const [caption, setCaption] = useState('');
 
+  // create a preview as a side effect, whenever selected file is changed
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const data = await contentService.getUserBoard();
-        setContent(data);
+    if (!selectedFile) {
+      setPreview(undefined);
+      return;
+    }
 
-      } catch (error) {
-        const _content =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
-          error.message ||
-          error.toString();
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreview(objectUrl);
 
-        setContent(_content);
+    // when effect returns a function, React will run it when it is time to clean up
+    // free memory when ever this component is unmounted
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile])
 
-        if (error.response && error.response.status === 401) {
-          dispatch(logout())
-            .unwrap()
-            .then((user) => {
-              console.log('logout link success', user)
-            })
-            .catch((error) => {
-              console.log('logout link error', error);
-            });
-        }
-      }
-    };
+  const onFileChange = event => {
+    setSelectedFile(event.target.files[0]);
+  };
 
-    getData();
-  }, []);
+  // On file upload (click the upload button)
+  const onFileUpload = (event) => {
+    event.preventDefault();
+
+    // Create an object of formData
+    const formData = new FormData();
+
+    formData.append(
+      'image',
+      selectedFile,
+      selectedFile.name
+    );
+
+    formData.append('caption', caption);
+    
+    //console.log(selectedFile);
+    axios.post('/api/user/profilepicture', formData);
+  };
+
+  const fileData = () => {
+    if (selectedFile) {
+      return (
+        <div>
+          <Preview
+            preview={preview}
+            name={selectedFile.name}
+            caption={caption}
+          />
+          {/*
+          <h2>File Details:</h2>
+          <p>File Name: {selectedFile.name}</p>
+          <p>File Type: {selectedFile.type}</p>
+          <p>
+            Last Modified:{" "}
+            {selectedFile.lastModifiedDate.toDateString()}
+          </p>
+          */}
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <br />
+          <h4>Choose before Pressing the Upload button</h4>
+        </div>
+      );
+    }
+  };
 
   return (
     <div>
-      <header>
-        <h3>{content}</h3>
-      </header>
+      <form
+        onSubmit={onFileUpload}
+        method='POST'
+      >
+        <input type='file' onChange={onFileChange} />
+        <label>
+          Caption:
+          <input
+            type='text'
+            value={caption}
+            onChange={(event) => setCaption(event.target.value)}
+          />
+        </label>
+        <button type='submit'>Upload!</button>
+      </form>
+      {fileData()}
     </div>
   );
 };
