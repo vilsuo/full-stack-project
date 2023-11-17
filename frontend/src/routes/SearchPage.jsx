@@ -6,7 +6,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 /*
 TODO
-- add links to user pages
+- add sorting to columns
 */
 
 const formatDate = date => {
@@ -64,13 +64,13 @@ const SearchPage = () => {
               <TableCell>Username</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>
-                <Grid container direction='row' alignItems='center' >
+                <Grid container direction='row' alignItems='center'>
                   <Grid item>
                     Created
                   </Grid>
                   <Grid item sx={{ ml: 1 }}>
                     <Tooltip title='(YYYY-MM-DD)'>
-                      <InfoOutlinedIcon fontSize='small' sx={{verticalAlign: 'sub'}} />
+                      <InfoOutlinedIcon fontSize='small' sx={{ verticalAlign: 'sub' }} />
                     </Tooltip>
                   </Grid>
                 </Grid>
@@ -79,9 +79,7 @@ const SearchPage = () => {
           </TableHead>
           <TableBody>
             {users.map(user =>
-              <TableRow
-                key={user.id}
-              >
+              <TableRow key={user.id}>
                 <TableCell>
                   <Link to={`/user/${user.id}`} key={user.id}>
                     {user.username}
