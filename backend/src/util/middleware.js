@@ -1,4 +1,4 @@
-const { User } = require('../models');;
+const { User, Image } = require('../models');;
 const logger = require('./logger');
 
 const parseNonNegative = (value, name) => {
@@ -30,6 +30,18 @@ const pageParser = async (req, res, next) => {
 
   next();
 };
+
+const fileFinder = async (req, res, next) => {
+  const { filename } = req.params;
+  const image = await Image.findOne({ where: { filename } });
+
+  if (!image) {
+    return res.status(404).send({ message: 'image not found' });
+  }
+
+  req.image = image;
+  next();
+}
 
 const isAuthenticated = (req, res, next) => {
   if (!req.session.user) {
@@ -79,6 +91,7 @@ const errorHandler = (error, req, res, next) => {
 
 module.exports = {
   pageParser,
+  fileFinder,
   isAuthenticated,
   userExtractor,
   requestLogger,

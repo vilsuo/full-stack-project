@@ -4,44 +4,44 @@ const { sequelize } = require('../util/db');
 class User extends Model {}
 
 User.init({
- id: {
-  type: DataTypes.INTEGER,
-  autoIncrement: true,
-  primaryKey: true,
- },
- name: {
-  type: DataTypes.STRING,
-  allowNull: false,
-  validate: {
-    notEmpty: {
-      msg: 'name can not be empty'
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'name can not be empty'
+      },
     },
   },
- },
- username: {
-  type: DataTypes.STRING,
-  allowNull: false,
-  unique: {
-    args: true,
-    msg: 'username has already been taken',
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: {
+      args: true,
+      msg: 'username has already been taken',
+    },
+    validate: {
+      notEmpty: {
+        msg: 'username can not be empty'
+      }
+    },
   },
-  validate: {
-    notEmpty: {
-      msg: 'username can not be empty'
-    }
+  passwordHash: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    },
   },
- },
- passwordHash: {
-  type: DataTypes.STRING,
-  allowNull: false,
-  validate: {
-    notEmpty: true
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   },
- },
- disabled: {
-  type: DataTypes.BOOLEAN,
-  defaultValue: false,
- },
 }, {
   sequelize,
   underscored: true,
