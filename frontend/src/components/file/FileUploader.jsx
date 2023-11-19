@@ -1,11 +1,15 @@
 import { Grid, Button, Typography, Tooltip, IconButton } from '@mui/material';
-import { useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 
-const FileUploader = ({ selectedFile, setSelectedFile }) => {
+const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
   // Create a reference to the hidden file input element
   const hiddenFileInput = useRef(null);
+
+  useImperativeHandle(refs, () => {
+    return { handleReset }
+  });
   
   // Programatically click the hidden file input element
   // when the Button component is clicked
@@ -32,7 +36,7 @@ const FileUploader = ({ selectedFile, setSelectedFile }) => {
     <Grid container
       direction='row'
       justifyContent="space-between"
-      alignItems="center"
+      alignItems='center'
     >
       <Grid item xs={12}>
         <Button
@@ -44,10 +48,10 @@ const FileUploader = ({ selectedFile, setSelectedFile }) => {
           Upload a file
         </Button>
         <input
-          type="file"
+          type='file'
           onChange={handleChange}
           ref={hiddenFileInput}
-          style={{ display: 'none' }} // Make the file input element invisible
+          style={{ display: 'none' }}
         />
       </Grid>
       { selectedFile ? (
@@ -67,6 +71,8 @@ const FileUploader = ({ selectedFile, setSelectedFile }) => {
       }
     </Grid>
   );
-}
+});
+
+FileUploader.displayName = 'FileUploader';
 
 export default FileUploader;

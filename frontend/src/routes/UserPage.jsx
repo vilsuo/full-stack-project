@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { 
   Box, Button, Card, 
   //CardContent, CardHeader, Typography,
-  CardMedia, Grid, Stack, TextField, 
+  CardMedia, Checkbox, FormControlLabel, FormGroup, Grid, Stack, TextField, 
 } from '@mui/material';
 
 
@@ -13,11 +13,7 @@ import Alert from '../components/Alert';
 
 /*
 TODO
-- can not reselect cleared image again
-
-- cache blank image
-- show success/error message
-- reset fields with success
+- cache blank image?
 */
 
 const Preview = ({ preview }) => {
@@ -47,14 +43,24 @@ const Preview = ({ preview }) => {
 
 const UserPage = () => {
   const [alertInfo, setAlertInfo] = useState({});
+  const fileUploaderRef = useRef();
 
   const [selectedFile, setSelectedFile] = useState(undefined);
   const [preview, setPreview] = useState(undefined);
 
   const [title, setTitle] = useState('');
   const [caption, setCaption] = useState('');
+  const [privacy, setPrivacy] = useState(false);
 
   const clearMessage = () => setAlertInfo({});
+
+  const reset = () => {
+    setTitle('');
+    setCaption('');
+
+    // reset file uploader
+    fileUploaderRef.current.handleReset();
+  }
 
   // create a preview as a side effect, whenever selected file is changed
   useEffect(() => {
@@ -87,6 +93,7 @@ const UserPage = () => {
     );
     formData.append('title', title);
     formData.append('caption', caption);
+    formData.append('private', privacy);
     
     try {
       await userService.addImage(formData);
@@ -95,7 +102,10 @@ const UserPage = () => {
         title: 'File uploaded',
         message: selectedFile.name
       });
+      reset();
+
     } catch (error) {
+      console.log('error', error);
       const errorMessages = error.response.data.message;
       setAlertInfo({
         severity: 'error',
@@ -116,6 +126,7 @@ const UserPage = () => {
         <Box id='image-form' component='form' onSubmit={onFileUpload}>
           <Stack spacing={2}>
             <FileUploader
+              ref={fileUploaderRef}
               selectedFile={selectedFile}
               setSelectedFile={setSelectedFile}
             />
@@ -134,6 +145,17 @@ const UserPage = () => {
               onChange={(event) => setCaption(event.target.value)}
               multiline={true}
             />
+            <FormGroup>
+              <FormControlLabel
+                label='Private'
+                control={
+                  <Checkbox
+                    checked={privacy}
+                    onChange={ (event) => setPrivacy(event.target.checked) }
+                  />
+                }
+              />
+            </FormGroup>
           </Stack>
           <Button
             id='img-button'

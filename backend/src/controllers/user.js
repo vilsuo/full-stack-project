@@ -14,7 +14,7 @@ router.post('/image', isAuthenticated, userExtractor, upload.single('image'), as
 
   const { filename, mimetype, size } = req.file;
   const filepath = req.file.path;
-  const { title, caption } = req.body;
+  const { title, caption, private } = req.body;
 
   const image = await Image.create({
     filename,
@@ -23,6 +23,7 @@ router.post('/image', isAuthenticated, userExtractor, upload.single('image'), as
     size,
     title,
     caption,
+    private,
     userId: req.user.id,
   });
 
