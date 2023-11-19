@@ -6,16 +6,17 @@ import {
   CardMedia, Grid, Stack, TextField, 
 } from '@mui/material';
 
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 import userService from '../services/user';
 import FileUploader from '../components/file/FileUploader';
 
 /*
 TODO
+- can not reselect cleared image again
+
+- cache blank image
 - show success/error message
 - reset fields with success
-- add placeholder card for when file is not selected
 */
 
 const Preview = ({ preview }) => {
@@ -33,9 +34,11 @@ const Preview = ({ preview }) => {
         */
       )}
       { !preview && (
-        <>
-          <QuestionMarkIcon fontSize='large'/>
-        </>
+        <CardMedia
+          component='img'
+          image='/static/images/blank.jpg'
+          alt='blank image'
+        />
       )}
     </Card>
   );
@@ -52,15 +55,21 @@ const UserPage = () => {
   useEffect(() => {
     if (!selectedFile) {
       setPreview(undefined);
+      console.log('set undefied')
       return;
     }
 
     const objectUrl = URL.createObjectURL(selectedFile);
     setPreview(objectUrl);
 
+    console.log('set', objectUrl);
+    
     // when effect returns a function, React will run it when it is time to clean up
     // free memory when ever this component is unmounted
-    return () => URL.revokeObjectURL(objectUrl);
+    return () => {
+      console.log('cleanup')
+      URL.revokeObjectURL(objectUrl);
+    }
   }, [selectedFile])
 
   // On file upload (click the upload button)
@@ -69,8 +78,6 @@ const UserPage = () => {
 
     // Create an object of formData
     const formData = new FormData();
-
-    //console.log('selectedfile', selectedFile);
 
     formData.append(
       'image',

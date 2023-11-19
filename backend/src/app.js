@@ -17,8 +17,10 @@ const { requestLogger, errorHandler, unknownEndpoint } = require('./util/middlew
 const session = require('express-session');
 const RedisStore = require('connect-redis').default;
 
-
 const app = express();
+
+// serve static content
+app.use('/static', express.static('public'));
 
 // MIDDLEWARE
 app.use(express.json());

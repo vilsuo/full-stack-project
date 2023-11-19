@@ -17,13 +17,14 @@ const FileUploader = ({ selectedFile, setSelectedFile }) => {
   // to handle the user-selected file 
   const handleChange = event => {
     const fileUploaded = event.target.files[0];
-    console.log('fileUploaded', fileUploaded)
+    //console.log('fileUploaded', fileUploaded)
     if (fileUploaded) {
       setSelectedFile(fileUploaded);
     }
   };
 
   const handleReset = () => {
+    hiddenFileInput.current.value = '';
     setSelectedFile(undefined);
   }
 
