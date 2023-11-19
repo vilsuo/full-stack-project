@@ -12,9 +12,12 @@ import AttachFileIcon from '@mui/icons-material/AttachFile'
 import CloseIcon from '@mui/icons-material/Close'
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
+import userService from '../services/user';
+
 /*
 TODO
 - show success/error message
+- reset fields with success
 - add placeholder card for when file is not selected
 
 - canceling file select clears selected file
@@ -83,7 +86,7 @@ const UserPage = () => {
     formData.append('title', title);
     formData.append('caption', caption);
     
-    await axios.post('/api/user/profilepicture', formData);
+    await userService.addImage(formData);
   };
 
   return (
@@ -103,6 +106,7 @@ const UserPage = () => {
               label='Image'
               value={selectedFile}
               onChange={value => setSelectedFile(value)}
+              required
             />
             <TextField
               id='title'

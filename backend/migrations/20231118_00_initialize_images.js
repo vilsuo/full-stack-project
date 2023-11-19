@@ -41,6 +41,11 @@ module.exports = {
         type: DataTypes.DATE,
       },
     });
+    await queryInterface.addColumn('images', 'user_id', {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: 'users', key: 'id' },
+    });
   },
   down: async ({ context: queryInterface}) => {
     await queryInterface.dropTable('images');

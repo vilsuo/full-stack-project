@@ -51,6 +51,7 @@ const isAuthenticated = (req, res, next) => {
 };
 
 const userExtractor = async (req, res, next) => {
+  console.log('userExtractor')
   const id = req.session.user.id;
   const user = await User.findByPk(id);
   if (!user) {

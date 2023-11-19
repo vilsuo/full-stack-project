@@ -1,13 +1,13 @@
 const router = require('express').Router();
 const path = require('path');
 const { Image } = require('../models');
-const { fileFinder } = require('../util/middleware');
+const { isAuthenticated, userExtractor, fileFinder } = require('../util/middleware');
 
 // add limits?: https://github.com/expressjs/multer#limits
 const multer = require('multer');
 const upload = multer({ dest: 'images/' });
 
-router.post('/profilepicture', upload.single('image'), async (req, res) => {
+router.post('/image', isAuthenticated, userExtractor, upload.single('image'), async (req, res) => {
   console.log('file', req.file);
   console.log('body', req.body);
 
@@ -22,12 +22,13 @@ router.post('/profilepicture', upload.single('image'), async (req, res) => {
     size,
     title,
     caption,
+    userId: req.user.id,
   });
 
   return res.status(201).send(image);
 });
 
-router.get('/profilepicture/:filename', fileFinder, async (req, res) => {
+router.get('/image/:filename', fileFinder, async (req, res) => {
   const image = req.image;
   const dirname = path.resolve();
   const fullfilepath = path.join(dirname, image.filepath);
@@ -37,7 +38,7 @@ router.get('/profilepicture/:filename', fileFinder, async (req, res) => {
     .sendFile(fullfilepath)
 });
 
-router.get('/profilepicture/:filename/details', fileFinder, async (req, res) => {
+router.get('/image/:filename/details', fileFinder, async (req, res) => {
   const { title, caption } = req.image;
   return res.send({ title, caption, });
 });
