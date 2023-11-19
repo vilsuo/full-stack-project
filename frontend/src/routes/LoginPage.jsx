@@ -9,10 +9,9 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 
-import LockIcon from '@mui/icons-material/Lock';
-import { Avatar, Paper, Typography } from '@mui/material';
+import Paper from '@mui/material/Paper';
 
-import ErrorAlert from '../components/ErrorAlert';
+import Alert from '../components/Alert';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -42,8 +41,9 @@ const LoginPage = () => {
 
   return (
     <Paper spacing={2} sx={{ p: 5 }}>
-      <ErrorAlert
-        id='login-error'
+      <Alert
+        id='login-alert'
+        severity='error'
         title='Login failed'
         message={message}
         clearMessage={clearMessage}

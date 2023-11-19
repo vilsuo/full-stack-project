@@ -8,7 +8,7 @@ import Stack from '@mui/material/Stack';
 
 import authService from '../services/auth';
 import { useNavigate } from 'react-router-dom';
-import ErrorAlert from '../components/ErrorAlert';
+import Alert from '../components/Alert';
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
@@ -44,8 +44,9 @@ const RegisterPage = () => {
 
   return (
     <Stack spacing={2} sx={{ mt: 3 }}>
-      <ErrorAlert
-        id='register-error'
+      <Alert
+        id='register-alert'
+        severity='error'
         title='Registration failed'
         message={message}
         clearMessage={clearMessage}

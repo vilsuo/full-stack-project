@@ -1,4 +1,4 @@
-import Alert from '@mui/material/Alert';
+import { default as MuiAlert } from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Zoom from '@mui/material/Zoom';
 
@@ -12,7 +12,7 @@ const Content = ({ messages }) => {
   );
 };
 
-const ErrorAlert = ({ title, message, clearMessage }) => {
+const Alert = ({ severity, title, message, clearMessage }) => {
   if (!message) {
     return null;
   }
@@ -22,14 +22,14 @@ const ErrorAlert = ({ title, message, clearMessage }) => {
 
   return (
     <Zoom in={true}>
-      <Alert severity='error' onClose={clearMessage}>
+      <MuiAlert severity={severity} onClose={clearMessage}>
         <AlertTitle>
           { title }: <strong>{`${singleMessage}.` }</strong>
         </AlertTitle>
         { !isSingleMessage && <Content messages={message} />}
-      </Alert>
+      </MuiAlert>
     </Zoom>
   );
 };
 
-export default ErrorAlert;
+export default Alert;

@@ -9,6 +9,7 @@ import {
 
 import userService from '../services/user';
 import FileUploader from '../components/file/FileUploader';
+import Alert from '../components/Alert';
 
 /*
 TODO
@@ -45,29 +46,29 @@ const Preview = ({ preview }) => {
 };
 
 const UserPage = () => {
+  const [alertInfo, setAlertInfo] = useState({});
+
   const [selectedFile, setSelectedFile] = useState(undefined);
   const [preview, setPreview] = useState(undefined);
 
   const [title, setTitle] = useState('');
   const [caption, setCaption] = useState('');
 
+  const clearMessage = () => setAlertInfo({});
+
   // create a preview as a side effect, whenever selected file is changed
   useEffect(() => {
     if (!selectedFile) {
       setPreview(undefined);
-      console.log('set undefied')
       return;
     }
 
     const objectUrl = URL.createObjectURL(selectedFile);
     setPreview(objectUrl);
 
-    console.log('set', objectUrl);
-    
     // when effect returns a function, React will run it when it is time to clean up
     // free memory when ever this component is unmounted
     return () => {
-      console.log('cleanup')
       URL.revokeObjectURL(objectUrl);
     }
   }, [selectedFile])
@@ -75,25 +76,43 @@ const UserPage = () => {
   // On file upload (click the upload button)
   const onFileUpload = async (event) => {
     event.preventDefault();
+    clearMessage();
 
     // Create an object of formData
     const formData = new FormData();
-
     formData.append(
       'image',
       selectedFile,
       selectedFile.name
     );
-
     formData.append('title', title);
     formData.append('caption', caption);
     
-    await userService.addImage(formData);
+    try {
+      await userService.addImage(formData);
+      setAlertInfo({
+        severity: 'success',
+        title: 'File uploaded',
+        message: selectedFile.name
+      });
+    } catch (error) {
+      const errorMessages = error.response.data.message;
+      setAlertInfo({
+        severity: 'error',
+        title: 'Upload failed',
+        message: errorMessages,
+      });
+    }
   };
 
   return (
     <Grid container spacing={2} sx={{ mt: 2 }}>
       <Grid item xs={12} sm={6}>
+        <Alert
+          id='upload-alert'
+          clearMessage={clearMessage}
+          { ...alertInfo }
+        />
         <Box id='image-form' component='form' onSubmit={onFileUpload}>
           <Stack spacing={2}>
             <FileUploader
@@ -122,6 +141,7 @@ const UserPage = () => {
             fullWidth
             variant='contained'
             sx={{ mt: 2 }}
+            disabled={!selectedFile}
           >
             Upload
           </Button>
