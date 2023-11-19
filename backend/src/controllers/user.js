@@ -2,14 +2,15 @@ const router = require('express').Router();
 const path = require('path');
 const { Image } = require('../models');
 const { isAuthenticated, userExtractor, fileFinder } = require('../util/middleware');
+const logger = require('../util/logger');
 
 // add limits?: https://github.com/expressjs/multer#limits
 const multer = require('multer');
 const upload = multer({ dest: 'images/' });
 
 router.post('/image', isAuthenticated, userExtractor, upload.single('image'), async (req, res) => {
-  console.log('file', req.file);
-  console.log('body', req.body);
+  logger.info('file', req.file);
+  logger.info('body', req.body);
 
   const { filename, mimetype, size } = req.file;
   const filepath = req.file.path;

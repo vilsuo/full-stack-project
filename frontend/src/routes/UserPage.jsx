@@ -1,26 +1,21 @@
 import { useState, useEffect } from 'react';
 
-import axios from 'axios';
 import { 
   Box, Button, Card, 
-  CardContent, CardHeader, Typography,
+  //CardContent, CardHeader, Typography,
   CardMedia, Grid, Stack, TextField, 
 } from '@mui/material';
 
-import { MuiFileInput } from 'mui-file-input';
-import AttachFileIcon from '@mui/icons-material/AttachFile'
-import CloseIcon from '@mui/icons-material/Close'
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 import userService from '../services/user';
+import FileUploader from '../components/file/FileUploader';
 
 /*
 TODO
 - show success/error message
 - reset fields with success
 - add placeholder card for when file is not selected
-
-- canceling file select clears selected file
 */
 
 const Preview = ({ preview }) => {
@@ -75,7 +70,7 @@ const UserPage = () => {
     // Create an object of formData
     const formData = new FormData();
 
-    console.log('selectedfile', selectedFile);
+    //console.log('selectedfile', selectedFile);
 
     formData.append(
       'image',
@@ -92,21 +87,11 @@ const UserPage = () => {
   return (
     <Grid container spacing={2} sx={{ mt: 2 }}>
       <Grid item xs={12} sm={6}>
-        <Box id='image-form' component='form' onSubmit={onFileUpload} >
+        <Box id='image-form' component='form' onSubmit={onFileUpload}>
           <Stack spacing={2}>
-            <MuiFileInput
-              InputProps={{
-                inputProps: { accept: 'image/*' },
-                startAdornment: <AttachFileIcon />,
-              }}
-              clearIconButtonProps={{
-                title: 'Remove',
-                children: <CloseIcon fontSize='small' />,
-              }}
-              label='Image'
-              value={selectedFile}
-              onChange={value => setSelectedFile(value)}
-              required
+            <FileUploader
+              selectedFile={selectedFile}
+              setSelectedFile={setSelectedFile}
             />
             <TextField
               id='title'
