@@ -31,15 +31,29 @@ const pageParser = async (req, res, next) => {
   next();
 };
 
-const fileFinder = async (req, res, next) => {
+const imageFinder = async (req, res, next) => {
   const { filename } = req.params;
   const image = await Image.findOne({ where: { filename } });
 
   if (!image) {
-    return res.status(404).send({ message: 'image not found' });
+    return res.status(404).send({ message: 'image does not exist' });
   }
 
   req.image = image;
+  next();
+};
+
+const userFinder = async (req, res, next) => {
+  const { username } = req.params;
+  const user = await User.findOne({ where: { username }});
+  if (!user) {
+    return res.status(404).send({ message: 'user does not exist' });
+
+  } else if (user.disabled) {
+    return res.status(404).send({ message: 'user is disabled' })
+  }
+
+  req.foundUser = user;
   next();
 }
 
@@ -51,7 +65,6 @@ const isAuthenticated = (req, res, next) => {
 };
 
 const userExtractor = async (req, res, next) => {
-  console.log('userExtractor')
   const id = req.session.user.id;
   const user = await User.findByPk(id);
   if (!user) {
@@ -92,7 +105,7 @@ const errorHandler = (error, req, res, next) => {
 
 module.exports = {
   pageParser,
-  fileFinder,
+  imageFinder, userFinder,
   isAuthenticated,
   userExtractor,
   requestLogger,
