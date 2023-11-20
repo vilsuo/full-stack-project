@@ -50,7 +50,7 @@ const userFinder = async (req, res, next) => {
     return res.status(404).send({ message: 'user does not exist' });
 
   } else if (user.disabled) {
-    return res.status(404).send({ message: 'user is disabled' })
+    return res.status(400).send({ message: 'user is disabled' })
   }
 
   req.foundUser = user;
