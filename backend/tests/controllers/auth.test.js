@@ -13,7 +13,6 @@ TODO
 - test cookies better
 */
 
-//const { sequelize, connectToDatabases } = require('../../src/util/db');
 const { User } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
 
