@@ -15,24 +15,13 @@ TODO
 
 const { User } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
+const { cookieKey, get_SetCookie } = require('../helpers/cookie');
 
 const supertest = require('supertest');
 const app = require('../../src/app');
 
 const api = supertest(app);
 
-const cookieKey = 'connect.sid';
-const get_SetCookie = response => {
-  const cookie = response
-    .get('set-cookie')
-    .find(value => value.startsWith(cookieKey));
-  
-  if (cookie) {
-    return cookie.split(';')[0].substring(cookieKey.length + 1);
-  }
-
-  return null;
-};
 
 describe('registering', () => {
   test('succeeds with valid inputs', async () => {
