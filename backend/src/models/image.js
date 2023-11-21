@@ -16,12 +16,9 @@ Image.init({
   },
   filename: {
     type: DataTypes.STRING,
-    allowNull: false,
   },
   filepath: {
     type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
   },
   mimetype: {
     type: DataTypes.STRING,
