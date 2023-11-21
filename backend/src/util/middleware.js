@@ -31,11 +31,14 @@ const pageParser = async (req, res, next) => {
   next();
 };
 
+/**
+ * Expects userFinder middleware to have been handled
+ */
 const imageFinder = async (req, res, next) => {
   const { filename } = req.params;
   const image = await Image.findOne({ where: { filename } });
 
-  if (!image) {
+  if (!image || image.userId !== req.foundUser.id) {
     return res.status(404).send({ message: 'image does not exist' });
   }
 
@@ -56,6 +59,8 @@ const userFinder = async (req, res, next) => {
   req.foundUser = user;
   next();
 }
+
+const userImageFinder = [userFinder, imageFinder];
 
 const isAuthenticated = (req, res, next) => {
   if (!req.session.user) {
@@ -105,7 +110,8 @@ const errorHandler = (error, req, res, next) => {
 
 module.exports = {
   pageParser,
-  imageFinder, userFinder,
+  userFinder,
+  userImageFinder,
   isAuthenticated,
   userExtractor,
   requestLogger,

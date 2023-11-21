@@ -6,10 +6,9 @@ const logger = require('../util/logger');
 
 /*
 TODO
-- rename route to images?
+- remove this route (use route: 'users' instead)
 */
-
-// add limits?: https://github.com/expressjs/multer#limits
+/*
 const multer = require('multer');
 const upload = multer({ dest: 'images/' });
 
@@ -56,5 +55,6 @@ router.get('/image/:filename/details', imageFinder, async (req, res) => {
   const { title, caption } = req.image;
   return res.send({ title, caption, });
 });
+*/
 
 module.exports = router;

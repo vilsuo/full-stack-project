@@ -1,53 +1,47 @@
 const router = require('express').Router();
 const { Op } = require('sequelize');
 const { sequelize } = require('../util/db');
+const logger = require('../util/logger');
 const { User, Image } = require('../models');
 const { 
-  //pageParser,
-  imageFinder, userFinder, 
-  isAuthenticated, userExtractor, composed
+  userImageFinder, userFinder, 
+  isAuthenticated, userExtractor,
 } = require('../util/middleware');
 
-// add limits?: https://github.com/expressjs/multer#limits
 const path = require('path');
-const multer = require('multer');
-const upload = multer({ dest: 'images/' });
+const upload = require('../util/image-storage');
 
 router.get('/', /*pageParser,*/ async (req, res) => {
-  let where = {};
-
+  const searchFilters = {};
   if (req.query.search) {
-    where = {
-      [Op.or]: [
-        sequelize.where(
-          sequelize.fn('lower', sequelize.col('name')),
-          { [Op.substring] : req.query.search.toLowerCase() }
-        ),
-        sequelize.where(
-          sequelize.fn('lower', sequelize.col('username')),
-          { [Op.substring] : req.query.search.toLowerCase() }
-        )
-      ]
-    }
+    searchFilters[Op.or] = [
+      sequelize.where(
+        sequelize.fn('lower', sequelize.col('name')),
+        { [Op.substring] : req.query.search.toLowerCase() }
+      ),
+      sequelize.where(
+        sequelize.fn('lower', sequelize.col('username')),
+        { [Op.substring] : req.query.search.toLowerCase() }
+      ),
+    ];
   }
-
-  where.disabled = false;
 
   const users = await User.findAll({
     attributes: {
       exclude: ['passwordHash', 'updatedAt']
     },
-    where,
+    where: { ...searchFilters, disabled: false },
     order: [
       ['username', 'ASC']
     ],
-    //offset: req.offset,
-    //limit: req.limit,
+    //offset: req.offset, limit: req.limit,
   });
 
   return res.json(users);
 });
 
+// TODO TEST
+// JOIN USERS IMAGES? (include private if session user is owner)
 router.get('/:username', userFinder, async (req, res) => {
   const user = req.foundUser;
   return res.send(user);
@@ -72,17 +66,22 @@ router.get('/:username/images', userFinder, async (req, res) => {
 router.post('/:username/images', userFinder, isAuthenticated, userExtractor, 
     upload.single('image'), async (req, res) => {
 
+  logger.info('File:  ', req.file);
+  
   if (req.foundUser.username !== req.user.username) {
     return res.status(401).send({
       message: 'can not add images to other users'
     });
   }
 
-  logger.info('file', req.file);
-  logger.info('body', req.body);
+  const {
+    mimetype, size,
+    filename, // The name of the file within the destination (DiskStorage only)
+  } = req.file;
 
-  const { filename, mimetype, size } = req.file;
+  // The full path to the uploaded file (DiskStorage only)
   const filepath = req.file.path;
+
   const { title, caption } = req.body;
   const privacy = req.body.private;
 
@@ -97,32 +96,6 @@ router.post('/:username/images', userFinder, isAuthenticated, userExtractor,
   return res.status(201).send(image);
 });
 
-router.get('/:username/images/:filename', userFinder, imageFinder, async (req, res) => {
-  const image = req.image;
-  const dirname = path.resolve();
-  const fullfilepath = path.join(dirname, image.filepath);
-  if (!image.private) {
-    return res
-      .type(image.mimetype)
-      .sendFile(fullfilepath)
-
-  } else {
-    if (req.session.user) {
-      const id = req.session.user.id;
-      const user = await User.findByPk(id);
-      // image is private: authenticated user must be the owner of the image
-      if (user && user.username === req.foundUser.username) {
-        return res
-          .type(image.mimetype)
-          .sendFile(fullfilepath)
-      }
-    }
-    return res.status(401).send({
-      message: 'image is private'
-    });
-  }
-});
-
 const sessionHasAccessToImage = async (session, imageOwner, image) => {
   if (!image.private) {
     return true
@@ -133,42 +106,42 @@ const sessionHasAccessToImage = async (session, imageOwner, image) => {
     const user = await User.findByPk(session.user.id);
     return (user && user.username === imageOwner.username);
   }
+
   return false;
 };
 
-// TEST!!
-router.get('/:username/images/:filename/details', imageFinder, userFinder, async (req, res) => {
+// TEST (first with postman)!!
+router.get('/:username/images/:filename', userImageFinder, async (req, res) => {
   const image = req.image;
-  const { title, caption } = image;
-  const privacy = req.body.private;
+  const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
+  if (allowAccess) {
+    const dirname = path.resolve();
+    const fullfilepath = path.join(dirname, image.filepath);
 
-  if (sessionHasAccessToImage(req.session, req.foundUser, image)) {
-    return res.send({ title, caption, private: privacy });
+    return res
+      .type(image.mimetype)
+      .sendFile(fullfilepath)
   }
-  
+
   return res.status(401).send({
     message: 'image is private'
   });
+});
 
-  /*
+// TEST!!
+router.get('/:username/images/:filename/details', userImageFinder, async (req, res) => {
   const image = req.image;
-  const { title, caption, private } = image;
-  if (!private) {
-    return res.send({ title, caption, private });
-  } else {
-    if (req.session.user) {
-      const id = req.session.user.id;
-      const user = await User.findByPk(id);
-      // image is private: authenticated user must be the owner of the image
-      if (user && user.username === req.foundUser.username) {
-        return res.send({ title, caption, private });
-      }
-    }
-    return res.status(401).send({
-      message: 'image is private'
-    });
+  const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
+  if (allowAccess) {
+    const { title, caption } = image;
+    const privacy = image.private;
+
+    return res.send({ title, caption, private: privacy });
   }
-  */
+
+  return res.status(401).send({
+    message: 'image is private'
+  });
 });
 
 module.exports = router;
