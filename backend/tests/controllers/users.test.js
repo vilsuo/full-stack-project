@@ -131,12 +131,16 @@ describe('posting images', () => {
   const imagePath = 'tests/test-images/git.png';
 
   describe('without authentication', () => {
-    // fails sometimes, see help?:
-    // https://stackoverflow.com/questions/54936185/express-mongoose-jest-error-econnaborted
+    /*
+    fails sometimes, see links:
+    https://stackoverflow.com/questions/54936185/express-mongoose-jest-error-econnaborted
+    https://github.com/ladjs/supertest/issues/230
+    */
     test('is unauthorized', async () => {
       const response = await api
         .post(`${baseUrl}/${username1}/images`)
         .set('Content-Type', 'multipart/form-data')
+        .set('Connection', 'keep-alive')  // there is a bug in supertest, this seems to fix it
         .field('title', title)
         .field('caption', caption)
         .field('private', privacyOption)
@@ -159,7 +163,7 @@ describe('posting images', () => {
         .send(credentials);
 
       cookie = get_SetCookie(response);
-      console.log('beforeEach cookie', cookie)
+      console.log('beforeEach cookie', cookie);
     });
 
     test('can post image to self', async () => {
@@ -174,11 +178,24 @@ describe('posting images', () => {
         .expect(201)
         .expect('Content-Type', /application\/json/);
 
-      console.log('cookie set in request', response.request.getHeader('Cookie'));
-
       expect(response.body.title).toBe(title);
       expect(response.body.caption).toBe(caption);
       expect(response.body.private).toBe(privacyOption);
+    });
+
+    test('can not post image to other user', async () => {
+      const response = await api
+        .post(`${baseUrl}/${username2}/images`)
+        .set('Cookie', `${cookieKey}=${cookie}`)
+        .set('Content-Type', 'multipart/form-data')
+        .field('title', title)
+        .field('caption', caption)
+        .field('private', privacyOption)
+        .attach('image', imagePath)
+        .expect(401)
+        .expect('Content-Type', /application\/json/);
+
+      expect(response.body.message).toBe('can not add images to other users');
     });
   });
 });
