@@ -47,6 +47,7 @@ router.get('/:username', userFinder, async (req, res) => {
   return res.send(user);
 });
 
+// can already write tests for this
 router.get('/:username/images', userFinder, async (req, res) => {
   const foundUser = req.foundUser;
 
@@ -67,11 +68,15 @@ router.post('/:username/images', userFinder, isAuthenticated, userExtractor,
     upload.single('image'), async (req, res) => {
 
   logger.info('File:  ', req.file);
-  
+
   if (req.foundUser.username !== req.user.username) {
     return res.status(401).send({
       message: 'can not add images to other users'
     });
+  }
+
+  if (!req.file) {
+    return res.status(400).send({ message: 'file is missing' });
   }
 
   const {
@@ -110,7 +115,11 @@ const sessionHasAccessToImage = async (session, imageOwner, image) => {
   return false;
 };
 
-// TEST (first with postman)!!
+// TEST
+// should 
+// - this return the details 
+//    - change path param 'filename' to Image.id?
+// - the details router (after beign renamed) return the image?
 router.get('/:username/images/:filename', userImageFinder, async (req, res) => {
   const image = req.image;
   const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
@@ -128,7 +137,7 @@ router.get('/:username/images/:filename', userImageFinder, async (req, res) => {
   });
 });
 
-// TEST!!
+// TEST
 router.get('/:username/images/:filename/details', userImageFinder, async (req, res) => {
   const image = req.image;
   const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
