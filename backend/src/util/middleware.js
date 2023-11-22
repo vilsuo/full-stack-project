@@ -9,6 +9,8 @@ const parseNonNegative = (value, name) => {
   return n;
 };
 
+// use sequelize 'findAndCountAll'
+// https://sequelize.org/docs/v6/core-concepts/model-querying-finders/#findandcountall
 const pageParser = async (req, res, next) => {
   const defaultPageNumber = 0;
   const defaultPageSize = 10;

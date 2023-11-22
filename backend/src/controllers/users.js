@@ -40,14 +40,11 @@ router.get('/', /*pageParser,*/ async (req, res) => {
   return res.json(users);
 });
 
-// TODO TEST
-// JOIN USERS IMAGES? (include private if session user is owner)
 router.get('/:username', userFinder, async (req, res) => {
   const user = req.foundUser;
   return res.send(user);
 });
 
-// can already write tests for this
 router.get('/:username/images', userFinder, async (req, res) => {
   const foundUser = req.foundUser;
 

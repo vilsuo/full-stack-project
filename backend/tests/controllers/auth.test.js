@@ -15,7 +15,7 @@ TODO
 
 const { User } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
-const { cookieKey, get_SetCookie } = require('../helpers/cookie');
+const { cookieKey, get_SetCookie } = require('../helpers');
 
 const supertest = require('supertest');
 const app = require('../../src/app');
