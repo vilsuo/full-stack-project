@@ -100,17 +100,19 @@ describe('find users images', () => {
     expect(response.body.message).toBe('user is disabled');
   });
 
-  test('when user has no images, an empty array is returned', async () => {
-    const response = await api
-      .get(`${baseUrl}/${username1}/images`)
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
-
-    expect(response.body).toHaveLength(0);
+  describe('when no images have been created', () => {
+    test('empty array is returned', async () => {
+      const response = await api
+        .get(`${baseUrl}/${username1}/images`)
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+  
+      expect(response.body).toHaveLength(0);
+    });
   });
 
   /*
-  describe('when user has images', () => {
+  describe('when images have been created', () => {
 
 
     describe('without authentication', () => {
@@ -166,36 +168,53 @@ describe('posting images', () => {
       console.log('beforeEach cookie', cookie);
     });
 
-    test('can post image to self', async () => {
-      const response = await api
-        .post(`${baseUrl}/${credentials.username}/images`)
-        .set('Cookie', `${cookieKey}=${cookie}`)
-        .set('Content-Type', 'multipart/form-data')
-        .field('title', title)
-        .field('caption', caption)
-        .field('private', privacyOption)
-        .attach('image', imagePath)
-        .expect(201)
-        .expect('Content-Type', /application\/json/);
+    describe('posting to self', () => {
+      test('can post image to self', async () => {
+        const response = await api
+          .post(`${baseUrl}/${credentials.username}/images`)
+          .set('Cookie', `${cookieKey}=${cookie}`)
+          .set('Content-Type', 'multipart/form-data')
+          .field('title', title)
+          .field('caption', caption)
+          .field('private', privacyOption)
+          .attach('image', imagePath)
+          .expect(201)
+          .expect('Content-Type', /application\/json/);
+  
+        expect(response.body.title).toBe(title);
+        expect(response.body.caption).toBe(caption);
+        expect(response.body.private).toBe(privacyOption);
+      });
 
-      expect(response.body.title).toBe(title);
-      expect(response.body.caption).toBe(caption);
-      expect(response.body.private).toBe(privacyOption);
+      test('image must be present in the request', async () => {
+        const response = await api
+          .post(`${baseUrl}/${credentials.username}/images`)
+          .set('Cookie', `${cookieKey}=${cookie}`)
+          .field('title', title)
+          .field('caption', caption)
+          .field('private', privacyOption)
+          .expect(400)
+          .expect('Content-Type', /application\/json/);
+
+        expect(response.body.message).toBe('file is missing');
+      });
     });
-
-    test('can not post image to other user', async () => {
-      const response = await api
-        .post(`${baseUrl}/${username2}/images`)
-        .set('Cookie', `${cookieKey}=${cookie}`)
-        .set('Content-Type', 'multipart/form-data')
-        .field('title', title)
-        .field('caption', caption)
-        .field('private', privacyOption)
-        .attach('image', imagePath)
-        .expect(401)
-        .expect('Content-Type', /application\/json/);
-
-      expect(response.body.message).toBe('can not add images to other users');
+    
+    describe('posting to others', () => {
+      test('can not post image to other user', async () => {
+        const response = await api
+          .post(`${baseUrl}/${username2}/images`)
+          .set('Cookie', `${cookieKey}=${cookie}`)
+          .set('Content-Type', 'multipart/form-data')
+          .field('title', title)
+          .field('caption', caption)
+          .field('private', privacyOption)
+          .attach('image', imagePath)
+          .expect(401)
+          .expect('Content-Type', /application\/json/);
+  
+        expect(response.body.message).toBe('can not add images to other users');
+      });
     });
   });
 });
