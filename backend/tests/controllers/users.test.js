@@ -12,7 +12,7 @@ const username1 = 'viltsu';
 const username2 = 'matsu';
 const disabledUsername = 'samtsu';
 const nonExistingUsername = 'jilmari';
-const rawPassword = 'password';
+const rawPassword = 'salainen';
 
 const getUsersImageCount = async username => {
   const usersImageCount = await Image.count({
@@ -23,6 +23,22 @@ const getUsersImageCount = async username => {
   });
   return usersImageCount;
 }
+
+const title = 'My title';
+const caption = 'Some caption';
+const imagePath = 'tests/test-images/git.png';
+const postImage = async (username, cookie, privacyOption) => {
+  return await api
+    .post(`${baseUrl}/${username}/images`)
+    .set('Cookie', `${cookieKey}=${cookie}`)
+    .set('Content-Type', 'multipart/form-data')
+    .field('title', title)
+    .field('caption', caption)
+    .field('private', privacyOption)
+    .attach('image', imagePath)
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+};
 
 beforeEach(async () => {
   // NON DISABLED USERS:
@@ -139,10 +155,7 @@ describe('find users images', () => {
 });
 
 describe('posting images', () => {
-  const title = 'My title';
-  const caption = 'Some caption';
   const privacyOption = false;
-  const imagePath = 'tests/test-images/git.png';
 
   describe('without authentication', () => {
     /*
@@ -168,57 +181,62 @@ describe('posting images', () => {
 
   describe('with authentication', () => {
     let cookie;
-    const credentials = { username: username1, password: rawPassword };
+    const credentials1 = { username: username1, password: rawPassword };
 
     // log in and save cookie
     beforeEach(async () => {
       const response = await api 
         .post('/api/auth/login')
-        .send(credentials);
+        .send(credentials1);
 
       cookie = get_SetCookie(response);
       console.log('beforeEach cookie', cookie);
     });
 
     describe('posting to self', () => {
+      const postingUsersUsername = credentials1.username;
+
       test('can post image to self', async () => {
-        const response = await api
-          .post(`${baseUrl}/${credentials.username}/images`)
-          .set('Cookie', `${cookieKey}=${cookie}`)
-          .set('Content-Type', 'multipart/form-data')
-          .field('title', title)
-          .field('caption', caption)
-          .field('private', privacyOption)
-          .attach('image', imagePath)
-          .expect(201)
-          .expect('Content-Type', /application\/json/);
-  
+        const response = await postImage(
+          postingUsersUsername, cookie, privacyOption
+        );
+
         expect(response.body.title).toBe(title);
         expect(response.body.caption).toBe(caption);
         expect(response.body.private).toBe(privacyOption);
       });
 
       test('users image count is increased', async () => {
-        const imageCountBefore = await getUsersImageCount(credentials.username);
-        await api
-          .post(`${baseUrl}/${credentials.username}/images`)
+        const imageCountBefore = await getUsersImageCount(postingUsersUsername);
+        
+        await postImage(postingUsersUsername, cookie, privacyOption);
+
+        const imageCountAfter = await getUsersImageCount(postingUsersUsername);
+        expect(imageCountAfter).toBe(imageCountBefore + 1);
+      });
+
+      test('can post without title, caption and privacy option', async () => {
+        const response = await api
+          .post(`${baseUrl}/${postingUsersUsername}/images`)
           .set('Cookie', `${cookieKey}=${cookie}`)
           .set('Content-Type', 'multipart/form-data')
-          .field('title', title)
-          .field('caption', caption)
-          .field('private', privacyOption)
           .attach('image', imagePath)
           .expect(201)
           .expect('Content-Type', /application\/json/);
 
-        const imageCountAfter = await getUsersImageCount(credentials.username);
-        expect(imageCountAfter).toBe(imageCountBefore + 1);
+          // there are six falsy values: false, 0, '', null, undefined, and NaN
+          expect(response.body.title).toBeFalsy();
+          expect(response.body.caption).toBeFalsy();
+
+          // default privacy option is false
+          expect(response.body.private).toBe(false);
       });
 
       test('image must be present in the request', async () => {
         const response = await api
-          .post(`${baseUrl}/${credentials.username}/images`)
+          .post(`${baseUrl}/${postingUsersUsername}/images`)
           .set('Cookie', `${cookieKey}=${cookie}`)
+          .set('Content-Type', 'multipart/form-data')
           .field('title', title)
           .field('caption', caption)
           .field('private', privacyOption)
