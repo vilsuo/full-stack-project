@@ -14,6 +14,16 @@ const disabledUsername = 'samtsu';
 const nonExistingUsername = 'jilmari';
 const rawPassword = 'password';
 
+const getUsersImageCount = async username => {
+  const usersImageCount = await Image.count({
+    include: {
+      model: User,
+      where: { username },
+    },
+  });
+  return usersImageCount;
+}
+
 beforeEach(async () => {
   // NON DISABLED USERS:
   const encodedPassword1 = await encodePassword(rawPassword);
@@ -113,7 +123,9 @@ describe('find users images', () => {
 
   /*
   describe('when images have been created', () => {
-
+    beforeEach(async () => {
+      // post private/nonprivate images to username1/username2;
+    });
 
     describe('without authentication', () => {
 
@@ -184,6 +196,23 @@ describe('posting images', () => {
         expect(response.body.title).toBe(title);
         expect(response.body.caption).toBe(caption);
         expect(response.body.private).toBe(privacyOption);
+      });
+
+      test('users image count is increased', async () => {
+        const imageCountBefore = await getUsersImageCount(credentials.username);
+        await api
+          .post(`${baseUrl}/${credentials.username}/images`)
+          .set('Cookie', `${cookieKey}=${cookie}`)
+          .set('Content-Type', 'multipart/form-data')
+          .field('title', title)
+          .field('caption', caption)
+          .field('private', privacyOption)
+          .attach('image', imagePath)
+          .expect(201)
+          .expect('Content-Type', /application\/json/);
+
+        const imageCountAfter = await getUsersImageCount(credentials.username);
+        expect(imageCountAfter).toBe(imageCountBefore + 1);
       });
 
       test('image must be present in the request', async () => {
