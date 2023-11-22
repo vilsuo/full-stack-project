@@ -7,9 +7,10 @@ import {
 } from '@mui/material';
 
 
-import userService from '../services/user';
+import usersService from '../services/users';
 import FileUploader from '../components/file/FileUploader';
 import Alert from '../components/Alert';
+import { useParams } from 'react-router-dom';
 
 /*
 TODO
@@ -42,6 +43,8 @@ const Preview = ({ preview }) => {
 };
 
 const UserPage = () => {
+  const userPage = useParams().username; // username of the page owner
+
   const [alertInfo, setAlertInfo] = useState({});
   const fileUploaderRef = useRef();
 
@@ -96,7 +99,7 @@ const UserPage = () => {
     formData.append('private', privacy);
     
     try {
-      await userService.addImage(formData);
+      await usersService.addImage(userPage, formData);
       setAlertInfo({
         severity: 'success',
         title: 'File uploaded',

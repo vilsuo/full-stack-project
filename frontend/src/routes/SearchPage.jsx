@@ -81,7 +81,7 @@ const SearchPage = () => {
             {users.map(user =>
               <TableRow key={user.id}>
                 <TableCell>
-                  <Link to={`/user/${user.id}`} key={user.id}>
+                  <Link to={`/user/${user.username}`} key={user.username}>
                     {user.username}
                   </Link>
                 </TableCell>

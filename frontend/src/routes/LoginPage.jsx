@@ -31,7 +31,7 @@ const LoginPage = () => {
     dispatch(login({ username, password }))
       .unwrap()
       .then((user) => {
-        navigate('/user');
+        navigate('/');
       })
       .catch((error) => {
         setMessage(error);
