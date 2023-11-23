@@ -10,6 +10,10 @@ const baseUrl = '/api/users';
 
 /*
 TODO
+- rewrite posting tests
+
+- add test that check that only images are allowed
+
 - add tests for single image routes
 */
 const credentials1 = { username: 'viltsu', password: 'salainen' };

@@ -9,6 +9,7 @@ const { sessionExtractor, isAllowedToViewImage, isAllowedToEditImage, } = requir
 
 const path = require('path');
 const upload = require('../util/image-storage');
+const imageUpload = upload.single('image');
 
 /*
 TODO
@@ -71,36 +72,40 @@ router.get('/:username/images', userFinder, async (req, res) => {
   return res.send(images);
 });
 
-router.post('/:username/images', userFinder, sessionExtractor, 
-    upload.single('image'), async (req, res) => {
+router.post('/:username/images', userFinder, sessionExtractor, async (req, res) => {
+  // multer upload error handling see: https://github.com/expressjs/multer/issues/336
+  imageUpload(req, res, async (error) => {
+    if (error) {
+      return res.status(400).send({ message: error.message });
+    }
 
-  logger.info('File:  ', req.file);
+    logger.info('File:  ', req.file);
 
-  if (req.foundUser.id !== req.user.id) {
-    return res.status(401).send({
-      message: 'can not add images to other users'
+    if (req.foundUser.id !== req.user.id) {
+      return res.status(401).send({
+        message: 'can not add images to other users'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).send({ message: 'file is missing' });
+    }
+
+    // The full path to the uploaded file (DiskStorage only)
+    const filepath = req.file.path;
+    const { mimetype, size, originalname, } = req.file;
+    const { title, caption, private: privateOption } = req.body;
+
+    const image = await Image.create({
+      originalname, filepath,
+      mimetype, size,
+      title, caption,
+      private: privateOption,
+      userId: req.user.id,
     });
-  }
 
-  if (!req.file) {
-    return res.status(400).send({ message: 'file is missing' });
-  }
-
-  const { mimetype, size, originalname, } = req.file;
-
-  // The full path to the uploaded file (DiskStorage only)
-  const filepath = req.file.path;
-
-  const { title, caption, private: privateOption } = req.body;
-  const image = await Image.create({
-    originalname, filepath,
-    mimetype, size,
-    title, caption,
-    private: privateOption,
-    userId: req.user.id,
+    return res.status(201).send(image);
   });
-
-  return res.status(201).send(image);
 });
 
 // TODO write tests

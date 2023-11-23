@@ -1,5 +1,10 @@
 const { DataTypes } = require('sequelize');
 
+/*
+Postgres bug
+- have to add 'type' to change column even when not changing it, see:
+https://stackoverflow.com/questions/62667269/sequelize-js-how-do-we-change-column-type-in-migration
+*/
 module.exports = {
   up: async ({ context: queryInterface }) => {
     const transaction = await queryInterface.sequelize.transaction();
@@ -53,4 +58,4 @@ module.exports = {
       throw error;
     }
   }
-}
+};

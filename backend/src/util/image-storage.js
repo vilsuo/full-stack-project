@@ -8,7 +8,6 @@ if (process.env.NODE_ENV === 'test') {
   options = { dest: 'images/' }
 }
 
-/*
 // copied from: https://github.com/expressjs/multer/issues/114
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png/;
@@ -18,13 +17,12 @@ const fileFilter = (req, file, cb) => {
   if (mimetype && extname) {
     return cb(null, true);
   }
-  cb('Error: File upload only supports the following filetypes - ' + filetypes);
+  cb(new Error('File upload only supports the following filetypes - ' + filetypes));
 };
-*/
 
 const upload = multer({
   ...options,
-  //fileFilter,
+  fileFilter,
 });
 
 module.exports = upload;
