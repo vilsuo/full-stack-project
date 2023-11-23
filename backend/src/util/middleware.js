@@ -37,8 +37,8 @@ const pageParser = async (req, res, next) => {
  * Expects userFinder middleware to have been handled
  */
 const imageFinder = async (req, res, next) => {
-  const { filename } = req.params;
-  const image = await Image.findOne({ where: { filename } });
+  const { imageId } = req.params;
+  const image = await Image.findByPk(imageId);
 
   if (!image || image.userId !== req.foundUser.id) {
     return res.status(404).send({ message: 'image does not exist' });

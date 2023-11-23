@@ -11,6 +11,13 @@ const {
 const path = require('path');
 const upload = require('../util/image-storage');
 
+/*
+TODO
+  - add tests for single image routes
+
+  - add methods for deleting/editing single images
+*/
+
 router.get('/', /*pageParser,*/ async (req, res) => {
   const searchFilters = {};
   if (req.query.search) {
@@ -113,11 +120,13 @@ const sessionHasAccessToImage = async (session, imageOwner, image) => {
 };
 
 // TEST
+// - create a helper function for getting the image file path
+//    - mock it in tests?
 // should 
-// - this return the details 
+// - this return the details?
 //    - change path param 'filename' to Image.id?
 // - the details router (after beign renamed) return the image?
-router.get('/:username/images/:filename', userImageFinder, async (req, res) => {
+router.get('/:username/images/:imageId', userImageFinder, async (req, res) => {
   const image = req.image;
   const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
   if (allowAccess) {
@@ -135,7 +144,7 @@ router.get('/:username/images/:filename', userImageFinder, async (req, res) => {
 });
 
 // TEST
-router.get('/:username/images/:filename/details', userImageFinder, async (req, res) => {
+router.get('/:username/images/:imageId/details', userImageFinder, async (req, res) => {
   const image = req.image;
   const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
   if (allowAccess) {
