@@ -14,4 +14,6 @@ beforeEach(async () => {
 afterAll(async () => {
   await sequelize.drop();
   console.log("All tables dropped!");
+
+  // reset redis db with redisClient.flushAll?
 });

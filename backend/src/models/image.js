@@ -1,11 +1,11 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../util/db');
 
-class Image extends Model {}
+class Image extends Model {};
 
 /*
 TODO
-  - add column original filename
+  - add column for original filename
 */
 
 Image.init({

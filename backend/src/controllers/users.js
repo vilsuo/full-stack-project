@@ -4,8 +4,8 @@ const { sequelize } = require('../util/db');
 const logger = require('../util/logger');
 const { User, Image } = require('../models');
 
-const { userFinder, userImageFinder, } = require('../util/middleware/finder');
-const { sessionExtractor, } = require('../util/middleware/session');
+const { userFinder, } = require('../util/middleware/finder');
+const { sessionExtractor, isAllowedToViewImage, isAllowedToEditImage, } = require('../util/middleware/auth');
 
 const path = require('path');
 const upload = require('../util/image-storage');
@@ -14,6 +14,7 @@ const upload = require('../util/image-storage');
 TODO
   - add tests for single image routes
   - add methods for deleting/editing single images
+  - test that only images can be uploaded
 */
 
 router.get('/', /*pageParser,*/ async (req, res) => {
@@ -62,7 +63,11 @@ router.get('/:username/images', userFinder, async (req, res) => {
     }
   }
 
-  const images = await Image.findAll({ where });
+  const images = await Image.findAll({
+    attributes: { exclude: ['filepath', 'size'] },
+    where, 
+  });
+
   return res.send(images);
 });
 
@@ -103,55 +108,44 @@ router.post('/:username/images', userFinder, sessionExtractor,
   return res.status(201).send(image);
 });
 
-// TODO implement as middleware?
-const sessionHasAccessToImage = async (session, imageOwner, image) => {
-  if (!image.private) {
-    return true
-  }
-
-  if (session.user) {
-    // image is private: authenticated user must be the owner of the image
-    const user = await User.findByPk(session.user.id);
-    return (user && user.username === imageOwner.username);
-  }
-
-  return false;
-};
-
-// TEST
-router.get('/:username/images/:imageId', userImageFinder, async (req, res) => {
+// TODO write tests
+router.get('/:username/images/:imageId', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
-  const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
-  if (allowAccess) {
-    const { title, caption } = image;
-    const privacy = image.private;
+  return res.send(image);
+});
 
-    return res.send({ title, caption, private: privacy });
-  }
+// TODO write tests
+router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
+  const image = req.image;
+  await image.destroy();
 
-  return res.status(401).send({
-    message: 'image is private'
-  });
+  return res.status(204).end();
+});
+
+// TODO TEST
+router.put('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
+  const image = req.image;
+
+  const { title, caption, private } = req.body;
+  if (title !== undefined)    { image.title = title; }
+  if (caption !== undefined)  { image.caption = caption; }
+  if (private !== undefined)  { image.private = private; }
+
+  const updatedImage = await image.save();
+  return res.send(updatedImage);
 });
 
 // TEST
 // - create a helper function for getting the image file path
 //    - mock it in tests?
-router.get('/:username/images/:imageId/content', userImageFinder, async (req, res) => {
+router.get('/:username/images/:imageId/content', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
-  const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
-  if (allowAccess) {
-    const dirname = path.resolve();
-    const fullfilepath = path.join(dirname, image.filepath);
+  const dirname = path.resolve();
+  const fullfilepath = path.join(dirname, image.filepath);
 
-    return res
-      .type(image.mimetype)
-      .sendFile(fullfilepath);
-  }
-
-  return res.status(401).send({
-    message: 'image is private'
-  });
+  return res
+    .type(image.mimetype)
+    .sendFile(fullfilepath);
 });
 
 module.exports = router;

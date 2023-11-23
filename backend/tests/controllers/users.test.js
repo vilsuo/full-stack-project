@@ -8,6 +8,10 @@ const app = require('../../src/app');
 const api = supertest(app);
 const baseUrl = '/api/users';
 
+/*
+TODO
+- add tests for single image routes
+*/
 const credentials1 = { username: 'viltsu', password: 'salainen' };
 const credentials2 = { username: 'matsu', password: 'salainen' };
 const disabledCredentials = { username: 'samtsu', password: 'salainen' };
@@ -140,7 +144,7 @@ describe('find users images', () => {
     let cookie1;
     let cookie2;
 
-    // post private & nonprivate image to user1;
+    // post private & nonprivate image to user1 & user2;
     beforeEach(async () => {
       // log in...
       const response1 = await api 
@@ -165,7 +169,6 @@ describe('find users images', () => {
       await postImage(credentials2.username, cookie2, true);
     });
 
-    // TODO
     describe('without authentication', () => {
       test('private images are not returned', async () => {
         const response = await api

@@ -52,6 +52,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/statistics', statisticsRouter);
 
 if (process.env.NODE_ENV === 'test') {
+  // reset route for E2E testing only!
   const testingRouter = require('./controllers/testing');
   app.use('/api/testing', testingRouter);
 }

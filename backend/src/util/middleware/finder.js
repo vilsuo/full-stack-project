@@ -19,7 +19,9 @@ const userFinder = async (req, res, next) => {
  */
 const imageFinder = async (req, res, next) => {
   const { imageId } = req.params;
-  const image = await Image.findByPk(imageId);
+  const image = await Image.findByPk(imageId, {
+    attributes: { exclude: ['filepath', 'size'] },
+  });
 
   if (!image || image.userId !== req.foundUser.id) {
     return res.status(404).send({ message: 'image does not exist' });
