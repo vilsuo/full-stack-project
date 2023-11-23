@@ -86,17 +86,14 @@ router.post('/:username/images', userFinder, sessionExtractor,
     return res.status(400).send({ message: 'file is missing' });
   }
 
-  const {
-    mimetype, size,
-    filename, // The name of the file within the destination (DiskStorage only)
-  } = req.file;
+  const { mimetype, size, originalname, } = req.file;
 
   // The full path to the uploaded file (DiskStorage only)
   const filepath = req.file.path;
 
   const { title, caption, private: privateOption } = req.body;
   const image = await Image.create({
-    filename, filepath,
+    originalname, filepath,
     mimetype, size,
     title, caption,
     private: privateOption,

@@ -3,26 +3,21 @@ const { sequelize } = require('../util/db');
 
 class Image extends Model {};
 
-/*
-TODO
-  - add column for original filename
-*/
-
 Image.init({
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  filename: {
+  originalname: {
     type: DataTypes.STRING,
+    allowNull: false,
   },
   filepath: {
     type: DataTypes.STRING,
   },
   mimetype: {
     type: DataTypes.STRING,
-    allowNull: false,
   },
   size: {
     type: DataTypes.INTEGER,
