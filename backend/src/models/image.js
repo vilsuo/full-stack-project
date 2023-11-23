@@ -5,7 +5,7 @@ class Image extends Model {}
 
 /*
 TODO
-  - add key to owner
+  - add column original filename
 */
 
 Image.init({

@@ -3,10 +3,9 @@ const { Op } = require('sequelize');
 const { sequelize } = require('../util/db');
 const logger = require('../util/logger');
 const { User, Image } = require('../models');
-const { 
-  userImageFinder, userFinder, 
-  isAuthenticated, userExtractor,
-} = require('../util/middleware');
+
+const { userFinder, userImageFinder, } = require('../util/middleware/finder');
+const { sessionExtractor, } = require('../util/middleware/session');
 
 const path = require('path');
 const upload = require('../util/image-storage');
@@ -14,7 +13,6 @@ const upload = require('../util/image-storage');
 /*
 TODO
   - add tests for single image routes
-
   - add methods for deleting/editing single images
 */
 
@@ -68,12 +66,12 @@ router.get('/:username/images', userFinder, async (req, res) => {
   return res.send(images);
 });
 
-router.post('/:username/images', userFinder, isAuthenticated, userExtractor, 
+router.post('/:username/images', userFinder, sessionExtractor, 
     upload.single('image'), async (req, res) => {
 
   logger.info('File:  ', req.file);
 
-  if (req.foundUser.username !== req.user.username) {
+  if (req.foundUser.id !== req.user.id) {
     return res.status(401).send({
       message: 'can not add images to other users'
     });
@@ -105,6 +103,7 @@ router.post('/:username/images', userFinder, isAuthenticated, userExtractor,
   return res.status(201).send(image);
 });
 
+// TODO implement as middleware?
 const sessionHasAccessToImage = async (session, imageOwner, image) => {
   if (!image.private) {
     return true
@@ -120,22 +119,14 @@ const sessionHasAccessToImage = async (session, imageOwner, image) => {
 };
 
 // TEST
-// - create a helper function for getting the image file path
-//    - mock it in tests?
-// should 
-// - this return the details?
-//    - change path param 'filename' to Image.id?
-// - the details router (after beign renamed) return the image?
 router.get('/:username/images/:imageId', userImageFinder, async (req, res) => {
   const image = req.image;
   const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
   if (allowAccess) {
-    const dirname = path.resolve();
-    const fullfilepath = path.join(dirname, image.filepath);
+    const { title, caption } = image;
+    const privacy = image.private;
 
-    return res
-      .type(image.mimetype)
-      .sendFile(fullfilepath)
+    return res.send({ title, caption, private: privacy });
   }
 
   return res.status(401).send({
@@ -144,14 +135,18 @@ router.get('/:username/images/:imageId', userImageFinder, async (req, res) => {
 });
 
 // TEST
-router.get('/:username/images/:imageId/details', userImageFinder, async (req, res) => {
+// - create a helper function for getting the image file path
+//    - mock it in tests?
+router.get('/:username/images/:imageId/content', userImageFinder, async (req, res) => {
   const image = req.image;
   const allowAccess = await sessionHasAccessToImage(req.session, req.foundUser, image);
   if (allowAccess) {
-    const { title, caption } = image;
-    const privacy = image.private;
+    const dirname = path.resolve();
+    const fullfilepath = path.join(dirname, image.filepath);
 
-    return res.send({ title, caption, private: privacy });
+    return res
+      .type(image.mimetype)
+      .sendFile(fullfilepath);
   }
 
   return res.status(401).send({

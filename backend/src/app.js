@@ -9,10 +9,9 @@ const { redisClient } = require('./util/db');
 
 const authRouter = require('./controllers/auth');
 const usersRouter = require('./controllers/users');
-const testRouter = require('./controllers/testr');
 const statisticsRouter = require('./controllers/statistics');
 
-const { requestLogger, errorHandler, unknownEndpoint } = require('./util/middleware');
+const { requestLogger, errorHandler, unknownEndpoint } = require('./util/middleware/common');
 
 const session = require('express-session');
 const RedisStore = require('connect-redis').default;
@@ -50,7 +49,6 @@ app.use(session({
 // ROUTES
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
-app.use('/api/test', testRouter);
 app.use('/api/statistics', statisticsRouter);
 
 if (process.env.NODE_ENV === 'test') {
