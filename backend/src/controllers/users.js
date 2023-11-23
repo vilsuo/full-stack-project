@@ -94,14 +94,12 @@ router.post('/:username/images', userFinder, sessionExtractor,
   // The full path to the uploaded file (DiskStorage only)
   const filepath = req.file.path;
 
-  const { title, caption } = req.body;
-  const privacy = req.body.private;
-
+  const { title, caption, private: privateOption } = req.body;
   const image = await Image.create({
     filename, filepath,
     mimetype, size,
     title, caption,
-    private: privacy,
+    private: privateOption,
     userId: req.user.id,
   });
 
@@ -126,10 +124,10 @@ router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, re
 router.put('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
 
-  const { title, caption, private } = req.body;
-  if (title !== undefined)    { image.title = title; }
-  if (caption !== undefined)  { image.caption = caption; }
-  if (private !== undefined)  { image.private = private; }
+  const { title, caption, private: privateOption } = req.body;
+  if (title !== undefined)          { image.title = title; }
+  if (caption !== undefined)        { image.caption = caption; }
+  if (privateOption !== undefined)  { image.private = privateOption; }
 
   const updatedImage = await image.save();
   return res.send(updatedImage);
