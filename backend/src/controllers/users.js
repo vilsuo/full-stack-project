@@ -65,7 +65,7 @@ router.get('/:username/images', userFinder, async (req, res) => {
   }
 
   const images = await Image.findAll({
-    attributes: { exclude: ['filepath', 'size'] },
+    attributes: { exclude: ['filepath'] },
     where, 
   });
 
@@ -93,6 +93,7 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
 
     // The full path to the uploaded file (DiskStorage only)
     const filepath = req.file.path;
+
     const { mimetype, size, originalname, } = req.file;
     const { title, caption, private: privateOption } = req.body;
 
@@ -108,7 +109,6 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
   });
 });
 
-// TODO write tests
 router.get('/:username/images/:imageId', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
   return res.send(image);
@@ -122,7 +122,8 @@ router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, re
   return res.status(204).end();
 });
 
-// TODO TEST
+// TODO write tests
+// add validations to values?
 router.put('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
 

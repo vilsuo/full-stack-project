@@ -24,7 +24,7 @@ const userFinder = async (req, res, next) => {
 const imageFinder = async (req, res, next) => {
   const { imageId } = req.params;
   const image = await Image.findByPk(imageId, {
-    attributes: { exclude: ['filepath', 'size'] },
+    attributes: { exclude: ['filepath'] },
   });
 
   if (!image || image.userId !== req.foundUser.id) {
