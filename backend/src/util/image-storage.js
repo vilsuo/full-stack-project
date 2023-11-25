@@ -8,7 +8,6 @@ if (process.env.NODE_ENV === 'test') {
   options = { dest: 'images/' }
 }
 
-// copied from: https://github.com/expressjs/multer/issues/114
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png/;
   const mimetype = filetypes.test(file.mimetype);

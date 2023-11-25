@@ -1,4 +1,9 @@
 const cookieKey = 'connect.sid';
+
+const cookieHeader = cookie => {
+  return { 'Cookie': `${cookieKey}=${cookie}` };
+};
+
 const get_SetCookie = response => {
   const cookie = response
     .get('set-cookie')
@@ -13,5 +18,6 @@ const get_SetCookie = response => {
 
 module.exports = {
   cookieKey,
+  cookieHeader,
   get_SetCookie,
 };
