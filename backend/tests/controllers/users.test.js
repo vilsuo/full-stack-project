@@ -441,6 +441,9 @@ describe('posting images', () => {
         expect(image.caption).toBe(caption);
         expect(image.private).toBe(privacyOption);
 
+        // filepath is not returned
+        expect(image.filepath).toBeUndefined();
+
         // image is saved to correct user
         const userId = (await User.findOne({ where: { username: postingUsersUsername }})).id;
         expect(image.userId).toBe(userId);

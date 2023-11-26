@@ -103,7 +103,10 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
       userId: req.user.id,
     });
 
-    return res.status(201).send(image);
+    // do not return the filepath
+    const { filepath: _, ...imageValues } = image.toJSON();
+
+    return res.status(201).send(imageValues);
   });
 });
 
