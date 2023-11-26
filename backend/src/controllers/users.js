@@ -13,9 +13,7 @@ const imageUpload = upload.single('image');
 
 /*
 TODO
-  - add tests for single image routes
-  - add methods for deleting/editing single images
-  - test that only images can be uploaded
+  - add tests for deleting/editing single images
 */
 
 router.get('/', /*pageParser,*/ async (req, res) => {

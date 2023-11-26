@@ -8,8 +8,9 @@ if (process.env.NODE_ENV === 'test') {
   options = { dest: 'images/' }
 }
 
+const filetypes = /jpeg|jpg|png/;
+
 const fileFilter = (req, file, cb) => {
-  const filetypes = /jpeg|jpg|png/;
   const mimetype = filetypes.test(file.mimetype);
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 

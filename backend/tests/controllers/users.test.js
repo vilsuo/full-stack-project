@@ -29,8 +29,8 @@ const getUsersImageCount = async username => {
   return usersImageCount;
 }
 
-const testImageInfo1 = { title: 'Git', caption: 'workflow graph', imagePath: 'tests/test-images/git.png' };
-const testImageInfo2 = { title: 'Test', caption: 'test results', imagePath: 'tests/test-images/test.PNG' };
+const testImageInfo1 = { title: 'Git', caption: 'workflow graph', imagePath: 'tests/test-files/git.png' };
+const testImageInfo2 = { title: 'Test', caption: 'test results', imagePath: 'tests/test-files/test.PNG' };
 
 const postImage = async (username, extraHeaders, formValues, statusCode) => {
   const { title, caption, private: privacyOption, imagePath } = formValues;
@@ -195,7 +195,7 @@ describe('find users images', () => {
     expect(response.body.message).toBe('user is disabled');
   });
 
-  test('if user does not have any imagess, an empty array is returned', async () => {
+  test('if user does not have any images, an empty array is returned', async () => {
     const response = await api
       .get(`${baseUrl}/${credentials1.username}/images`)
       .expect(200)
@@ -431,16 +431,22 @@ describe('posting images', () => {
           postingUsersUsername, authHeader, formValues, 201
         );
 
+        const image = response.body;
+        expect(image.id).toBeDefined();
         // original filename is saved
-        expect(response.body.originalname).toBe(imagePath.split('/')[2]);
+        expect(image.originalname).toBe(imagePath.split('/')[2]);
 
         // form values are saved
-        expect(response.body.title).toBe(title);
-        expect(response.body.caption).toBe(caption);
-        expect(response.body.private).toBe(privacyOption);
+        expect(image.title).toBe(title);
+        expect(image.caption).toBe(caption);
+        expect(image.private).toBe(privacyOption);
+
+        // image is saved to correct user
+        const userId = (await User.findOne({ where: { username: postingUsersUsername }})).id;
+        expect(image.userId).toBe(userId);
       });
 
-      test('users image count is increased', async () => {
+      test('users image count is increased by one', async () => {
         const imageCountBefore = await getUsersImageCount(postingUsersUsername);
         
         await postImage(
@@ -449,6 +455,21 @@ describe('posting images', () => {
 
         const imageCountAfter = await getUsersImageCount(postingUsersUsername);
         expect(imageCountAfter).toBe(imageCountBefore + 1);
+      });
+
+      test('image details can be found after posting', async () => {
+        const response = await postImage(
+          postingUsersUsername, authHeader, formValues, 201
+        );
+
+        const createdImage = response.body;
+        const foundImage = await Image.findByPk(createdImage.id);
+
+        expect(foundImage.toJSON()).toMatchObject({
+          ...createdImage,
+          createdAt: new Date(createdImage.createdAt),
+          updatedAt: new Date(createdImage.updatedAt),
+        });
       });
 
       test('can post without title, caption and privacy option', async () => {
@@ -473,6 +494,19 @@ describe('posting images', () => {
         );
 
         expect(response.body.message).toBe('file is missing');
+      });
+
+      test('can not post text file', async () => {
+        const textInfo = {
+          title: 'Text', caption: 'textfile', imagePath: 'tests/test-files/text.txt'
+        };
+        
+        const response = await postImage(
+          postingUsersUsername, authHeader, { ...textInfo, private: false }, 400
+        );
+
+        const message = response.body.message;
+        expect(message).toMatch(/^File upload only supports the following filetypes/);
       });
     });
     
