@@ -10,9 +10,8 @@ const baseUrl = '/api/users';
 
 /*
 TODO
-- add test that check that only images are allowed
-
-- add tests for single image routes
+  - add tests for deleting/editing single images
+  - add tests for getting the actual image
 */
 const credentials1 = { username: 'viltsu', password: 'salainen' };
 const credentials2 = { username: 'matsu', password: 'salainen' };
@@ -29,9 +28,27 @@ const getUsersImageCount = async username => {
   return usersImageCount;
 }
 
+const compareFoundAndResponseImage = (foundImage, responseImage) => {
+  // filepath is not returned
+  expect(responseImage).not.toHaveProperty('filepath');
+
+  // compare all values except 'filepath'
+  const { filepath: _, ...foundImageValues } = foundImage.toJSON();
+  foundImageValues.createdAt = foundImageValues.createdAt.toJSON();
+  foundImageValues.updatedAt = foundImageValues.updatedAt.toJSON();
+
+  // compare all values except 'filepath'
+
+  // from documentation: 'toEqual ignores object keys with undefined properties, 
+  // undefined array items, array sparseness, or object type mismatch. To take these 
+  // into account use .toStrictEqual instead
+  expect(foundImageValues).toStrictEqual(responseImage);
+};
+
 const testImageInfo1 = { title: 'Git', caption: 'workflow graph', imagePath: 'tests/test-files/git.png' };
 const testImageInfo2 = { title: 'Test', caption: 'test results', imagePath: 'tests/test-files/test.PNG' };
 
+// todo set default values to empty string
 const postImage = async (username, extraHeaders, formValues, statusCode) => {
   const { title, caption, private: privacyOption, imagePath } = formValues;
 
@@ -118,7 +135,7 @@ describe('get users', () => {
         .expect('Content-Type', /application\/json/);
   
       const returnedUser = response.body[0];
-      expect(returnedUser.passwordHash).toBeUndefined();
+      expect(returnedUser).not.toHaveProperty('passwordHash');
     });
   });
 
@@ -155,27 +172,11 @@ describe('get users', () => {
         .expect(200)
         .expect('Content-Type', /application\/json/);
   
-      expect(response.body.passwordHash).toBeUndefined();
+      expect(response.body).not.toHaveProperty('passwordHash');
     });
   });
 });
 
-/*
-TODO test image return values
-- return:
-    id
-    originalname
-    mimetype
-    size
-    title
-    caption
-    private
-    createdAt
-    updatedAt
-    userId
-- do not return:
-    filepath
-*/
 describe('find users images', () => {
   test('non existing user is bad request', async () => {
     const response = await api
@@ -226,19 +227,23 @@ describe('find users images', () => {
       userPublicImage = await Image.create({
         originalname: 'image1-pub.jpeg', 
         mimetype: 'image/jpeg', 
+        title: 'public image',
+        caption: 'this image is public',
         private: false,
         userId,
       });
 
       userPrivateImage = await Image.create({
         originalname: 'image1-priv.jpeg', 
-        mimetype: 'image/jpeg', 
+        mimetype: 'image/jpeg',
+        title: 'private image',
+        caption: 'this image is private!',
         private: true,
         userId,
       });
     });
 
-    test('can not view disabled users public images', async () => {
+    test('can not view disabled users public image', async () => {
       const disabledUsersUsername = disabledCredentials.username;
       const disabledUsersId = (await User.findOne({
         where: { username: disabledUsersUsername }
@@ -267,7 +272,9 @@ describe('find users images', () => {
           .expect('Content-Type', /application\/json/);
     
         expect(response.body).toHaveLength(1);
-        expect(response.body[0].private).toBe(false);
+
+        const returnedImage = response.body[0];
+        compareFoundAndResponseImage(userPublicImage, returnedImage);
       });
 
       test('can access public image', async () => {
@@ -276,8 +283,8 @@ describe('find users images', () => {
           .expect(200)
           .expect('Content-Type', /application\/json/);
 
-        expect(response.body.originalname).toBe('image1-pub.jpeg');
-        expect(response.body.private).toBe(false);
+        const returnedImage = response.body;
+        compareFoundAndResponseImage(userPublicImage, returnedImage);
       });
 
       test('can not access private image', async () => {
@@ -323,7 +330,8 @@ describe('find users images', () => {
             .expect(200)
             .expect('Content-Type', /application\/json/);
 
-          expect(response.body.originalname).toBe('image1-priv.jpeg');
+          const returnedImage = response.body;
+          compareFoundAndResponseImage(userPrivateImage, returnedImage);
         });
       });
 
@@ -340,7 +348,9 @@ describe('find users images', () => {
           
           otherUserPublicImage = await Image.create({
             originalname: 'image2-pub.jpeg', 
-            mimetype: 'image/jpeg', 
+            mimetype: 'image/jpeg',
+            title: 'someones public image',
+            caption: 'public access',
             private: false,
             userId: otherUserId,
           });
@@ -348,6 +358,8 @@ describe('find users images', () => {
           oherUserPrivateImage = await Image.create({
             originalname: 'image2-priv.jpeg', 
             mimetype: 'image/jpeg', 
+            title: 'someones private image',
+            caption: 'private access',
             private: true,
             userId: otherUserId,
           });
@@ -361,17 +373,20 @@ describe('find users images', () => {
             .expect('Content-Type', /application\/json/);
         
           expect(response.body).toHaveLength(1);
-          expect(response.body[0].private).toBe(false);
+
+          const returnedImage = response.body[0];
+          compareFoundAndResponseImage(otherUserPublicImage, returnedImage);
         });
 
-        test('can access public images', async () => {
+        test('can access public image', async () => {
           const response = await api
             .get(`${baseUrl}/${otherUsername}/images/${otherUserPublicImage.id}`)
             .set(authHeader)
             .expect(200)
             .expect('Content-Type', /application\/json/);
 
-          expect(response.body.originalname).toBe('image2-pub.jpeg');
+          const returnedImage = response.body;
+          compareFoundAndResponseImage(otherUserPublicImage, returnedImage);
         });
 
         test('can not access private images', async () => {
@@ -431,22 +446,26 @@ describe('posting images', () => {
           postingUsersUsername, authHeader, formValues, 201
         );
 
-        const image = response.body;
-        expect(image.id).toBeDefined();
-        // original filename is saved
-        expect(image.originalname).toBe(imagePath.split('/')[2]);
+        const createdImage = response.body;
 
-        // form values are saved
-        expect(image.title).toBe(title);
-        expect(image.caption).toBe(caption);
-        expect(image.private).toBe(privacyOption);
+        // form values are returned
+        expect(createdImage.title).toBe(title);
+        expect(createdImage.caption).toBe(caption);
+        expect(createdImage.private).toBe(privacyOption);
 
         // filepath is not returned
-        expect(image.filepath).toBeUndefined();
+        expect(createdImage).not.toHaveProperty('filepath');
+
+        // original filename is set
+        expect(createdImage.originalname).toBe(imagePath.split('/')[2]);
 
         // image is saved to correct user
-        const userId = (await User.findOne({ where: { username: postingUsersUsername }})).id;
-        expect(image.userId).toBe(userId);
+        const userId = (await User.findOne({ 
+          where: { username: postingUsersUsername }
+        })).id;
+
+        expect(createdImage.id).toBeDefined();
+        expect(createdImage.userId).toBe(userId);
       });
 
       test('users image count is increased by one', async () => {
@@ -468,11 +487,7 @@ describe('posting images', () => {
         const createdImage = response.body;
         const foundImage = await Image.findByPk(createdImage.id);
 
-        expect(foundImage.toJSON()).toMatchObject({
-          ...createdImage,
-          createdAt: new Date(createdImage.createdAt),
-          updatedAt: new Date(createdImage.updatedAt),
-        });
+        compareFoundAndResponseImage(foundImage, createdImage);
       });
 
       test('can post without title, caption and privacy option', async () => {
@@ -480,12 +495,14 @@ describe('posting images', () => {
           postingUsersUsername, authHeader, { imagePath }, 201
         );
 
+        const createdImage = response.body;
+
         // there are six falsy values: false, 0, '', null, undefined, and NaN
-        expect(response.body.title).toBeFalsy();
-        expect(response.body.caption).toBeFalsy();
+        expect(createdImage.title).toBeFalsy();
+        expect(createdImage.caption).toBeFalsy();
 
         // default privacy option is false
-        expect(response.body.private).toBe(false);
+        expect(createdImage.private).toBe(false);
       });
 
       test('image must be present in the request', async () => {
