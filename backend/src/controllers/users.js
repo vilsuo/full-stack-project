@@ -8,13 +8,10 @@ const { userFinder, } = require('../util/middleware/finder');
 const { sessionExtractor, isAllowedToViewImage, isAllowedToEditImage, } = require('../util/middleware/auth');
 
 const path = require('path');
+const fs = require('fs');
+
 const upload = require('../util/image-storage');
 const imageUpload = upload.single('image');
-
-/*
-TODO
-  - add tests for deleting/editing single images
-*/
 
 router.get('/', /*pageParser,*/ async (req, res) => {
   const searchFilters = {};
@@ -70,6 +67,12 @@ router.get('/:username/images', userFinder, async (req, res) => {
   return res.send(images);
 });
 
+const getImageValues = image => {
+  // do not return the filepath
+  const { filepath: _, ...imageValues } = image.toJSON();
+  return imageValues;
+};
+
 router.post('/:username/images', userFinder, sessionExtractor, async (req, res) => {
   // multer upload error handling see: https://github.com/expressjs/multer/issues/336
   imageUpload(req, res, async (error) => {
@@ -103,22 +106,33 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
       userId: req.user.id,
     });
 
-    // do not return the filepath
-    const { filepath: _, ...imageValues } = image.toJSON();
-
-    return res.status(201).send(imageValues);
+    return res.status(201).send(getImageValues(image));
   });
 });
 
 router.get('/:username/images/:imageId', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
-  return res.send(image);
+
+  return res.send(getImageValues(image));
 });
 
 // TODO write tests
+// how to handle file delete?
 router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
+  
+  const dirname = path.resolve();
+  const fullfilepath = path.join(dirname, image.filepath); 
+
   await image.destroy();
+
+  fs.unlink(fullfilepath, (error) => {
+    if (error) {
+      logger.error('Error removing file:', error);
+    } else {
+      logger.info(`Removed file:`, fullfilepath);
+    }
+  });
 
   return res.status(204).end();
 });
@@ -134,7 +148,7 @@ router.put('/:username/images/:imageId', isAllowedToEditImage, async (req, res) 
   if (privateOption !== undefined)  { image.private = privateOption; }
 
   const updatedImage = await image.save();
-  return res.send(updatedImage);
+  return res.send(getImageValues(updatedImage));
 });
 
 // TEST

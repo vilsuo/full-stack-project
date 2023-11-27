@@ -1,7 +1,7 @@
 const parseNonNegative = (value, name) => {
   const n = Number(value);
   if (isNaN(n) || n < 0) {
-    throw new Error(`parameter '${name}' must be non-negative`);
+    throw new Error(`${name} must be non-negative number`);
   }
   return n;
 };
@@ -31,5 +31,6 @@ const pageParser = async (req, res, next) => {
 };
 
 module.exports = {
+  parseNonNegative,
   pageParser,
 };

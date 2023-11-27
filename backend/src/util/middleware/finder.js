@@ -22,17 +22,18 @@ const userFinder = async (req, res, next) => {
  * Expects userFinder middleware to have been handled
  */
 const imageFinder = async (req, res, next) => {
-  const { imageId } = req.params;
-  const image = await Image.findByPk(imageId, {
-    attributes: { exclude: ['filepath'] },
-  });
+  const imageId = Number(req.params.imageId);
 
-  if (!image || image.userId !== req.foundUser.id) {
-    return res.status(404).send({ message: 'image does not exist' });
+  if (!isNaN(imageId)) {
+    const image = await Image.findByPk(imageId);
+
+    if (image && image.userId === req.foundUser.id) {
+      req.image = image;
+      return next();
+    }
   }
 
-  req.image = image;
-  next();
+  return res.status(404).send({ message: 'image does not exist' });
 };
 
 const userImageFinder = [userFinder, imageFinder];
