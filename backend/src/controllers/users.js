@@ -8,10 +8,10 @@ const { userFinder, } = require('../util/middleware/finder');
 const { sessionExtractor, isAllowedToViewImage, isAllowedToEditImage, } = require('../util/middleware/auth');
 
 const path = require('path');
-const fs = require('fs');
 
-const upload = require('../util/image-storage');
+const { upload, removeFile } = require('../util/image-storage');
 const imageUpload = upload.single('image');
+
 
 router.get('/', /*pageParser,*/ async (req, res) => {
   const searchFilters = {};
@@ -117,23 +117,14 @@ router.get('/:username/images/:imageId', isAllowedToViewImage, async (req, res) 
 });
 
 // TODO write tests
-// how to handle file delete?
 router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
-  
-  const dirname = path.resolve();
-  const fullfilepath = path.join(dirname, image.filepath); 
 
   await image.destroy();
 
-  fs.unlink(fullfilepath, (error) => {
-    if (error) {
-      logger.error('Error removing file:', error);
-    } else {
-      logger.info(`Removed file:`, fullfilepath);
-    }
-  });
-
+  // filepath is null in tests!
+  removeFile(image.filepath);
+  
   return res.status(204).end();
 });
 
@@ -156,6 +147,7 @@ router.put('/:username/images/:imageId', isAllowedToEditImage, async (req, res) 
 //    - mock it in tests?
 router.get('/:username/images/:imageId/content', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
+  
   const dirname = path.resolve();
   const fullfilepath = path.join(dirname, image.filepath);
 

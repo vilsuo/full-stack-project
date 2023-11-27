@@ -47,21 +47,26 @@ const checkImageViewAccess = async (req, res, next) => {
   if (allowAccess) {
     return next();
   }
-
+  
   return res.status(401).send({ message: 'image is private' });
 };
 
+/**
+ * Expects sessionExtractor middlewares to have been handled
+ */
 const checkImageEditAccess = async (req, res, next) => {
   const image = req.image;
-  const allowAccess = await isSessionUserOwner(req.session, image.userId);
-  if (!allowAccess) {
+  const user = req.user;
+
+  // check if authenticated user is the owner of the image
+  if (user.id !== image.userId) {
     return res.status(401).send({ message: 'can not modify other users images' });
   }
   next();
 };
 
 const isAllowedToViewImage = [ ...userImageFinder, checkImageViewAccess ];
-const isAllowedToEditImage = [ ...userImageFinder, checkImageEditAccess ];
+const isAllowedToEditImage = [ ...userImageFinder, sessionExtractor, checkImageEditAccess ];
 
 module.exports = {
   sessionExtractor,

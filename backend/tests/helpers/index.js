@@ -1,3 +1,6 @@
+const { User, Image } = require('../../src/models');
+const { encodePassword } = require('../../src/util/auth');
+
 const cookieKey = 'connect.sid';
 
 const cookieHeader = cookie => {
@@ -16,8 +19,49 @@ const get_SetCookie = response => {
   return null;
 };
 
+const createUser = async (name, { username, password }, disabled = false) => {
+  const user = await User.create({
+    name,
+    username,
+    passwordHash: await encodePassword(password),
+    disabled
+  });
+
+  return user;
+};
+
+const getUsersImageCount = async username => {
+  const usersImageCount = await Image.count({
+    include: {
+      model: User,
+      where: { username },
+    },
+  });
+  return usersImageCount;
+}
+
+const compareFoundAndResponseImage = (foundImage, responseImage) => {
+  // filepath is not returned
+  expect(responseImage).not.toHaveProperty('filepath');
+
+  // compare all values except 'filepath'
+  const { filepath: _, ...foundImageValues } = foundImage.toJSON();
+  foundImageValues.createdAt = foundImageValues.createdAt.toJSON();
+  foundImageValues.updatedAt = foundImageValues.updatedAt.toJSON();
+
+  // compare all values except 'filepath'
+
+  // from documentation: 'toEqual ignores object keys with undefined properties, 
+  // undefined array items, array sparseness, or object type mismatch. To take these 
+  // into account use .toStrictEqual instead
+  expect(foundImageValues).toStrictEqual(responseImage);
+};
+
 module.exports = {
   cookieKey,
   cookieHeader,
   get_SetCookie,
+  createUser,
+  getUsersImageCount,
+  compareFoundAndResponseImage,
 };

@@ -1,5 +1,6 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 let options;
 if (process.env.NODE_ENV === 'test') {
@@ -25,4 +26,24 @@ const upload = multer({
   fileFilter,
 });
 
-module.exports = upload;
+const removeFile = (filepath) => {
+  const dirname = path.resolve();
+  const fullfilepath = path.join(dirname, filepath); 
+
+  console.log('fullfilepath', fullfilepath);
+  
+  fs.unlink(fullfilepath, (error) => {
+    if (error) {
+      console.log('error', error)
+      logger.error('Error removing file:', error);
+    } else {
+      console.log('success')
+      logger.info(`Removed file:`, fullfilepath);
+    }
+  });
+};
+
+module.exports = {
+  upload,
+  removeFile,
+};
