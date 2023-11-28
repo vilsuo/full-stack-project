@@ -126,7 +126,7 @@ describe('editing images', () => {
         expect(response2.body.private).toBe(!newPrivacyOption);
       });
 
-      test.only('can edit private image', async () => {
+      test('can edit private image', async () => {
         const response = await editImage(
           username, userPrivateImage.id, 200, newImageValues, authHeader
         );
@@ -173,9 +173,7 @@ describe('editing images', () => {
       });
     });
 
-    // TODO
-    /*
-    describe('deleting others images', () => {
+    describe('editing others images', () => {
       const otherUsername = credentials2.username;
 
       let otherUserPublicImage;
@@ -205,23 +203,22 @@ describe('editing images', () => {
           userId: otherUserId,
         });
       });
-      
-      test('can not delete public image', async () => {
-        const response = await expectEditImageFailure(
-          otherUsername, otherUserPublicImage.id, 401, authHeader
+
+      test('can not edit public image', async () => {
+        const response = await editImage(
+          otherUsername, otherUserPublicImage.id, 401, newImageValues, authHeader
         );
 
         expect(response.body.message).toBe('can not modify other users images')
       });
 
-      test('can not delete private image', async () => {
-        const response = await expectEditImageFailure(
-          otherUsername, otherUserPrivateImage.id, 401, authHeader
+      test('can not edit private image', async () => {
+        const response = await editImage(
+          otherUsername, otherUserPrivateImage.id, 401, newImageValues, authHeader
         );
 
         expect(response.body.message).toBe('can not modify other users images')
       });
     });
-    */
   });
 });
