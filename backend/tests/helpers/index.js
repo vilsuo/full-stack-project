@@ -1,5 +1,6 @@
 const { User, Image } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
+const omit = require('lodash.omit');
 
 const cookieKey = 'connect.sid';
 
@@ -41,20 +42,29 @@ const getUsersImageCount = async username => {
 }
 
 const compareFoundAndResponseImage = (foundImage, responseImage) => {
-  // filepath is not returned
-  expect(responseImage).not.toHaveProperty('filepath');
 
-  // compare all values except 'filepath'
-  const { filepath: _, ...foundImageValues } = foundImage.toJSON();
-  foundImageValues.createdAt = foundImageValues.createdAt.toJSON();
-  foundImageValues.updatedAt = foundImageValues.updatedAt.toJSON();
+  compareFoundWithResponse(foundImage, responseImage, ['filepath']);
+};
 
-  // compare all values except 'filepath'
+const compareFoundWithResponse = (found, response, exclude) => {
+  exclude.forEach(property => {
+    expect(response).not.toHaveProperty(property);
+  });
+
+  const foundValues = omit(found.toJSON(), exclude);
+  foundValues.createdAt = foundValues.createdAt.toJSON();
+  foundValues.updatedAt = foundValues.updatedAt.toJSON();
+
+  // compare all values that are not excluded
 
   // from documentation: 'toEqual ignores object keys with undefined properties, 
   // undefined array items, array sparseness, or object type mismatch. To take these 
   // into account use .toStrictEqual instead
-  expect(foundImageValues).toStrictEqual(responseImage);
+  expect(foundValues).toStrictEqual(response);
+};
+
+const compareFoundAndResponseUser = (foundUser, responseUser) => {
+  compareFoundWithResponse(foundUser, responseUser, ['passwordHash']);
 };
 
 module.exports = {
@@ -64,4 +74,5 @@ module.exports = {
   createUser,
   getUsersImageCount,
   compareFoundAndResponseImage,
+  compareFoundAndResponseUser,
 };
