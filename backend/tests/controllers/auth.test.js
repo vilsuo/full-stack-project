@@ -1,13 +1,5 @@
-// setup
-// (
-  // 1. $ npm run test-pg:down
-  // 2. $ npm run test-pg:up
-// )
-// 3. $ npm run test
-
 /*
 TODO
-- make global jest file for setup/teardown if possible?
 - test logout with/without logged in/cookie being set
 
 - test cookies better
@@ -15,103 +7,108 @@ TODO
 
 const { User } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
-const { cookieKey, get_SetCookie } = require('../helpers');
+const { cookieKey, get_SetCookie, compareFoundAndResponseUser } = require('../helpers');
+
+const omit = require('lodash.omit');
 
 const supertest = require('supertest');
 const app = require('../../src/app');
 
 const api = supertest(app);
 
+/*
+TODO
+// - redo 'when user exists'
+*/
+
+const userValues = {
+  name: 'ville',
+  username: 'ellivil',
+  password: 'password123'
+};
+
+const register = async (details, statusCode) => {
+  const response = await api
+    .post('/api/auth/register')
+    .send(details)
+    .expect(statusCode)
+    .expect('Content-Type', /application\/json/);
+
+  return response;
+};
 
 describe('registering', () => {
-  test('succeeds with valid inputs', async () => {
-    const user = {
-      name: 'ville',
-      username: 'viltsu',
-      password: 'secret'
-    };
+  test('can register with valid inputs', async () => {
+      const response = await register(userValues, 201);
+  
+      const returnedUser = response.body;
+      expect(returnedUser.id).toBeDefined();
+  
+      // name and username are set from the request values
+      expect(returnedUser.name).toBe(userValues.name);
+      expect(returnedUser.username).toBe(userValues.username);
+      
+      // plaintext password is not included in the response
+      expect(returnedUser).not.toHaveProperty('password');
+  });
 
-    const response = await api
-      .post('/api/auth/register')
-      .send(user)
-      .expect(201)
-      .expect('Content-Type', /application\/json/);
+  test('user can be found after registering', async () => {
+    const response = await register(userValues, 201);
 
-    const returnedUser = response.body;
-    expect(returnedUser.id).toBeDefined();
+    const responseUser = response.body;
+    const foundUser = await User.findByPk(responseUser.id);
 
-    expect(returnedUser.name).toBe(user.name);
-    expect(returnedUser.username).toBe(user.username);
-    
-    // plaintext password is not included in the response
-    expect(returnedUser.password).toBeUndefined()
+    compareFoundAndResponseUser(foundUser, responseUser);
+  });
+
+  test('passwordHash is not returned', async () => {
+      const response = await register(userValues, 201);
+  
+      const returnedUser = response.body;
+      expect(returnedUser).not.toHaveProperty('passwordHash');
   });
 
   describe('fails with', () => {
     test('missing/empty name', async () => {
       // missing name
-      const user1 = { username: 'matsu', password: 'salainen' };
-      const response1 = await api
-        .post('/api/auth/register')
-        .send(user1)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
+      const response1 = await register(omit(userValues, ['name']), 400);
+
       const errorMessages1 = response1.body.message;
       expect(errorMessages1).toContain('user.name cannot be null');
 
       // empty name
-      const user2 = { name: '', username: 'matsu', password: 'salainen' };
-      const response2 = await api
-        .post('/api/auth/register')
-        .send(user2)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
+      const response2 = await register({ ...userValues, name: '' }, 400);
+
       const errorMessages2 = response2.body.message;
       expect(errorMessages2).toContain('name can not be empty');
     });
 
     test('missing/empty username', async () => {
-      // missing name
-      const user1 = { name: 'matti', password: 'salainen' };
-      const response1 = await api
-        .post('/api/auth/register')
-        .send(user1)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
+      // missing username
+      const response1 = await register(omit(userValues, ['username']), 400);
+
       const errorMessages1 = response1.body.message;
       expect(errorMessages1).toContain('user.username cannot be null');
 
-      // empty name
-      const user2 = { name: 'matti', username: '', password: 'salainen' };
-      const response2 = await api
-        .post('/api/auth/register')
-        .send(user2)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
+      // empty username
+      const response2 = await register({ ...userValues, username: '' }, 400);
+
       const errorMessages2 = response2.body.message;
       expect(errorMessages2).toContain('username can not be empty');
     });
 
     test('missing/empty password', async () => {
-      // missing password
-      const user1 = { name: 'matti', username: 'matsu' };
-      const response1 = await api
-        .post('/api/auth/register')
-        .send(user1)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
-      const errorMessage1 = response1.body.message;
-      expect(errorMessage1).toMatch('password is missing');
+      // missing username
+      const response1 = await register(omit(userValues, ['password']), 400);
 
-      // empty password
-      const user2 = { name: 'matti', username: 'matsu', password: '' };
-      const response2 = await api
-        .post('/api/auth/register')
-        .send(user2)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
-      const errorMessage2 = response2.body.message;
-      expect(errorMessage2).toMatch('password is missing');
+      const errorMessages1 = response1.body.message;
+      expect(errorMessages1).toContain('password is missing');
+
+      // empty username
+      const response2 = await register({ ...userValues, password: '' }, 400);
+
+      const errorMessages2 = response2.body.message;
+      expect(errorMessages2).toContain('password is missing');
     });
   });
 });

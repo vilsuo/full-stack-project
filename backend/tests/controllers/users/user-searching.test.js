@@ -1,14 +1,10 @@
 const supertest = require('supertest');
 const app = require('../../../src/app');
-const { createUser } = require('../../helpers');
+const { createUser, compareFoundAndResponseUser } = require('../../helpers');
+const { User } = require('../../../src/models');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
-
-/*
-TODO
-  - add better user comparisons
-*/
 
 const credentials1 = { username: 'viltsu', password: 'salainen' };
 const credentials2 = { username: 'matsu', password: 'salainen' };
@@ -43,7 +39,9 @@ describe('get users', () => {
     });
   
     test('with query, a subset of users is returned', async () => {
-      const searchParam = 'vil';
+      const targetUsername = credentials1.username;
+      const searchParam = targetUsername.substring(0, 3);
+
       const response = await api
         .get(baseUrl)
         .query({ search: searchParam })
@@ -52,8 +50,10 @@ describe('get users', () => {
   
       expect(response.body).toHaveLength(1);
   
-      const usernames = response.body.map(user => user.username);
-      expect(usernames).toContain(credentials1.username);
+      const foundUser = await User.findOne({ where: { username: targetUsername }});
+      const responseUser = response.body[0];
+
+      compareFoundAndResponseUser(foundUser, responseUser);
     });
   
     test('password hashes are not returned', async () => {
@@ -69,13 +69,18 @@ describe('get users', () => {
 
   describe('single', () => {
     test('can access existing user', async () => {
+      const username = credentials1.username;
       const response = await api
-        .get(`${baseUrl}/${credentials1.username}`)
+        .get(`${baseUrl}/${username}`)
         .expect(200)
         .expect('Content-Type', /application\/json/);
 
-      expect(response.body.username).toBe(credentials1.username);
+      const foundUser = await User.findOne({ where: { username }});
+      const responseUser = response.body;
+
+      compareFoundAndResponseUser(foundUser, responseUser);
     });
+
     test('can not access disabled user', async () => {
       const response = await api
         .get(`${baseUrl}/${disabledCredentials.username}`)
