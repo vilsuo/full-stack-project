@@ -182,7 +182,7 @@ describe('find users images', () => {
       describe('accessing other users images', () => {
         const otherUsername = credentials2.username;
         let otherUserPublicImage;
-        let oherUserPrivateImage;
+        let otherUserPrivateImage;
 
         // create image to other user
         beforeEach(async () => {
@@ -199,7 +199,7 @@ describe('find users images', () => {
             userId: otherUserId,
           });
     
-          oherUserPrivateImage = await Image.create({
+          otherUserPrivateImage = await Image.create({
             originalname: 'image2-priv.jpeg', 
             mimetype: 'image/jpeg', 
             title: 'someones private image',
@@ -235,7 +235,7 @@ describe('find users images', () => {
 
         test('can not access private images', async () => {
           const response = await api
-            .get(`${baseUrl}/${otherUsername}/images/${oherUserPrivateImage.id}`)
+            .get(`${baseUrl}/${otherUsername}/images/${otherUserPrivateImage.id}`)
             .set(authHeader)
             .expect(401)
             .expect('Content-Type', /application\/json/);
