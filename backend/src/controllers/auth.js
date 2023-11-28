@@ -16,7 +16,9 @@ router.post('/register', async (req, res) => {
     passwordHash: encodedPassword
   });
 
-  return res.status(201).send(user);
+  // do not return the passworHash
+  const { passwordHash: _, ...userValues } = user.toJSON();
+  return res.status(201).send(userValues);
 });
 
 router.post('/login', async (req, res) => {

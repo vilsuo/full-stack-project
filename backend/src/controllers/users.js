@@ -12,7 +12,6 @@ const path = require('path');
 const { upload, removeFile } = require('../util/image-storage');
 const imageUpload = upload.single('image');
 
-
 router.get('/', /*pageParser,*/ async (req, res) => {
   const searchFilters = {};
   if (req.query.search) {
@@ -30,7 +29,7 @@ router.get('/', /*pageParser,*/ async (req, res) => {
 
   const users = await User.findAll({
     attributes: {
-      exclude: ['passwordHash', 'updatedAt']
+      exclude: ['passwordHash']
     },
     where: { ...searchFilters, disabled: false },
     order: [
@@ -116,7 +115,6 @@ router.get('/:username/images/:imageId', isAllowedToViewImage, async (req, res) 
   return res.send(getImageValues(image));
 });
 
-// TODO write tests
 router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
 
