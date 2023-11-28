@@ -10,11 +10,6 @@ const baseUrl = '/api/users';
 // mock 'removeFile' to do NOTHING
 jest.mock('../../../src/util/image-storage');
 
-/*
-TODO
-- test deleting others images
-*/
-
 const expectDeleteImageFailure = async (username, imageId, statusCode, headers = {}) => {
   return await api
     .delete(`${baseUrl}/${username}/images/${imageId}`)
@@ -30,14 +25,16 @@ const expectDeleteImageSuccess = async (username, imageId, headers) => {
     .expect(204)
 };
 
-const credentials = { username: 'viltsu', password: 'salainen' };
+const credentials1 = { username: 'viltsu', password: 'salainen' };
+const credentials2 = { username: 'matsu', password: 'salainen' };
 
 beforeEach(async () => {
-  await createUser('vili', credentials);
+  await createUser('vili', credentials1);
+  await createUser('matias', credentials2);
 });
 
 describe('deleting images', () => {
-  const username = credentials.username;
+  const username = credentials1.username;
   let userPublicImage;
   let userPrivateImage;
 
@@ -81,7 +78,7 @@ describe('deleting images', () => {
       // log in and save cookie
       const response = await api 
         .post('/api/auth/login')
-        .send(credentials);
+        .send(credentials1);
 
       const cookie = get_SetCookie(response);
       authHeader = cookieHeader(cookie);
@@ -103,7 +100,7 @@ describe('deleting images', () => {
         expect(response.body.message).toBe('image does not exist');
       });
 
-      test('image can not be found after deleting', async () => {
+      test('users image count is decreased by one after deleting', async () => {
         const imageCountBefore = await getUsersImageCount(username);
 
         const imageToDeleteId = userPublicImage.id;
@@ -112,6 +109,11 @@ describe('deleting images', () => {
         // users image count is decreased by one
         const imageCountAfter = await getUsersImageCount(username);
         expect(imageCountAfter).toBe(imageCountBefore - 1);
+      });
+
+      test('image can not be found after deleting', async () => {
+        const imageToDeleteId = userPublicImage.id;
+        await expectDeleteImageSuccess(username, imageToDeleteId, authHeader);
 
         // image is no longer found
         const result = await Image.findOne({ where: { id: imageToDeleteId } });
@@ -120,17 +122,50 @@ describe('deleting images', () => {
     });
 
     describe('deleting others images', () => {
-      // create 2 images to 'other' (public and private)
-      beforeEach(async () => {
+      const otherUsername = credentials2.username;
 
+      let otherUserPublicImage;
+      let otherUserPrivateImage;
+
+      // create private & nonprivate images to other user
+      beforeEach(async () => {
+        const otherUserId = (await User.findOne({
+          where: { username: otherUsername }
+        })).id;
+        
+        otherUserPublicImage = await Image.create({
+          originalname: 'image2-pub.jpeg', 
+          mimetype: 'image/jpeg',
+          title: 'someones public image',
+          caption: 'public access',
+          private: false,
+          userId: otherUserId,
+        });
+  
+        otherUserPrivateImage = await Image.create({
+          originalname: 'image2-priv.jpeg', 
+          mimetype: 'image/jpeg', 
+          title: 'someones private image',
+          caption: 'private access',
+          private: true,
+          userId: otherUserId,
+        });
       });
       
-      test('can delete public image', async () => {
+      test('can not delete public image', async () => {
+        const response = await expectDeleteImageFailure(
+          otherUsername, otherUserPublicImage.id, 401, authHeader
+        );
 
+        expect(response.body.message).toBe('can not modify other users images')
       });
 
-      test('can delete private image', async () => {
+      test('can not delete private image', async () => {
+        const response = await expectDeleteImageFailure(
+          otherUsername, otherUserPrivateImage.id, 401, authHeader
+        );
 
+        expect(response.body.message).toBe('can not modify other users images')
       });
     });
   })
