@@ -34,9 +34,7 @@ const isSessionUserOwner = async (session, ownerId) => {
 const checkImageViewAccess = async (req, res, next) => {
   const image = req.image;
 
-  //if (image.privacy === 'public') {
-  if (!image.private) {
-    // use 'return next' to jump out the callback immediately
+  if (image.privacy === 'public') {
     return next();
   }
   

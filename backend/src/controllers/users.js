@@ -13,7 +13,7 @@ const imageUpload = upload.single('image');
 
 router.get('/', async (req, res) => {
   const searchFilters = {};
-  
+
   if (req.query.search) {
     searchFilters[Op.or] = [
       sequelize.where(
@@ -66,7 +66,7 @@ router.get('/:username/images', userFinder, async (req, res) => {
   return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
-// add validations to values?
+// add validations to values
 router.post('/:username/images', userFinder, sessionExtractor, async (req, res) => {
   // multer upload error handling see: https://github.com/expressjs/multer/issues/336
   imageUpload(req, res, async (error) => {
@@ -92,14 +92,13 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
     const filepath = req.file.path;
 
     const { mimetype, size, originalname, } = req.file;
-    const { title, caption, private: privateOption, privacy } = req.body;
+    const { title, caption, privacy } = req.body;
 
     const image = await Image.create({
       originalname, filepath,
       mimetype, size,
       title, caption,
-      private: privateOption,
-      //privacy,
+      privacy,
       userId: req.user.id,
     });
 
@@ -129,11 +128,10 @@ router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, re
 router.put('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
 
-  const { title, caption, private: privateOption, privacy } = req.body;
+  const { title, caption, privacy } = req.body;
   if (title !== undefined)    { image.title = title; }
   if (caption !== undefined)  { image.caption = caption; }
-  if (privateOption !== undefined)  { image.private = privateOption; }
-  //if (privacy !== undefined)  { image.privacy = privacy; }
+  if (privacy !== undefined)  { image.privacy = privacy; }
 
   const updatedImage = await image.save();
   return res.send(getNonSensitiveImage(updatedImage));
