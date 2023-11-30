@@ -1,24 +1,23 @@
 const router = require('express').Router();
+const { cookieKey } = require('../constants');
 const { User } = require('../models');
 
 const { encodePassword, comparePassword } = require('../util/auth');
+const { getNonSensitiveUser } = require('../util/dto');
 
 router.post('/register', async (req, res) => {
-  const { password } = req.body;
-  // if password is undefined or empty string
+  const { name, username, password } = req.body;
   if (!password) {
     return res.status(400).send({ message: 'password is missing' });
   }
 
   const encodedPassword = await encodePassword(password);
   const user = await User.create({
-    ...req.body,
+    name, username,
     passwordHash: encodedPassword
   });
 
-  // do not return the passworHash
-  const { passwordHash: _, ...userValues } = user.toJSON();
-  return res.status(201).send(userValues);
+  return res.status(201).send(getNonSensitiveUser(user));
 });
 
 router.post('/login', async (req, res) => {
@@ -64,7 +63,7 @@ router.post('/logout', async (req, res) => {
     }
 
     return res
-      .clearCookie('connect.sid')
+      .clearCookie(cookieKey)
       .send({ message: "you've been signed out" });
   });
 });

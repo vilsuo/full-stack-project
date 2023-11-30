@@ -1,19 +1,19 @@
 const router = require('express').Router();
 const { Op } = require('sequelize');
 const { sequelize } = require('../util/db');
-const logger = require('../util/logger');
-const { User, Image } = require('../models');
-
-const { userFinder, } = require('../util/middleware/finder');
-const { sessionExtractor, isAllowedToViewImage, isAllowedToEditImage, } = require('../util/middleware/auth');
-
 const path = require('path');
 
+const { User, Image } = require('../models');
+const { userFinder, } = require('../util/middleware/finder');
+const { sessionExtractor, isAllowedToViewImage, isAllowedToEditImage, } = require('../util/middleware/auth');
 const { upload, removeFile } = require('../util/image-storage');
+const { getNonSensitiveUser, getNonSensitiveImage } = require('../util/dto');
+const logger = require('../util/logger');
 const imageUpload = upload.single('image');
 
-router.get('/', /*pageParser,*/ async (req, res) => {
+router.get('/', async (req, res) => {
   const searchFilters = {};
+  
   if (req.query.search) {
     searchFilters[Op.or] = [
       sequelize.where(
@@ -28,50 +28,45 @@ router.get('/', /*pageParser,*/ async (req, res) => {
   }
 
   const users = await User.findAll({
-    attributes: {
-      exclude: ['passwordHash']
-    },
     where: { ...searchFilters, disabled: false },
     order: [
       ['username', 'ASC']
     ],
-    //offset: req.offset, limit: req.limit,
   });
 
-  return res.json(users);
+  return res.json(users.map(user => getNonSensitiveUser(user)));
 });
 
 router.get('/:username', userFinder, async (req, res) => {
   const user = req.foundUser;
-  return res.send(user);
+  return res.send(getNonSensitiveUser(user));
 });
 
 router.get('/:username/images', userFinder, async (req, res) => {
   const foundUser = req.foundUser;
 
-  const where = { userId: foundUser.id, private: false };
+  const where = { userId: foundUser.id, private: false,
+    //privacy: 'public' 
+  };
+
   if (req.session.user) {
-    const user = await User.findByPk(req.session.user.id);
-    if (user && user.username === foundUser.username ) {
-      // send all private images only if user is the owner
+    const userId = req.session.user.id;
+    const user = await User.findOne({ where: { id: userId } });
+    if (user && userId === foundUser.id) {
+      // send all images only if user is the owner
+      
+      //delete where.privacy;
+
       delete where.private;
     }
   }
 
-  const images = await Image.findAll({
-    attributes: { exclude: ['filepath'] },
-    where, 
-  });
+  const images = await Image.findAll({ where });
 
-  return res.send(images);
+  return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
-const getImageValues = image => {
-  // do not return the filepath
-  const { filepath: _, ...imageValues } = image.toJSON();
-  return imageValues;
-};
-
+// add validations to values?
 router.post('/:username/images', userFinder, sessionExtractor, async (req, res) => {
   // multer upload error handling see: https://github.com/expressjs/multer/issues/336
   imageUpload(req, res, async (error) => {
@@ -87,6 +82,8 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
       });
     }
 
+    // found user exists, so session user exists (foundUser is session user)
+
     if (!req.file) {
       return res.status(400).send({ message: 'file is missing' });
     }
@@ -95,26 +92,27 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
     const filepath = req.file.path;
 
     const { mimetype, size, originalname, } = req.file;
-    const { title, caption, private: privateOption } = req.body;
+    const { title, caption, private: privateOption, privacy } = req.body;
 
     const image = await Image.create({
       originalname, filepath,
       mimetype, size,
       title, caption,
       private: privateOption,
+      //privacy,
       userId: req.user.id,
     });
 
-    return res.status(201).send(getImageValues(image));
+    return res.status(201).send(getNonSensitiveImage(image));
   });
 });
 
 router.get('/:username/images/:imageId', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
-
-  return res.send(getImageValues(image));
+  return res.send(getNonSensitiveImage(image));
 });
 
+// TODO test
 router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
 
@@ -126,21 +124,22 @@ router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, re
   return res.status(204).end();
 });
 
-// TODO write tests
+// TODO test
 // add validations to values?
 router.put('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
 
-  const { title, caption, private: privateOption } = req.body;
-  if (title !== undefined)          { image.title = title; }
-  if (caption !== undefined)        { image.caption = caption; }
+  const { title, caption, private: privateOption, privacy } = req.body;
+  if (title !== undefined)    { image.title = title; }
+  if (caption !== undefined)  { image.caption = caption; }
   if (privateOption !== undefined)  { image.private = privateOption; }
+  //if (privacy !== undefined)  { image.privacy = privacy; }
 
   const updatedImage = await image.save();
-  return res.send(getImageValues(updatedImage));
+  return res.send(getNonSensitiveImage(updatedImage));
 });
 
-// TEST
+// TODO test
 // - create a helper function for getting the image file path
 //    - mock it in tests?
 router.get('/:username/images/:imageId/content', isAllowedToViewImage, async (req, res) => {

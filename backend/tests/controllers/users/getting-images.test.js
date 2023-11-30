@@ -1,66 +1,82 @@
-const { User, Image } = require('../../../src/models');
-
-const { cookieHeader, get_SetCookie, createUser, getUsersImageCount, compareFoundAndResponseImage } = require('../../helpers');
 const supertest = require('supertest');
+const omit = require('lodash.omit');
 const app = require('../../../src/app');
+
+const { User, Image } = require('../../../src/models');
+const {
+  existingUserValues,
+  existingDisabledUserValues,
+  nonExistingUserValues
+} = require('../../helpers/constants');
+const {
+  login, get_SetCookie, cookieHeader, 
+  createImage, getUsersImageCount, 
+  compareFoundWithResponse, compareFoundArrayWithResponseArray,
+} = require('../../helpers');
+const { getNonSensitiveImage } = require('../../../src/util/dto');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
 
-const credentials1 = { username: 'viltsu', password: 'salainen' };
-const credentials2 = { username: 'matsu', password: 'salainen' };
-const disabledCredentials = { username: 'samtsu', password: 'salainen' };
-const nonExistingUsername = 'jilmari';
+const nonExistinguserValue = nonExistingUserValues[0];
+const existingUserValue = existingUserValues[0];
+const otherExistingUserValue = existingUserValues[1];
+const disabledUserValue = existingDisabledUserValues[0];
 
-beforeEach(async () => {
-  // NON DISABLED USERS:
-  await createUser('vili', credentials1);
-  await createUser('matias', credentials2);
+const getImages = async (username, statusCode = 200, headers = {}) => {
+  const response = await api
+    .get(`${baseUrl}/${username}/images`)
+    .set(headers)
+    .expect(statusCode)
+    .expect('Content-Type', /application\/json/);
 
-  // DISABLED USER:
-  await createUser('samuli', disabledCredentials, true);
-});
+  return response.body;
+};
+
+const getImage = async (username, imageId, statusCode = 200, headers = {}) => {
+  const response = await api
+    .get(`${baseUrl}/${username}/images/${imageId}`)
+    .set(headers)
+    .expect(statusCode)
+    .expect('Content-Type', /application\/json/);
+
+  return response.body;
+};
 
 describe('find users images', () => {
-  test('non existing user is bad request', async () => {
-    const response = await api
-      .get(`${baseUrl}/${nonExistingUsername}/images`)
-      .expect(404)
-      .expect('Content-Type', /application\/json/);
+  test('can not view non-existing users images', async () => {
+    const username = nonExistinguserValue.username;
+    const responseBody = await getImages(username, 404)
 
-    expect(response.body.message).toBe('user does not exist');
+    expect(responseBody.message).toBe('user does not exist');
   });
 
   test('can not view disabled users images', async () => {
-    const response = await api
-      .get(`${baseUrl}/${disabledCredentials.username}/images`)
-      .expect(400)
-      .expect('Content-Type', /application\/json/);
+    const username = disabledUserValue.username;
+    const responseBody = await getImages(username, 400)
 
-    expect(response.body.message).toBe('user is disabled');
+    expect(responseBody.message).toBe('user is disabled');
   });
 
   test('if user does not have any images, an empty array is returned', async () => {
-    const response = await api
-      .get(`${baseUrl}/${credentials1.username}/images`)
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
+    const username = existingUserValue.username;
+    const returnedImages = await getImages(username);
   
-    expect(response.body).toHaveLength(0);
+    expect(returnedImages).toHaveLength(0);
   });
 
-  test('can not access image that does not exist', async () => {
+  test('can not view an image that does not exist', async () => {
     const randomImageId = 1234;
-    const response = await api
-      .get(`${baseUrl}/${credentials1.username}/images/${randomImageId}`)
-      .expect(404)
-      .expect('Content-Type', /application\/json/);
+    const username = existingUserValue.username;
 
-    expect(response.body.message).toBe('image does not exist');
+    const responseBody = await getImage(username, randomImageId, 404);
+
+    expect(responseBody.message).toBe('image does not exist');
   });
 
   describe('when images have been created', () => {
-    const username = credentials1.username;
+    const credentials = omit(existingUserValue, ['name']);
+    const username = existingUserValue.username;
     let userPublicImage;
     let userPrivateImage;
 
@@ -68,76 +84,54 @@ describe('find users images', () => {
     beforeEach(async () => {
       const userId = (await User.findOne({ where: { username } })).id;
       
-      userPublicImage = await Image.create({
-        originalname: 'image1-pub.jpeg', 
-        mimetype: 'image/jpeg', 
-        title: 'public image',
-        caption: 'this image is public',
-        private: false,
-        userId,
-      });
-
-      userPrivateImage = await Image.create({
-        originalname: 'image1-priv.jpeg', 
-        mimetype: 'image/jpeg',
-        title: 'private image',
-        caption: 'this image is private!',
-        private: true,
-        userId,
-      });
-    });
-
-    test('can not view disabled users public image', async () => {
-      const disabledUsersUsername = disabledCredentials.username;
-      const disabledUsersId = (await User.findOne({
-        where: { username: disabledUsersUsername }
-      })).id;
-
-      await Image.create({
-        originalname: 'image-disabled-pub.jpeg', 
-        mimetype: 'image/jpeg', 
-        private: false,
-        userId: disabledUsersId,
-      });
-
-      const response = await api
-        .get(`${baseUrl}/${disabledUsersUsername}/images`)
-        .expect(400)
-        .expect('Content-Type', /application\/json/);
-  
-      expect(response.body.message).toBe('user is disabled');
+      userPublicImage = await createImage(userId, 'public image', 'this image is public');
+      userPrivateImage = await createImage(userId, 'private image', 'this image is private!', true);
     });
 
     describe('without authentication', () => {
       test('only public images are found', async () => {
-        const response = await api
-          .get(`${baseUrl}/${username}/images`)
-          .expect(200)
-          .expect('Content-Type', /application\/json/);
+        const returnedImages = await getImages(username);
     
-        expect(response.body).toHaveLength(1);
+        expect(returnedImages).toHaveLength(1);
 
-        const returnedImage = response.body[0];
-        compareFoundAndResponseImage(userPublicImage, returnedImage);
+        const returnedImage = returnedImages[0];
+
+        compareFoundWithResponse(
+          getNonSensitiveImage(userPublicImage),
+          returnedImage
+        );
       });
 
       test('can access public image', async () => {
-        const response = await api
-          .get(`${baseUrl}/${username}/images/${userPublicImage.id}`)
-          .expect(200)
-          .expect('Content-Type', /application\/json/);
+        const returnedImage = await getImage(username, userPublicImage.id);
 
-        const returnedImage = response.body;
-        compareFoundAndResponseImage(userPublicImage, returnedImage);
+        compareFoundWithResponse(
+          getNonSensitiveImage(userPublicImage),
+          returnedImage
+        );
       });
 
       test('can not access private image', async () => {
-        const response = await api
-          .get(`${baseUrl}/${username}/images/${userPrivateImage.id}`)
-          .expect(401)
-          .expect('Content-Type', /application\/json/);
+        const responseBody = await getImage(username, userPrivateImage.id, 401);
 
-        expect(response.body.message).toBe('image is private');
+        expect(responseBody.message).toBe('image is private');
+      });
+
+      test('can not view disabled users public image', async () => {
+        const disabledUsersUsername = disabledUserValue.username;
+        const disabledUser = await User.findOne({
+          where: { username: disabledUsersUsername }
+        });
+  
+        const disabledUsersImage = await createImage(
+          disabledUser.id, 'disabled users public image', 'no access'
+        );
+  
+        const responseBody = await getImage(
+          disabledUsersUsername, disabledUsersImage.id, 400
+        );
+    
+        expect(responseBody.message).toBe('user is disabled');
       });
     });
   
@@ -146,9 +140,7 @@ describe('find users images', () => {
 
       beforeEach(async () => {
         // log in and save cookie
-        const response = await api 
-          .post('/api/auth/login')
-          .send(credentials1);
+        const response = await login(api, credentials);
 
         const cookie = get_SetCookie(response);
         authHeader = cookieHeader(cookie);
@@ -158,89 +150,76 @@ describe('find users images', () => {
         test('can access all images', async () => {
           const userImageCount = await getUsersImageCount(username);
 
-          const response = await api
-            .get(`${baseUrl}/${username}/images`)
-            .set(authHeader)
-            .expect(200)
-            .expect('Content-Type', /application\/json/);
-        
-          expect(response.body).toHaveLength(userImageCount);
+          const returnedImages = await getImages(username, 200, authHeader);
+
+          const user = await User.findOne({ where: { username }});
+          const foundImages = await Image.findAll({ where: { userId: user.id } });
+
+          expect(returnedImages).toHaveLength(userImageCount);
+
+          compareFoundArrayWithResponseArray(
+            foundImages.map(image => getNonSensitiveImage(image)),
+            returnedImages
+          );
         });
 
         test('can access private image', async () => {
-          const response = await api
-            .get(`${baseUrl}/${username}/images/${userPrivateImage.id}`)
-            .set(authHeader)
-            .expect(200)
-            .expect('Content-Type', /application\/json/);
+          const returnedImage = await getImage(username, userPrivateImage.id, 200, authHeader);
 
-          const returnedImage = response.body;
-          compareFoundAndResponseImage(userPrivateImage, returnedImage);
+          compareFoundWithResponse(
+            getNonSensitiveImage(userPrivateImage),
+            returnedImage
+          );
         });
       });
 
       describe('accessing other users images', () => {
-        const otherUsername = credentials2.username;
+        const otherUsername = otherExistingUserValue.username;
         let otherUserPublicImage;
         let otherUserPrivateImage;
 
-        // create image to other user
+        // create images to other user
         beforeEach(async () => {
-          const otherUserId = (await User.findOne({
-            where: { username: otherUsername }
-          })).id;
-          
-          otherUserPublicImage = await Image.create({
-            originalname: 'image2-pub.jpeg', 
-            mimetype: 'image/jpeg',
-            title: 'someones public image',
-            caption: 'public access',
-            private: false,
-            userId: otherUserId,
-          });
-    
-          otherUserPrivateImage = await Image.create({
-            originalname: 'image2-priv.jpeg', 
-            mimetype: 'image/jpeg', 
-            title: 'someones private image',
-            caption: 'private access',
-            private: true,
-            userId: otherUserId,
-          });
+          const otherUserId = (await User.findOne({ where: { username: otherUsername } })).id;
+      
+          otherUserPublicImage = await createImage(
+            otherUserId, 'others public image', 'this is public access'
+          );
+          otherUserPrivateImage = await createImage(
+            otherUserId, 'others private image', 'this is private access only!', true
+          );
         });
 
         test('only public images are returned', async () => {
-          const response = await api
-            .get(`${baseUrl}/${otherUsername}/images`)
-            .set(authHeader)
-            .expect(200)
-            .expect('Content-Type', /application\/json/);
+          const returnedImages = await getImages(otherUsername, 200, authHeader);
         
-          expect(response.body).toHaveLength(1);
+          expect(returnedImages).toHaveLength(1);
 
-          const returnedImage = response.body[0];
-          compareFoundAndResponseImage(otherUserPublicImage, returnedImage);
+          const returnedImage = returnedImages[0];
+
+          compareFoundWithResponse(
+            getNonSensitiveImage(otherUserPublicImage),
+            returnedImage
+          );
         });
 
         test('can access public image', async () => {
-          const response = await api
-            .get(`${baseUrl}/${otherUsername}/images/${otherUserPublicImage.id}`)
-            .set(authHeader)
-            .expect(200)
-            .expect('Content-Type', /application\/json/);
+          const returnedImage = await getImage(
+            otherUsername, otherUserPublicImage.id, 200, authHeader
+          );
 
-          const returnedImage = response.body;
-          compareFoundAndResponseImage(otherUserPublicImage, returnedImage);
+          compareFoundWithResponse(
+            getNonSensitiveImage(otherUserPublicImage),
+            returnedImage
+          );
         });
 
         test('can not access private images', async () => {
-          const response = await api
-            .get(`${baseUrl}/${otherUsername}/images/${otherUserPrivateImage.id}`)
-            .set(authHeader)
-            .expect(401)
-            .expect('Content-Type', /application\/json/);
+          const responseBody = await getImage(
+            otherUsername, otherUserPrivateImage.id, 401, authHeader
+          );
 
-          expect(response.body.message).toBe('image is private');
+          expect(responseBody.message).toBe('image is private');
         });
       });
     });

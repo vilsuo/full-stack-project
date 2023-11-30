@@ -2,12 +2,7 @@ const { User } = require('../../models');
 const { userImageFinder } = require('./finder');
 
 /**
- * Extracts the authenticated User from request to req.user.
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- * @returns 
+ * Extracts the authenticated User from request to req.user
  */
 const sessionExtractor = async (req, res, next) => {
   if (!req.session.user) {
@@ -38,6 +33,8 @@ const isSessionUserOwner = async (session, ownerId) => {
  */
 const checkImageViewAccess = async (req, res, next) => {
   const image = req.image;
+
+  //if (image.privacy === 'public') {
   if (!image.private) {
     // use 'return next' to jump out the callback immediately
     return next();

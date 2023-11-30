@@ -24,14 +24,23 @@ Image.init({
   },
   title: {
     type: DataTypes.STRING,
+    defaultValue: '',
   },
   caption: {
     type: DataTypes.STRING,
+    defaultValue: '',
   },
   private: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  /*
+  privacy: {
+    type: DataTypes.ENUM('public, private'),
+    defaultValue: 'public',
+    allowNull: false,
+  },
+  */
 }, {
   sequelize,
   underscored: true,

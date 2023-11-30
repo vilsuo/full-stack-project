@@ -1,8 +1,14 @@
-const { User, Image } = require('../../../src/models');
-
-const { cookieHeader, get_SetCookie, createUser, getUsersImageCount, compareFoundAndResponseImage } = require('../../helpers');
 const supertest = require('supertest');
 const app = require('../../../src/app');
+
+const { User, Image } = require('../../../src/models');
+const { existingUserValues } = require('../../helpers/constants');
+const {
+  login, get_SetCookie, cookieHeader, 
+  compareFoundWithResponse, getUsersImageCount
+} = require('../../helpers');
+const { getNonSensitiveImage } = require('../../../src/util/dto');
+const omit = require('lodash.omit');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -12,19 +18,21 @@ TODO
 - test more file types
 */
 
+// filetypes are allowed
 const testImageInfo1 = { title: 'Git', caption: 'workflow graph', imagePath: 'tests/test-files/git.png' };
 const testImageInfo2 = { title: 'Test', caption: 'test results', imagePath: 'tests/test-files/test.PNG' };
 
-const postImage = async (username, extraHeaders, formValues, statusCode) => {
-  const { title, caption, private: privacyOption, imagePath } = formValues;
+// filetype not allowed:
+const testTextInfo = { title: 'Text', caption: 'textfile', imagePath: 'tests/test-files/text.txt' };
 
-  const headers = { ...extraHeaders };
-  if (imagePath) { headers['Content-Type'] = 'multipart/form-data'; }
+const postImage = async (username, extraHeaders, formValues, statusCode = 201) => {
+  const fieldValues = omit(formValues, ['imagePath']);
+  const { imagePath } = formValues;
 
-  const fieldValues = {};
-  if (title !== undefined)          { fieldValues.title = title };
-  if (caption !== undefined)        { fieldValues.caption = caption };
-  if (privacyOption !== undefined)  { fieldValues.private = privacyOption };
+  const headers = {
+    'Content-Type': 'multipart/form-data',
+    ...extraHeaders
+  };
 
   const response = await api
     .post(`${baseUrl}/${username}/images`)
@@ -34,54 +42,42 @@ const postImage = async (username, extraHeaders, formValues, statusCode) => {
     .expect(statusCode)
     .expect('Content-Type', /application\/json/);
 
-  return response;
+  return response.body;
 };
 
-const credentials1 = { username: 'viltsu', password: 'salainen' };
-const credentials2 = { username: 'matsu', password: 'salainen' };
-const disabledCredentials = { username: 'samtsu', password: 'salainen' };
-
-beforeEach(async () => {
-  // NON DISABLED USERS:
-  await createUser('vili', credentials1);
-  await createUser('matias', credentials2);
-
-  // DISABLED USER:
-  await createUser('samuli', disabledCredentials, true);
-});
+const existingUserValue = existingUserValues[0];
+const otherExistingUserValue = existingUserValues[1];
 
 describe('posting images', () => {
   const privacyOption = false;
   const formValues = { ...testImageInfo1, private: privacyOption };
-  const { title, caption, imagePath } = formValues;
 
-  describe('without authentication', () => {
-    test('is unauthorized', async () => {
-      const headers = {
-        // there is a bug in supertest, this seems to fix it
-        // https://stackoverflow.com/questions/54936185/express-mongoose-jest-error-econnaborted
-        // https://github.com/ladjs/supertest/issues/230
-        'Connection': 'keep-alive',
-      };
+  test('can not post without authentication', async () => {
+    const username = existingUserValue.username;
 
-      const response = await postImage(
-        credentials1.username, headers, formValues, 401
-      );
+    const headers = {
+      // there is a bug in supertest, this seems to fix it
+      // https://stackoverflow.com/questions/54936185/express-mongoose-jest-error-econnaborted
+      // https://github.com/ladjs/supertest/issues/230
+      'Connection': 'keep-alive',
+    };
 
-      expect(response.body.message).toBe('authentication required');
-    });
+    const responseBody = await postImage(
+      username, headers, formValues, 401
+    );
+
+    expect(responseBody.message).toBe('authentication required');
   });
 
   describe('with authentication', () => {
-    const postingUsersUsername = credentials1.username;
+    const credentials = omit(existingUserValue, ['name']);
+    const postingUsersUsername = credentials.username;
 
     let authHeader = {};
 
     beforeEach(async () => {
       // log in and save cookie
-      const response = await api 
-        .post('/api/auth/login')
-        .send(credentials1);
+      const response = await login(api, credentials);
 
       const cookie = get_SetCookie(response);
       authHeader = cookieHeader(cookie);
@@ -89,37 +85,38 @@ describe('posting images', () => {
 
     describe('posting to self', () => {
       test('can post image to self', async () => {
-        const response = await postImage(
-          postingUsersUsername, authHeader, formValues, 201
+        await postImage(postingUsersUsername, authHeader, formValues);
+      });
+
+      test('response contains set values', async () => {
+        const responseImage = await postImage(
+          postingUsersUsername, authHeader, formValues
         );
 
-        const createdImage = response.body;
+        const { title, caption, imagePath } = formValues;
 
-        // form values are returned
-        expect(createdImage.title).toBe(title);
-        expect(createdImage.caption).toBe(caption);
-        expect(createdImage.private).toBe(privacyOption);
+        // response contains original filename
+        expect(responseImage.originalname).toBe(imagePath.split('/')[2]);
 
-        // filepath is not returned
-        expect(createdImage).not.toHaveProperty('filepath');
+        // response contains posted values
+        expect(responseImage.title).toBe(title);
+        expect(responseImage.caption).toBe(caption);
+        expect(responseImage.private).toBe(privacyOption);
 
-        // original filename is set
-        expect(createdImage.originalname).toBe(imagePath.split('/')[2]);
-
-        // image is saved to correct user
+        // response contains users id
         const userId = (await User.findOne({ 
           where: { username: postingUsersUsername }
         })).id;
 
-        expect(createdImage.id).toBeDefined();
-        expect(createdImage.userId).toBe(userId);
+        expect(responseImage.id).toBeDefined();
+        expect(responseImage.userId).toBe(userId);
       });
 
       test('users image count is increased by one', async () => {
         const imageCountBefore = await getUsersImageCount(postingUsersUsername);
         
         await postImage(
-          postingUsersUsername, authHeader, formValues, 201
+          postingUsersUsername, authHeader, formValues
         );
 
         const imageCountAfter = await getUsersImageCount(postingUsersUsername);
@@ -127,64 +124,69 @@ describe('posting images', () => {
       });
 
       test('image details can be found after posting', async () => {
-        const response = await postImage(
-          postingUsersUsername, authHeader, formValues, 201
+        const responseImage = await postImage(
+          postingUsersUsername, authHeader, formValues
         );
 
-        const createdImage = response.body;
-        const foundImage = await Image.findByPk(createdImage.id);
+        const foundImage = await Image.findByPk(responseImage.id);
 
-        compareFoundAndResponseImage(foundImage, createdImage);
+        compareFoundWithResponse(getNonSensitiveImage(foundImage), responseImage);
       });
 
-      test('can post without title, caption and privacy option', async () => {
-        const response = await postImage(
-          postingUsersUsername, authHeader, { imagePath }, 201
+      test('image filepath is not returned', async () => {
+        const responseImage = await postImage(
+          postingUsersUsername, authHeader, formValues
         );
 
-        const createdImage = response.body;
+        expect(responseImage).not.toHaveProperty('filepath');
+      });
 
-        // there are six falsy values: false, 0, '', null, undefined, and NaN
-        expect(createdImage.title).toBeFalsy();
-        expect(createdImage.caption).toBeFalsy();
+      test('default privacy is public', async () => {
+        const responseImage = await postImage(
+          postingUsersUsername, authHeader, omit(formValues, ['private'])
+        );
 
-        // default privacy option is false
-        expect(createdImage.private).toBe(false);
+        expect(responseImage.private).toBe(false);
+      });
+
+      test('title and caption are empty by default', async () => {
+        const responseImage = await postImage(
+          postingUsersUsername, authHeader, omit(formValues, ['title', 'caption'])
+        );
+
+        expect(responseImage.title).toBe('');
+        expect(responseImage.caption).toBe('');
       });
 
       test('image must be present in the request', async () => {
-        const response = await postImage(
+        const responseBody = await postImage(
           postingUsersUsername,
           authHeader,
-          { title, caption, private: privacyOption },
+          omit(formValues, ['imagePath']),
           400
         );
 
-        expect(response.body.message).toBe('file is missing');
+        expect(responseBody.message).toBe('file is missing');
       });
 
-      test('can not post text file', async () => {
-        const textInfo = {
-          title: 'Text', caption: 'textfile', imagePath: 'tests/test-files/text.txt'
-        };
-        
-        const response = await postImage(
-          postingUsersUsername, authHeader, { ...textInfo, private: false }, 400
-        );
-
-        const message = response.body.message;
-        expect(message).toMatch(/^File upload only supports the following filetypes/);
+      describe('invalid filetypes', () => {
+        test('text files are not allowed', async () => {
+          const responseBody = await postImage(
+            postingUsersUsername, authHeader, testTextInfo, 400
+          );
+  
+          expect(responseBody.message).toMatch(/^File upload only supports the following filetypes/);
+        });
       });
     });
-    
-    describe('posting to others', () => {
-      test('can not post image to other user', async () => {
-        const response = await postImage(
-          credentials2.username, authHeader, formValues, 401
-        );
 
-        expect(response.body.message).toBe('can not add images to other users');
-      });
+    test('can not post image to other user', async () => {
+      const otherUsername = otherExistingUserValue.username;
+      const responseBody = await postImage(
+        otherUsername, authHeader, formValues, 401
+      );
+
+      expect(responseBody.message).toBe('can not add images to other users');
     });
   });
 });

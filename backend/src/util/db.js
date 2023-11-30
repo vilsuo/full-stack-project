@@ -54,11 +54,11 @@ const connectToDatabases = async () => {
   }
 
   return null;
-}
+};
 
 module.exports = {
   sequelize,
   redisClient,
   connectToDatabases,
   rollbackMigration,
-}
+};
