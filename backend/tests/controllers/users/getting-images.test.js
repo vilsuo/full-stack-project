@@ -85,7 +85,7 @@ describe('find users images', () => {
       const userId = (await User.findOne({ where: { username } })).id;
       
       userPublicImage = await createImage(userId, 'public image', 'this image is public');
-      userPrivateImage = await createImage(userId, 'private image', 'this image is private!', true);
+      userPrivateImage = await createImage(userId, 'private image', 'this image is private!', 'private');
     });
 
     describe('without authentication', () => {
@@ -186,7 +186,7 @@ describe('find users images', () => {
             otherUserId, 'others public image', 'this is public access'
           );
           otherUserPrivateImage = await createImage(
-            otherUserId, 'others private image', 'this is private access only!', true
+            otherUserId, 'others private image', 'this is private access only!', 'private'
           );
         });
 

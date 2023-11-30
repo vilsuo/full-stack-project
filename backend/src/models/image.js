@@ -18,6 +18,7 @@ Image.init({
   },
   mimetype: {
     type: DataTypes.STRING,
+    allowNull: false,
   },
   size: {
     type: DataTypes.INTEGER,
@@ -31,7 +32,7 @@ Image.init({
     defaultValue: '',
   },
   privacy: {
-    type: DataTypes.ENUM('public, private'),
+    type: DataTypes.ENUM('public', 'private'),
     defaultValue: 'public',
     allowNull: false,
   },

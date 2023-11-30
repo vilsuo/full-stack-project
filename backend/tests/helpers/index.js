@@ -37,15 +37,12 @@ const createUser = async ({ name, username, password, disabled = false }) => {
 };
 
 // missing 'filepath'
-const createImage = async (userId, title, caption, privateOption = false) => {
+const createImage = async (userId, title, caption, privacy = 'public') => {
   return await Image.create({
     originalname: 'test.jpeg', 
     mimetype: 'image/jpeg',
     size: 1000,
-    title,
-    caption,
-    private: privateOption,
-    userId,
+    title, caption, privacy, userId,
   });
 };
 

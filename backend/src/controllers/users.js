@@ -45,19 +45,14 @@ router.get('/:username', userFinder, async (req, res) => {
 router.get('/:username/images', userFinder, async (req, res) => {
   const foundUser = req.foundUser;
 
-  const where = { userId: foundUser.id, private: false,
-    //privacy: 'public' 
-  };
+  const where = { userId: foundUser.id, privacy: 'public' };
 
   if (req.session.user) {
     const userId = req.session.user.id;
     const user = await User.findOne({ where: { id: userId } });
     if (user && userId === foundUser.id) {
       // send all images only if user is the owner
-      
-      //delete where.privacy;
-
-      delete where.private;
+      delete where.privacy;
     }
   }
 

@@ -49,8 +49,7 @@ const existingUserValue = existingUserValues[0];
 const otherExistingUserValue = existingUserValues[1];
 
 describe('posting images', () => {
-  const privacyOption = false;
-  const formValues = { ...testImageInfo1, private: privacyOption };
+  const formValues = { ...testImageInfo1, privacy: 'public' };
 
   test('can not post without authentication', async () => {
     const username = existingUserValue.username;
@@ -93,7 +92,7 @@ describe('posting images', () => {
           postingUsersUsername, authHeader, formValues
         );
 
-        const { title, caption, imagePath } = formValues;
+        const { title, caption, imagePath, privacy } = formValues;
 
         // response contains original filename
         expect(responseImage.originalname).toBe(imagePath.split('/')[2]);
@@ -101,7 +100,7 @@ describe('posting images', () => {
         // response contains posted values
         expect(responseImage.title).toBe(title);
         expect(responseImage.caption).toBe(caption);
-        expect(responseImage.private).toBe(privacyOption);
+        expect(responseImage.privacy).toBe(privacy);
 
         // response contains users id
         const userId = (await User.findOne({ 
@@ -142,11 +141,14 @@ describe('posting images', () => {
       });
 
       test('default privacy is public', async () => {
+        const noPrivacyValue = omit(formValues, ['privacy']);
+        expect(noPrivacyValue).not.toHaveProperty('privacy');
+
         const responseImage = await postImage(
-          postingUsersUsername, authHeader, omit(formValues, ['private'])
+          postingUsersUsername, authHeader, noPrivacyValue
         );
 
-        expect(responseImage.private).toBe(false);
+        expect(responseImage.privacy).toBe('public');
       });
 
       test('title and caption are empty by default', async () => {
