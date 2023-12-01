@@ -1,5 +1,16 @@
 const { User, Image } = require('../../models');
 
+/**
+ * Extracts the User from request parameter 'username' to request.foundUser.
+ * 
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next  
+ * 
+ * @returns response with status 
+ *  - '404' if said user does not exist
+ *  - '400' if said user is disabled
+ */
 const userFinder = async (req, res, next) => {
   const { username } = req.params;
   const user = await User.findOne({ where: { username } });
@@ -16,7 +27,17 @@ const userFinder = async (req, res, next) => {
 };
 
 /**
- * Expects userFinder middleware to have been handled
+ * Extracts the Image from request parameter 'imageId' to request.image.
+ * 
+ * Expects the middleware {@link userFinder} to have been handled beforehand.
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ * 
+ * @returns response with status
+ * - '404' if there is no image with id = imageId.
+ * - '404' if the image owner is not the request.foundUser
  */
 const imageFinder = async (req, res, next) => {
   const imageId = Number(req.params.imageId);
@@ -33,6 +54,9 @@ const imageFinder = async (req, res, next) => {
   return res.status(404).send({ message: 'image does not exist' });
 };
 
+/**
+ * Combines middlewares {@link userFinder} and {@link imageFinder} to one middleware
+ */
 const userImageFinder = [userFinder, imageFinder];
 
 module.exports = {
