@@ -1,5 +1,5 @@
 const { User } = require('../../models');
-const { userImageFinder } = require('./finder');
+const { userFinder, userImageFinder } = require('./finder');
 
 /**
  * Extracts the authenticated User from request to req.user
@@ -60,11 +60,23 @@ const checkImageEditAccess = async (req, res, next) => {
   next();
 };
 
+const checkImagePostAccess = (req, res, next) => {
+  // check if user is posting image to self
+  if (req.foundUser.id !== req.user.id) {
+    return res.status(401).send({
+      message: 'can not add images to other users'
+    });
+  }
+
+  next();
+};
+
 const isAllowedToViewImage = [ ...userImageFinder, checkImageViewAccess ];
 const isAllowedToEditImage = [ ...userImageFinder, sessionExtractor, checkImageEditAccess ];
+const isAllowedToPostImage = [ userFinder, sessionExtractor, checkImagePostAccess];
 
 module.exports = {
-  sessionExtractor,
   isAllowedToViewImage,
   isAllowedToEditImage,
+  isAllowedToPostImage,
 };

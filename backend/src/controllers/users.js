@@ -5,7 +5,7 @@ const path = require('path');
 
 const { User, Image } = require('../models');
 const { userFinder, } = require('../util/middleware/finder');
-const { sessionExtractor, isAllowedToViewImage, isAllowedToEditImage, } = require('../util/middleware/auth');
+const { isAllowedToViewImage, isAllowedToEditImage, isAllowedToPostImage, } = require('../util/middleware/auth');
 const { upload, removeFile } = require('../util/image-storage');
 const { getNonSensitiveUser, getNonSensitiveImage } = require('../util/dto');
 const logger = require('../util/logger');
@@ -61,23 +61,23 @@ router.get('/:username/images', userFinder, async (req, res) => {
   return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
-// add validations to values
-router.post('/:username/images', userFinder, sessionExtractor, async (req, res) => {
+const validateImageValues = (req, res, next) => {
+
+};
+
+// TODO
+// - IMAGE IS STILL SAVED TO FILESYSTEM EVEN WHEN THE IMAGE VALIDATION FAILS!
+// - IMAGE VALIDATION CRASHES APP!
+// - add validations to values
+router.post('/:username/images', isAllowedToPostImage, async (req, res) => {
   // multer upload error handling see: https://github.com/expressjs/multer/issues/336
   imageUpload(req, res, async (error) => {
+    // handle this error in middleware somehow?
     if (error) {
       return res.status(400).send({ message: error.message });
     }
 
     logger.info('File:  ', req.file);
-
-    if (req.foundUser.id !== req.user.id) {
-      return res.status(401).send({
-        message: 'can not add images to other users'
-      });
-    }
-
-    // found user exists, so session user exists (foundUser is session user)
 
     if (!req.file) {
       return res.status(400).send({ message: 'file is missing' });
@@ -89,15 +89,20 @@ router.post('/:username/images', userFinder, sessionExtractor, async (req, res) 
     const { mimetype, size, originalname, } = req.file;
     const { title, caption, privacy } = req.body;
 
-    const image = await Image.create({
-      originalname, filepath,
-      mimetype, size,
-      title, caption,
-      privacy,
-      userId: req.user.id,
-    });
+    try {
+      const image = await Image.create({
+        originalname, filepath,
+        mimetype, size,
+        title, caption,
+        privacy,
+        userId: req.user.id,
+      });
 
-    return res.status(201).send(getNonSensitiveImage(image));
+      return res.status(201).send(getNonSensitiveImage(image));
+    } catch (error) {
+      throw new Error(error.errors[0].message);
+      //return res.status(500).send(error);
+    }
   });
 });
 
@@ -106,7 +111,6 @@ router.get('/:username/images/:imageId', isAllowedToViewImage, async (req, res) 
   return res.send(getNonSensitiveImage(image));
 });
 
-// TODO test
 router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
 
