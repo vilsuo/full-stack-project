@@ -13,11 +13,12 @@ const omit = require('lodash.omit');
 const api = supertest(app);
 const baseUrl = '/api/users';
 
-const existingUserValue = existingUserValues[0];
-const otherExistingUserValue = existingUserValues[1];
-
 // mock 'removeFile' to do NOTHING
 jest.mock('../../../src/util/image-storage');
+const { removeFile } = require('../../../src/util/image-storage');
+
+const existingUserValue = existingUserValues[0];
+const otherExistingUserValue = existingUserValues[1];
 
 const deleteImage = async (username, imageId, headers = {}, statusCode = 401) => {
   const response = await api
@@ -81,23 +82,32 @@ describe('deleting images', () => {
         expect(responseBody.message).toBe('image does not exist');
       });
 
-      test('users image count is decreased by one after deleting', async () => {
-        const imageCountBefore = await getUsersImageCount(username);
-
-        await deleteImage(username, userPublicImage.id, authHeader, 204);
-
-        // users image count is decreased by one
-        const imageCountAfter = await getUsersImageCount(username);
-        expect(imageCountAfter).toBe(imageCountBefore - 1);
-      });
-
-      test('image can not be found after deleting', async () => {
-        const imageToDeleteId = userPublicImage.id;
-        await deleteImage(username, imageToDeleteId, authHeader, 204);
-
-        // image is no longer found
-        const result = await Image.findOne({ where: { id: imageToDeleteId } });
-        expect(result).toBeFalsy();
+      describe('after deleting an image', () => {
+        test('users image count is decreased by one', async () => {
+          const imageCountBefore = await getUsersImageCount(username);
+  
+          await deleteImage(username, userPublicImage.id, authHeader, 204);
+  
+          // users image count is decreased by one
+          const imageCountAfter = await getUsersImageCount(username);
+          expect(imageCountAfter).toBe(imageCountBefore - 1);
+        });
+  
+        test('image can not be found', async () => {
+          const imageToDeleteId = userPublicImage.id;
+          await deleteImage(username, imageToDeleteId, authHeader, 204);
+  
+          // image is no longer found
+          const result = await Image.findOne({ where: { id: imageToDeleteId } });
+          expect(result).toBeFalsy();
+        });
+  
+        test('attempt is made to remove file from the filesystem', async () => {
+          await deleteImage(username, userPublicImage.id, authHeader, 204);
+  
+          // The mock function was called at least once
+          expect(removeFile).toHaveBeenCalled();
+        });
       });
     });
 
