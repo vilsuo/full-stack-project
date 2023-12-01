@@ -20,7 +20,7 @@ const migrationConf = {
   },
   storage: new SequelizeStorage({ sequelize, tableName: 'migrations' }),
   context: sequelize.getQueryInterface(),
-  logger: console,
+  logger,
 };
 
 const runMigrations = async () => {

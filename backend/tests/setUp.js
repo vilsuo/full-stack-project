@@ -28,24 +28,26 @@ beforeEach(async () => {
   // create the tables, dropping them first if they already existed
   try {
     await sequelize.sync({ force: true });
-    console.log('All models were synchronized successfully.');
+    //console.log('All models were synchronized successfully.');
     
   } catch (error) {
-    console.log('sync error', error);
+    console.log('Sync error:', error);
     throw error;
   }
 
   // create users
-  await User.bulkCreate(userCreationValues);
+  // VALIDATIONS ARE NOT RUN BY DEFAULT!
+  await User.bulkCreate(userCreationValues /*, { validate: true }*/);
 });
 
+// reset redis db with redisClient.flushAll?
 afterAll(async () => {
   try {
     await sequelize.drop({});
-    console.log('All tables dropped!');
+    //console.log('All tables dropped!');
+
   } catch (error) {
-    console.log('drop error', error);
+    console.log('Table drop error:', error);
     throw error;
   }
-  // reset redis db with redisClient.flushAll?
 });
