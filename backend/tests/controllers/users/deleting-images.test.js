@@ -1,73 +1,56 @@
-const { User, Image } = require('../../../src/models');
-
-const { cookieHeader, get_SetCookie, createUser, getUsersImageCount } = require('../../helpers');
 const supertest = require('supertest');
 const app = require('../../../src/app');
+
+const { User, Image } = require('../../../src/models');
+const { existingUserValues } = require('../../helpers/constants');
+const {
+  login, get_SetCookie, cookieHeader, 
+  getUsersImageCount,
+  createImage
+} = require('../../helpers');
+const omit = require('lodash.omit');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
 
+const existingUserValue = existingUserValues[0];
+const otherExistingUserValue = existingUserValues[1];
+
 // mock 'removeFile' to do NOTHING
 jest.mock('../../../src/util/image-storage');
 
-const expectDeleteImageFailure = async (username, imageId, statusCode, headers = {}) => {
-  return await api
+const deleteImage = async (username, imageId, headers = {}, statusCode = 401) => {
+  const response = await api
     .delete(`${baseUrl}/${username}/images/${imageId}`)
     .set(headers)
-    .expect(statusCode)
-    .expect('Content-Type', /application\/json/);
+    .expect(statusCode);
+
+  return response.body;
 };
-
-const expectDeleteImageSuccess = async (username, imageId, headers) => {
-  return await api
-    .delete(`${baseUrl}/${username}/images/${imageId}`)
-    .set(headers)
-    .expect(204)
-};
-
-const credentials1 = { username: 'viltsu', password: 'salainen' };
-const credentials2 = { username: 'matsu', password: 'salainen' };
-
-beforeEach(async () => {
-  await createUser('vili', credentials1);
-  await createUser('matias', credentials2);
-});
 
 describe('deleting images', () => {
-  const username = credentials1.username;
+  const credentials = omit(existingUserValue, ['name']);
+  const username = existingUserValue.username;
   let userPublicImage;
   let userPrivateImage;
 
   // create private & nonprivate images
   beforeEach(async () => {
     const userId = (await User.findOne({ where: { username } })).id;
-    
-    userPublicImage = await Image.create({
-      originalname: 'image1-pub.jpeg', 
-      mimetype: 'image/jpeg', 
-      title: 'public image',
-      caption: 'this image is public',
-      private: false,
-      userId,
-    });
-
-    userPrivateImage = await Image.create({
-      originalname: 'image1-priv.jpeg', 
-      mimetype: 'image/jpeg',
-      title: 'private image',
-      caption: 'this image is private!',
-      private: true,
-      userId,
-    });
+      
+    userPublicImage = await createImage(userId, 'public image', 'this image is public');
+    userPrivateImage = await createImage(userId, 'private image', 'this image is private!', 'private');
   });
 
   describe('without authentication', () => {
-    test('can not delete images', async () => {
-      const response1 = await expectDeleteImageFailure(username, userPublicImage.id, 401);
-      expect(response1.body.message).toBe('authentication required');
+    test('can not delete public image', async () => {
+      const responseBody = await deleteImage(username, userPublicImage.id);
+      expect(responseBody.message).toBe('authentication required');
+    });
 
-      const response2 = await expectDeleteImageFailure(username, userPrivateImage.id, 401);
-      expect(response2.body.message).toBe('authentication required')
+    test('can not delete private image', async () => {
+      const responseBody = await deleteImage(username, userPrivateImage.id);
+      expect(responseBody.message).toBe('authentication required')
     });
   });
 
@@ -76,9 +59,7 @@ describe('deleting images', () => {
 
     beforeEach(async () => {
       // log in and save cookie
-      const response = await api 
-        .post('/api/auth/login')
-        .send(credentials1);
+      const response = await login(api, credentials);
 
       const cookie = get_SetCookie(response);
       authHeader = cookieHeader(cookie);
@@ -86,25 +67,24 @@ describe('deleting images', () => {
 
     describe('deleting own images', () => {
       test('can delete public image', async () => {
-        await expectDeleteImageSuccess(username, userPublicImage.id, authHeader);
+        await deleteImage(username, userPublicImage.id, authHeader, 204);
       });
 
       test('can delete private image', async () => {
-        await expectDeleteImageSuccess(username, userPrivateImage.id, authHeader);
+        await deleteImage(username, userPrivateImage.id, authHeader, 204);
       });
 
       test('can not delete image that does not exist', async () => {
         const nonExistingImageId = 91727149;
-        const response = await expectDeleteImageFailure(username, nonExistingImageId, 404, authHeader);
+        const responseBody = await deleteImage(username, nonExistingImageId, authHeader, 404);
 
-        expect(response.body.message).toBe('image does not exist');
+        expect(responseBody.message).toBe('image does not exist');
       });
 
       test('users image count is decreased by one after deleting', async () => {
         const imageCountBefore = await getUsersImageCount(username);
 
-        const imageToDeleteId = userPublicImage.id;
-        await expectDeleteImageSuccess(username, imageToDeleteId, authHeader);
+        await deleteImage(username, userPublicImage.id, authHeader, 204);
 
         // users image count is decreased by one
         const imageCountAfter = await getUsersImageCount(username);
@@ -113,7 +93,7 @@ describe('deleting images', () => {
 
       test('image can not be found after deleting', async () => {
         const imageToDeleteId = userPublicImage.id;
-        await expectDeleteImageSuccess(username, imageToDeleteId, authHeader);
+        await deleteImage(username, imageToDeleteId, authHeader, 204);
 
         // image is no longer found
         const result = await Image.findOne({ where: { id: imageToDeleteId } });
@@ -121,51 +101,37 @@ describe('deleting images', () => {
       });
     });
 
-    describe('deleting others images', () => {
-      const otherUsername = credentials2.username;
-
+    describe('deleting other users images', () => {
+      const otherUsername = otherExistingUserValue.username;
       let otherUserPublicImage;
       let otherUserPrivateImage;
 
-      // create private & nonprivate images to other user
+      // create images to other user
       beforeEach(async () => {
-        const otherUserId = (await User.findOne({
-          where: { username: otherUsername }
-        })).id;
-        
-        otherUserPublicImage = await Image.create({
-          originalname: 'image2-pub.jpeg', 
-          mimetype: 'image/jpeg',
-          title: 'someones public image',
-          caption: 'public access',
-          private: false,
-          userId: otherUserId,
-        });
-  
-        otherUserPrivateImage = await Image.create({
-          originalname: 'image2-priv.jpeg', 
-          mimetype: 'image/jpeg', 
-          title: 'someones private image',
-          caption: 'private access',
-          private: true,
-          userId: otherUserId,
-        });
+        const otherUserId = (await User.findOne({ where: { username: otherUsername } })).id;
+    
+        otherUserPublicImage = await createImage(
+          otherUserId, 'others public image', 'this is public access'
+        );
+        otherUserPrivateImage = await createImage(
+          otherUserId, 'others private image', 'this is private access only!', 'private'
+        );
       });
       
       test('can not delete public image', async () => {
-        const response = await expectDeleteImageFailure(
-          otherUsername, otherUserPublicImage.id, 401, authHeader
+        const responseBody = await deleteImage(
+          otherUsername, otherUserPublicImage.id, authHeader
         );
 
-        expect(response.body.message).toBe('can not modify other users images')
+        expect(responseBody.message).toBe('can not modify other users images')
       });
 
       test('can not delete private image', async () => {
-        const response = await expectDeleteImageFailure(
-          otherUsername, otherUserPrivateImage.id, 401, authHeader
+        const responseBody = await deleteImage(
+          otherUsername, otherUserPrivateImage.id, authHeader
         );
 
-        expect(response.body.message).toBe('can not modify other users images')
+        expect(responseBody.message).toBe('can not modify other users images')
       });
     });
   })
