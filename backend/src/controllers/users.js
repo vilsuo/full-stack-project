@@ -61,15 +61,11 @@ router.get('/:username/images', userFinder, async (req, res) => {
   return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
-const validateImageValues = (req, res, next) => {
-
-};
-
 // TODO
-// - IMAGE IS STILL SAVED TO FILESYSTEM EVEN WHEN THE IMAGE VALIDATION FAILS!
-// - IMAGE VALIDATION CRASHES APP!
+// - add file limit 1 to upload
 // - add validations to values
-router.post('/:username/images', isAllowedToPostImage, async (req, res) => {
+router.post('/:username/images', isAllowedToPostImage, async (req, res, next) => {
+
   // multer upload error handling see: https://github.com/expressjs/multer/issues/336
   imageUpload(req, res, async (error) => {
     // handle this error in middleware somehow?
@@ -77,7 +73,8 @@ router.post('/:username/images', isAllowedToPostImage, async (req, res) => {
       return res.status(400).send({ message: error.message });
     }
 
-    logger.info('File:  ', req.file);
+    logger.info('File:    ', req.file);
+    logger.info('Fields:  ', req.body);
 
     if (!req.file) {
       return res.status(400).send({ message: 'file is missing' });
@@ -100,8 +97,10 @@ router.post('/:username/images', isAllowedToPostImage, async (req, res) => {
 
       return res.status(201).send(getNonSensitiveImage(image));
     } catch (error) {
-      throw new Error(error.errors[0].message);
-      //return res.status(500).send(error);
+      // Image validation failed, image was already saved to the filesystem
+      removeFile(filepath);
+
+      next(error);
     }
   });
 });

@@ -35,6 +35,12 @@ Image.init({
     type: DataTypes.ENUM('public', 'private'),
     defaultValue: 'public',
     allowNull: false,
+    validate: {
+      isIn: {
+        args: [['public', 'private']],
+        msg: 'image must be public or private'
+      },
+    },
   },
 }, {
   sequelize,
