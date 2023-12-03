@@ -6,10 +6,10 @@ const path = require('path');
 const { User, Image } = require('../models');
 const { userFinder, } = require('../util/middleware/finder');
 const { isAllowedToViewImage, isAllowedToEditImage, isAllowedToPostImage, } = require('../util/middleware/auth');
-const { upload, removeFile } = require('../util/image-storage');
+const imageStorage = require('../util/image-storage');
 const { getNonSensitiveUser, getNonSensitiveImage } = require('../util/dto');
 const logger = require('../util/logger');
-const imageUpload = upload.single('image');
+const imageUpload = imageStorage.upload.single('image');
 
 router.get('/', async (req, res) => {
   const searchFilters = {};
@@ -61,46 +61,50 @@ router.get('/:username/images', userFinder, async (req, res) => {
   return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
-// TODO
-// - add file limit 1 to upload
-// - add validations to values
+const createImage = async (filepath, file, fields, userId) => {
+  const { mimetype, size, originalname } = file;
+  const { title, caption, privacy } = fields;
+
+  const image = await Image.create({
+    originalname, 
+    filepath,
+    mimetype, 
+    size,
+    title, 
+    caption,
+    privacy,
+    userId,
+  });
+
+  return image;
+};
+
 router.post('/:username/images', isAllowedToPostImage, async (req, res, next) => {
-
-  // multer upload error handling see: https://github.com/expressjs/multer/issues/336
   imageUpload(req, res, async (error) => {
-    // handle this error in middleware somehow?
-    if (error) {
-      return res.status(400).send({ message: error.message });
-    }
+    if (error) return next(error);
 
-    logger.info('File:    ', req.file);
-    logger.info('Fields:  ', req.body);
+    const file = req.file;
+    const fields = req.body;
 
-    if (!req.file) {
+    logger.info('File:    ', file);
+    logger.info('Fields:  ', fields);
+
+    if (!file) {
       return res.status(400).send({ message: 'file is missing' });
     }
 
     // The full path to the uploaded file (DiskStorage only)
-    const filepath = req.file.path;
-
-    const { mimetype, size, originalname, } = req.file;
-    const { title, caption, privacy } = req.body;
+    const filepath = file.path;
 
     try {
-      const image = await Image.create({
-        originalname, filepath,
-        mimetype, size,
-        title, caption,
-        privacy,
-        userId: req.user.id,
-      });
-
+      const userId = req.user.id;
+      const image = await createImage(filepath, file, fields, userId);
       return res.status(201).send(getNonSensitiveImage(image));
+
     } catch (error) {
       // Image validation failed, image was already saved to the filesystem
-      removeFile(filepath);
-
-      next(error);
+      imageStorage.removeFile(filepath);
+      return next(error);
     }
   });
 });
@@ -116,7 +120,7 @@ router.delete('/:username/images/:imageId', isAllowedToEditImage, async (req, re
   await image.destroy();
 
   // filepath is null in tests!
-  removeFile(image.filepath);
+  imageStorage.removeFile(image.filepath);
   
   return res.status(204).end();
 });

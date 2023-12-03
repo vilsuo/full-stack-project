@@ -1,21 +1,18 @@
 const supertest = require('supertest');
-const app = require('../../../src/app');
+const omit = require('lodash.omit');
 
+const app = require('../../../src/app');
 const { User, Image } = require('../../../src/models');
+const imageStorage = require('../../../src/util/image-storage');
 const { existingUserValues } = require('../../helpers/constants');
 const {
   login, get_SetCookie, cookieHeader, 
   getUsersImageCount,
   createImage
 } = require('../../helpers');
-const omit = require('lodash.omit');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
-
-// mock 'removeFile' to do NOTHING
-jest.mock('../../../src/util/image-storage');
-const { removeFile } = require('../../../src/util/image-storage');
 
 const existingUserValue = existingUserValues[0];
 const otherExistingUserValue = existingUserValues[1];
@@ -34,6 +31,10 @@ describe('deleting images', () => {
   const username = existingUserValue.username;
   let userPublicImage;
   let userPrivateImage;
+
+  const removeFileSpy = jest
+    .spyOn(imageStorage, 'removeFile')
+    .mockImplementation((filepath) => console.log(`spy called with ${filepath}`));
 
   // create private & nonprivate images
   beforeEach(async () => {
@@ -105,8 +106,7 @@ describe('deleting images', () => {
         test('attempt is made to remove file from the filesystem', async () => {
           await deleteImage(username, userPublicImage.id, authHeader, 204);
   
-          // The mock function was called at least once
-          expect(removeFile).toHaveBeenCalled();
+          expect(removeFileSpy).toHaveBeenCalled();
         });
       });
     });

@@ -2,12 +2,15 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const logger = require('./logger');
+const { FiletypeError } = require('./error');
 
-let options;
+const options = {};
 if (process.env.NODE_ENV === 'test') {
-  options = { storage: multer.memoryStorage() };
+  // throw away the image after upload
+  options.storage = multer.memoryStorage();
 } else {
-  options = { dest: 'images/' }
+  // save image locally
+  options.dest = 'images/';
 }
 
 const filetypes = /jpeg|jpg|png/;
@@ -19,7 +22,10 @@ const fileFilter = (req, file, cb) => {
   if (mimetype && extname) {
     return cb(null, true);
   }
-  cb(new Error('File upload only supports the following filetypes - ' + filetypes));
+
+  cb(new FiletypeError(
+    `File upload only supports the following filetypes -  ${filetypes}`
+  ));
 };
 
 const upload = multer({

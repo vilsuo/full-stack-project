@@ -23,6 +23,8 @@ const errorHandler = (error, req, res, next) => {
       return res.status(400).send({
         message: error.errors.map(error => error.message)
       });
+    case 'FiletypeError':
+      return res.status(400).send({ message: error.message });
   }
 
   next(error);

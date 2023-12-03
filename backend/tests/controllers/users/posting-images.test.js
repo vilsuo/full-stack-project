@@ -1,6 +1,7 @@
 const supertest = require('supertest');
-const app = require('../../../src/app');
+const omit = require('lodash.omit');
 
+const app = require('../../../src/app');
 const { User, Image } = require('../../../src/models');
 const { existingUserValues } = require('../../helpers/constants');
 const {
@@ -8,7 +9,7 @@ const {
   compareFoundWithResponse, getUsersImageCount
 } = require('../../helpers');
 const { getNonSensitiveImage } = require('../../../src/util/dto');
-const omit = require('lodash.omit');
+const imageStorage = require('../../../src/util/image-storage');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -16,6 +17,7 @@ const baseUrl = '/api/users';
 /*
 TODO
 - test more file types
+- how to test that file was (/was) not saved to the filesystem?
 */
 
 // filetypes are allowed
@@ -51,6 +53,10 @@ const otherExistingUserValue = existingUserValues[1];
 describe('posting images', () => {
   const formValues = { ...testImageInfo1, privacy: 'public' };
 
+  const removeFileSpy = jest
+    .spyOn(imageStorage, 'removeFile')
+    .mockImplementation((filepath) => console.log(`spy called with ${filepath}`));
+
   test('can not post without authentication', async () => {
     const username = existingUserValue.username;
 
@@ -83,8 +89,18 @@ describe('posting images', () => {
     });
 
     describe('posting to self', () => {
-      test('can post image to self', async () => {
-        await postImage(postingUsersUsername, authHeader, formValues);
+      test('can post a public image', async () => {
+        const returnedImage = await postImage(postingUsersUsername, authHeader, formValues);
+
+        expect(returnedImage.privacy).toBe('public');
+      });
+
+      test('can post a private image', async () => {
+        const returnedImage = await postImage(
+          postingUsersUsername, authHeader, { ...formValues, privacy: 'private' }
+        );
+
+        expect(returnedImage.privacy).toBe('private');
       });
 
       test('response contains set values', async () => {
@@ -171,7 +187,32 @@ describe('posting images', () => {
         expect(responseBody.message).toBe('file is missing');
       });
 
-      describe('invalid filetypes', () => {
+      test('there is no attempt to remove an image from filesystem after successfull upload', async () => {
+        await postImage(postingUsersUsername, authHeader, formValues);
+
+        expect(removeFileSpy).not.toHaveBeenCalled();
+      });
+
+      describe('invalid field values', () => {
+        const invalidPrivacy = 'friends';
+        const invalidFormValues = { ...formValues, privacy: invalidPrivacy };
+
+        test('can not post an image with invalid privacy option', async () => {
+          const responseBody = await postImage(
+            postingUsersUsername, authHeader, invalidFormValues, 400
+          );
+  
+          expect(responseBody.message).toContain('image must be public or private');
+        });
+
+        test('attempt is made to remove the failed upload image from filesystem', async () => {
+          await postImage(postingUsersUsername, authHeader, invalidFormValues, 400);
+          
+          expect(removeFileSpy).toHaveBeenCalled();
+        });
+      });
+
+      describe('invalid files', () => {
         test('text files are not allowed', async () => {
           const responseBody = await postImage(
             postingUsersUsername, authHeader, testTextInfo, 400
