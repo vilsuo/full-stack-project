@@ -36,12 +36,32 @@ const createUser = async ({ name, username, password, disabled = false }) => {
   });
 };
 
-// missing 'filepath'
-const createImage = async (userId, title, caption, privacy = 'public') => {
+/**
+ * Creates a new {@link Image} from the parameters. The resulting image will
+ *  have undefined 'filepath'.
+ * 
+ * @param {*} userId 
+ * @param {*} title 
+ * @param {*} caption 
+ * @param {*} privacy
+ * @param {*} mimetype      default 'image/jpeg'
+ * @param {*} originalname  default 'test.jpeg'
+ * @param {*} size          default 1000
+ * 
+ * @returns the created image
+ */
+const createImage = async ({
+    userId,
+    title,
+    caption,
+    privacy, 
+    mimetype = 'image/jpeg',
+    originalname = 'test.jpeg',
+    size = 1000
+  }) => {
+
   return await Image.create({
-    originalname: 'test.jpeg', 
-    mimetype: 'image/jpeg',
-    size: 1000,
+    originalname, mimetype, size,
     title, caption, privacy, userId,
   });
 };
@@ -57,6 +77,8 @@ const getUsersImageCount = async username => {
 };
 
 const compareFoundArrayWithResponseArray = (foundNonSensitiveValuesArray, responseArray) => {
+  expect(responseArray).toHaveLength(foundNonSensitiveValuesArray.length);
+
   foundNonSensitiveValuesArray.forEach(nonSensitiveValue => {
     expect(responseArray).toEqual(
       expect.arrayContaining([ nonSensitiveValue ])

@@ -3,7 +3,7 @@ const omit = require('lodash.omit');
 
 const app = require('../../../src/app');
 const { User, Image } = require('../../../src/models');
-const { existingUserValues } = require('../../helpers/constants');
+const { existingUserValues, testImages, } = require('../../helpers/constants');
 const {
   login, get_SetCookie, cookieHeader,
   createImage,
@@ -16,6 +16,7 @@ const baseUrl = '/api/users';
 
 const existingUserValue = existingUserValues[0];
 const otherExistingUserValue = existingUserValues[1];
+const { jpg: [ jpg1, jpg2 ], png: [ png1 ] } = testImages;
 
 const editImage = async (username, imageId, imageValues, headers = {}, statusCode = 401) => {
   const response = await api
@@ -45,8 +46,15 @@ describe('editing images', () => {
   beforeEach(async () => {
     const userId = (await User.findOne({ where: { username } })).id;
       
-    userPublicImage = await createImage(userId, 'public image', 'this image is public');
-    userPrivateImage = await createImage(userId, 'private image', 'this image is private!', 'private');
+    userPublicImage = await createImage({
+      userId, privacy: 'public',
+      ...omit(png1, ['imagePath']),
+    });
+
+    userPrivateImage = await createImage({
+      userId, privacy: 'private',
+      ...omit(jpg1, ['imagePath']),
+    });
   });
 
   describe('without authentication', () => {
@@ -168,14 +176,17 @@ describe('editing images', () => {
 
       // create images to other user
       beforeEach(async () => {
-        const otherUserId = (await User.findOne({ where: { username: otherUsername } })).id;
+        const otherUserId = (await User.findOne({
+          where: { username: otherUsername }
+        })).id;
     
-        otherUserPublicImage = await createImage(
-          otherUserId, 'others public image', 'this is public access'
-        );
-        otherUserPrivateImage = await createImage(
-          otherUserId, 'others private image', 'this is private access only!', 'private'
-        );
+        otherUserPublicImage = await createImage({
+          userId: otherUserId, privacy: 'public',
+          ...omit(jpg2, ['imagePath']),
+        });
+        otherUserPrivateImage = await createImage({
+          userId: otherUserId, privacy: 'private'
+        });
       });
       
       test('can not edit public image', async () => {

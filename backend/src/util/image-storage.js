@@ -33,9 +33,8 @@ const upload = multer({
   fileFilter,
 });
 
-const removeFile = (filepath) => {
-  const dirname = path.resolve();
-  const fullfilepath = path.join(dirname, filepath);
+const removeFile = filepath => {
+  const fullfilepath = getImageFilePath(filepath);
 
   fs.unlink(fullfilepath, (error) => {
     if (error) {
@@ -46,7 +45,15 @@ const removeFile = (filepath) => {
   });
 };
 
+const getImageFilePath = filepath => {
+  const dirname = path.resolve();
+  const fullfilepath = path.join(dirname, filepath);
+
+  return fullfilepath;
+};
+
 module.exports = {
   upload,
   removeFile,
+  getImageFilePath,
 };

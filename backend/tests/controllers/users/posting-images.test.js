@@ -16,6 +16,8 @@ const baseUrl = '/api/users';
 
 /*
 TODO
+- rewrite the testImageInfos
+- reset mock after each test
 - test more file types
 - how to test that file was (/was) not saved to the filesystem?
 */

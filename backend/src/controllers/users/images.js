@@ -1,5 +1,4 @@
 const router = require('express').Router({ mergeParams: true }); // use parameter 'username'
-const path = require('path');
 
 const { Image, User } = require('../../models');
 const { userFinder } = require('../../util/middleware/finder');
@@ -47,6 +46,10 @@ router.get('/', userFinder, async (req, res) => {
   return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
+router.get('/:imageId', isAllowedToViewImage, async (req, res) => {
+  const image = req.image;
+  return res.send(getNonSensitiveImage(image));
+});
 
 router.post('/', isAllowedToPostImage, async (req, res, next) => {
   imageUpload(req, res, async (error) => {
@@ -78,9 +81,16 @@ router.post('/', isAllowedToPostImage, async (req, res, next) => {
   });
 });
 
-router.get('/:imageId', isAllowedToViewImage, async (req, res) => {
+router.put('/:imageId', isAllowedToEditImage, async (req, res) => {
   const image = req.image;
-  return res.send(getNonSensitiveImage(image));
+
+  const { title, caption, privacy } = req.body;
+  if (title !== undefined)    { image.title = title; }
+  if (caption !== undefined)  { image.caption = caption; }
+  if (privacy !== undefined)  { image.privacy = privacy; }
+
+  const updatedImage = await image.save();
+  return res.send(getNonSensitiveImage(updatedImage));
 });
 
 router.delete('/:imageId', isAllowedToEditImage, async (req, res) => {
@@ -94,26 +104,10 @@ router.delete('/:imageId', isAllowedToEditImage, async (req, res) => {
   return res.status(204).end();
 });
 
-router.put('/:imageId', isAllowedToEditImage, async (req, res) => {
-  const image = req.image;
-
-  const { title, caption, privacy } = req.body;
-  if (title !== undefined)    { image.title = title; }
-  if (caption !== undefined)  { image.caption = caption; }
-  if (privacy !== undefined)  { image.privacy = privacy; }
-
-  const updatedImage = await image.save();
-  return res.send(getNonSensitiveImage(updatedImage));
-});
-
 // TODO test
-// - create a helper function for getting the image file path
-//    - mock it in tests?
 router.get('/:imageId/content', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
-  
-  const dirname = path.resolve();
-  const fullfilepath = path.join(dirname, image.filepath);
+  const fullfilepath = imageStorage.getImageFilePath(image.filepath);
 
   return res
     .type(image.mimetype)
