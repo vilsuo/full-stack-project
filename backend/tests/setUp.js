@@ -1,53 +1,51 @@
+const omit = require('lodash.omit');
 const { User } = require('../src/models');
 const { encodePassword } = require('../src/util/auth');
 const { sequelize, connectToDatabases } = require('../src/util/db');
 
-const { existingUserValues, existingDisabledUserValues } = require('./helpers/constants');
+const { 
+  existingUserValues, otherExistingUserValues, disabledExistingUserValues,
+  existingUserImageValues, otherExistingUserImageValues,
+} = require('./helpers/constants');
+const { createPublicAndPrivateImage } = require('./helpers');
 
-let userCreationValues;
+const userValues = [ existingUserValues, otherExistingUserValues, disabledExistingUserValues ];
+
+const hashedPasswords = {};
 
 beforeAll(async () => {
   await connectToDatabases();
   console.log('Connected to Databases.');
 
-  const userValues = [ ...existingUserValues, ...existingDisabledUserValues ];
-
-  userCreationValues = await Promise.all(userValues.map(async (user) => {
-    const { name, username, password, disabled = false } = user;
-
-    // encode user passwords
-    const passwordHash = await encodePassword(password);
-
-    return { name, username, passwordHash, disabled };
-  }));
-
-  //console.log('userCreationValues', userCreationValues);
+  // encode user passwords
+  userValues.forEach(async user => {
+    hashedPasswords[user.username] = await encodePassword(user.password);
+  });
 });
 
 beforeEach(async () => {
   // create the tables, dropping them first if they already existed
-  try {
-    await sequelize.sync({ force: true });
-    //console.log('All models were synchronized successfully.');
-    
-  } catch (error) {
-    console.log('Sync error:', error);
-    throw error;
-  }
+  await sequelize.sync({ force: true });
 
-  // create users
-  // VALIDATIONS ARE NOT RUN BY DEFAULT!
-  await User.bulkCreate(userCreationValues /*, { validate: true }*/);
+  // create users and save user ids
+  const userIds = await Promise.all(userValues.map(async user => {
+    const creationValues = omit(user, ['password']);
+    const passwordHash = hashedPasswords[user.username];
+
+    const createdUser = await User.create({ ...creationValues, passwordHash });
+    return createdUser.id;
+  }));
+
+  // create public & private images to 2 first users
+  const [ id, otherId ] = userIds;
+
+  await createPublicAndPrivateImage(id, existingUserImageValues);
+  await createPublicAndPrivateImage(otherId, otherExistingUserImageValues);
 });
 
 // reset redis db with redisClient.flushAll?
 afterAll(async () => {
-  try {
-    await sequelize.drop({});
-    //console.log('All tables dropped!');
+  await sequelize.drop({});
 
-  } catch (error) {
-    console.log('Table drop error:', error);
-    throw error;
-  }
+  //console.log('All tables dropped!');
 });

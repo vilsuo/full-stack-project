@@ -1,3 +1,5 @@
+const omit = require('lodash.omit');
+
 const { User, Image } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
 const { cookieKey } = require('../../src/constants');
@@ -19,12 +21,22 @@ const get_SetCookie = response => {
   throw new Error('"Set-Cookie" is not found');
 };
 
-const login = async (api, credentials, statusCode = 200) => {
-  return await api
+/**
+ * 
+ * @param {*} api 
+ * @param {*} credentials login credentials: username and password
+ * @returns an authentication header to be set in authenticated requests
+ */
+const login = async (api, credentials) => {
+  const response = await api
     .post('/api/auth/login')
     .send(credentials)
-    .expect(statusCode)
+    .expect(200)
     .expect('Content-Type', /application\/json/);
+
+  // login was successfull, return the authentication header
+  const cookie = get_SetCookie(response);
+  return cookieHeader(cookie);
 };
 
 const createUser = async ({ name, username, password, disabled = false }) => {
@@ -66,6 +78,34 @@ const createImage = async ({
   });
 };
 
+const createPublicAndPrivateImage = async (userId, { publicImageValues, privateImageValues }) => {
+  const publicImage = await createImage({
+    userId, privacy: 'public',
+    ...omit(publicImageValues, ['filepath']),
+  });
+
+  const privateImage = await createImage({
+    userId, privacy: 'private',
+    ...omit(privateImageValues, ['filepath']),
+  });
+
+  return { publicImage, privateImage };
+};
+
+const findPublicAndPrivateImage = async (username) => {
+  const userId = (await User.findOne({ where: { username }})).id;
+
+  publicImage = await Image.findOne({
+    where: { userId, privacy: 'public' }
+  });
+
+  privateImage = await Image.findOne({
+    where: { userId, privacy: 'private' }
+  });
+
+  return { publicImage, privateImage };
+};
+
 const getUsersImageCount = async username => {
   const usersImageCount = await Image.count({
     include: {
@@ -76,6 +116,7 @@ const getUsersImageCount = async username => {
   return usersImageCount;
 };
 
+// TODO change!
 const compareFoundArrayWithResponseArray = (foundNonSensitiveValuesArray, responseArray) => {
   expect(responseArray).toHaveLength(foundNonSensitiveValuesArray.length);
 
@@ -99,6 +140,8 @@ module.exports = {
   login,
   createUser,
   createImage,
+  createPublicAndPrivateImage,
+  findPublicAndPrivateImage,
   getUsersImageCount,
   compareFoundArrayWithResponseArray,
   compareFoundWithResponse,
