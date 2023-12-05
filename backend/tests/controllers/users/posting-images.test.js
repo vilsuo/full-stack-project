@@ -3,11 +3,15 @@ const omit = require('lodash.omit');
 
 const app = require('../../../src/app');
 const { User, Image } = require('../../../src/models');
-const { existingUserValues } = require('../../helpers/constants');
 const {
-  login, get_SetCookie, cookieHeader, 
-  compareFoundWithResponse, getUsersImageCount
+  existingUserValues, otherExistingUserValues,
+  nonExistingImageValues, invalidImageTypes,
+} = require('../../helpers/constants');
+
+const {
+  login, compareFoundWithResponse, getUsersImageCount
 } = require('../../helpers');
+
 const { getNonSensitiveImage } = require('../../../src/util/dto');
 const imageStorage = require('../../../src/util/image-storage');
 
@@ -16,22 +20,13 @@ const baseUrl = '/api/users';
 
 /*
 TODO
-- rewrite the testImageInfos
 - reset mock after each test
 - test more file types
 - how to test that file was (/was) not saved to the filesystem?
 */
 
-// filetypes are allowed
-const testImageInfo1 = { title: 'Git', caption: 'workflow graph', imagePath: 'tests/test-files/git.png' };
-const testImageInfo2 = { title: 'Test', caption: 'test results', imagePath: 'tests/test-files/test.PNG' };
-
-// filetype not allowed:
-const testTextInfo = { title: 'Text', caption: 'textfile', imagePath: 'tests/test-files/text.txt' };
-
 const postImage = async (username, extraHeaders, formValues, statusCode = 201) => {
-  const fieldValues = omit(formValues, ['imagePath']);
-  const { imagePath } = formValues;
+  const { imagePath, ...fieldValues } = formValues;
 
   const headers = {
     'Content-Type': 'multipart/form-data',
@@ -49,18 +44,20 @@ const postImage = async (username, extraHeaders, formValues, statusCode = 201) =
   return response.body;
 };
 
-const existingUserValue = existingUserValues[0];
-const otherExistingUserValue = existingUserValues[1];
-
 describe('posting images', () => {
-  const formValues = { ...testImageInfo1, privacy: 'public' };
+  const formValues = {
+    ...omit(nonExistingImageValues, ['mimetype', 'originalname']),
+    privacy: 'public'
+  };
+  const { title, caption, privacy } = formValues;
+  const originalname = nonExistingImageValues.originalname;
 
   const removeFileSpy = jest
     .spyOn(imageStorage, 'removeFile')
     .mockImplementation((filepath) => console.log(`spy called with ${filepath}`));
 
   test('can not post without authentication', async () => {
-    const username = existingUserValue.username;
+    const username = existingUserValues.username;
 
     const headers = {
       // there is a bug in supertest, this seems to fix it
@@ -77,17 +74,13 @@ describe('posting images', () => {
   });
 
   describe('with authentication', () => {
-    const credentials = omit(existingUserValue, ['name']);
+    const credentials = omit(existingUserValues, ['name']);
     const postingUsersUsername = credentials.username;
 
     let authHeader = {};
 
     beforeEach(async () => {
-      // log in and save cookie
-      const response = await login(api, credentials);
-
-      const cookie = get_SetCookie(response);
-      authHeader = cookieHeader(cookie);
+      authHeader = await login(api, credentials);
     });
 
     describe('posting to self', () => {
@@ -110,10 +103,8 @@ describe('posting images', () => {
           postingUsersUsername, authHeader, formValues
         );
 
-        const { title, caption, imagePath, privacy } = formValues;
-
         // response contains original filename
-        expect(responseImage.originalname).toBe(imagePath.split('/')[2]);
+        expect(responseImage.originalname).toBe(originalname);
 
         // response contains posted values
         expect(responseImage.title).toBe(title);
@@ -215,9 +206,11 @@ describe('posting images', () => {
       });
 
       describe('invalid files', () => {
+        const txtFile = invalidImageTypes[0];
+
         test('text files are not allowed', async () => {
           const responseBody = await postImage(
-            postingUsersUsername, authHeader, testTextInfo, 400
+            postingUsersUsername, authHeader, txtFile, 400
           );
   
           expect(responseBody.message).toMatch(/^File upload only supports the following filetypes/);
@@ -226,7 +219,7 @@ describe('posting images', () => {
     });
 
     test('can not post image to other user', async () => {
-      const otherUsername = otherExistingUserValue.username;
+      const otherUsername = otherExistingUserValues.username;
       const responseBody = await postImage(
         otherUsername, authHeader, formValues, 401
       );

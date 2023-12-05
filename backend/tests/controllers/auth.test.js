@@ -3,11 +3,11 @@ const supertest = require('supertest');
 const app = require('../../src/app');
 
 const { User } = require('../../src/models');
-const { get_SetCookie, cookieHeader, login, compareFoundWithResponse } = require('../helpers');
+const { get_SetCookie, compareFoundWithResponse, login } = require('../helpers');
 const {
   existingUserValues,
-  existingDisabledUserValues,
-  nonExistingUserValues
+  disabledExistingUserValues,
+  nonExistingUserValues,
 } = require('../helpers/constants');
 const { getNonSensitiveUser } = require('../../src/util/dto');
 
@@ -23,26 +23,21 @@ const register = async (details, statusCode = 201) => {
   return response.body;
 };
 
-const nonExistinguserValue = nonExistingUserValues[0];
-const existingUserValue = existingUserValues[0];
-const disabledUserValue = existingDisabledUserValues[0];
-
-const credentials = omit(existingUserValue, ['name']);
-const { name, username } = existingUserValue;
+const credentials = omit(existingUserValues, ['name']);
 
 describe('registering', () => {
   test('can register', async () => {
-    const responseBody = await register(nonExistinguserValue);
+    const responseBody = await register(nonExistingUserValues);
   
     expect(responseBody.id).toBeDefined();
   
     // name and username are set from the request values
-    expect(responseBody.name).toBe(nonExistinguserValue.name);
-    expect(responseBody.username).toBe(nonExistinguserValue.username);
+    expect(responseBody.name).toBe(nonExistingUserValues.name);
+    expect(responseBody.username).toBe(nonExistingUserValues.username);
   });
 
   test('user can be found after registering', async () => {
-    const responseUser = await register(nonExistinguserValue);
+    const responseUser = await register(nonExistingUserValues);
     const foundUser = await User.findByPk(responseUser.id);
 
     compareFoundWithResponse(getNonSensitiveUser(foundUser), responseUser);
@@ -51,31 +46,31 @@ describe('registering', () => {
   test('registering increments the user count', async () => {
     const userCountBefore = await User.count();
 
-    await register(nonExistinguserValue);
+    await register(nonExistingUserValues);
 
     const userCountAfter = await User.count();
     expect(userCountAfter).toBe(userCountBefore + 1);
   });
 
   test('hashed password is not returned', async () => {
-    const responseBody = await register(nonExistinguserValue);
+    const responseBody = await register(nonExistingUserValues);
   
     expect(responseBody).not.toHaveProperty('passwordHash');
   });
 
   describe('fails with', () => {
-    const takenUsername = existingUserValue.username;
-    const disabledUsersUsername = disabledUserValue.username;
+    const takenUsername = existingUserValues.username;
+    const disabledUsersUsername = disabledExistingUserValues.username;
 
     test('missing/empty name', async () => {
       // missing name
-      const responseBody1 = await register(omit(nonExistinguserValue, ['name']), 400);
+      const responseBody1 = await register(omit(nonExistingUserValues, ['name']), 400);
 
       const errorMessages1 = responseBody1.message;
-      expect(errorMessages1).toContain('user.name cannot be null');
+      expect(errorMessages1).toContain('name can not be null');
 
       // empty name
-      const responseBody2 = await register({ ...nonExistinguserValue, name: '' }, 400);
+      const responseBody2 = await register({ ...nonExistingUserValues, name: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
       expect(errorMessages2).toContain('name can not be empty');
@@ -83,27 +78,28 @@ describe('registering', () => {
 
     test('missing/empty username', async () => {
       // missing username
-      const responseBody1 = await register(omit(nonExistinguserValue, ['username']), 400);
+      const responseBody1 = await register(omit(nonExistingUserValues, ['username']), 400);
 
       const errorMessages1 = responseBody1.message;
-      expect(errorMessages1).toContain('user.username cannot be null');
+      expect(errorMessages1).toContain('username can not be null');
 
       // empty username
-      const responseBody2 = await register({ ...nonExistinguserValue, username: '' }, 400);
+      const responseBody2 = await register({ ...nonExistingUserValues, username: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
       expect(errorMessages2).toContain('username can not be empty');
     });
 
+    // validated manually in route
     test('missing/empty password', async () => {
       // missing username
-      const responseBody1 = await register(omit(nonExistinguserValue, ['password']), 400);
+      const responseBody1 = await register(omit(nonExistingUserValues, ['password']), 400);
 
       const errorMessages1 = responseBody1.message;
       expect(errorMessages1).toContain('password is missing');
 
       // empty username
-      const responseBody2 = await register({ ...nonExistinguserValue, password: '' }, 400);
+      const responseBody2 = await register({ ...nonExistingUserValues, password: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
       expect(errorMessages2).toContain('password is missing');
@@ -111,7 +107,7 @@ describe('registering', () => {
 
     test('taken username', async () => {
       const withTakenUsernameValue = {
-        ...nonExistinguserValue, 
+        ...nonExistingUserValues, 
         username: takenUsername,
       };
   
@@ -123,7 +119,7 @@ describe('registering', () => {
   
     test('disabled users username', async () => {
       const withDisabledUsernameValue = {
-        ...nonExistinguserValue, 
+        ...nonExistingUserValues, 
         username: disabledUsersUsername,
       };
   
@@ -135,61 +131,78 @@ describe('registering', () => {
   });
 });
 
+const loginWithResponse = async (credentials, statusCode = 200) => {
+  return await api
+    .post('/api/auth/login')
+    .send(credentials)
+    .expect(statusCode)
+    .expect('Content-Type', /application\/json/);
+};
+
 describe('loggin in', () => {
-  test('can log in with a registered user', async () => {
-    await login(api, credentials);
-  });
+  describe('successfull login', () => {
+    test('can log in with a registered user', async () => {
+      await loginWithResponse(credentials);
+    });
 
-  test('login fails with wrong password', async () => {
-    const wrongPassword = 'wrongpswd';
-    const wrongCredentials = { ...credentials, password: wrongPassword };
-
-    const response = await login(api, wrongCredentials, 401)
-
-    expect(response.body.message).toBe('invalid username or password');
-  });
-
-  test('disabled user can not login', async () => {
-    const disabledCredentials = omit(disabledUserValue, ['name']);
-
-    const response = await login(api, disabledCredentials, 401);
-
-    expect(response.body.message).toBe('user has been disabled');
-  });
-
-  test('can not log in with user that does not exist', async () => {
-    const nonexistingCredentials = omit(nonExistinguserValue, ['name']);
-
-    const response = await login(api, nonexistingCredentials, 401);
-
-    expect(response.body.message).toBe('invalid username or password');
-  });
-
-  describe('after successfull login', () => {
     test('authentication cookie is set', async () => {
-      const response = await login(api, credentials);
+      const response = await loginWithResponse(credentials);
 
-      const cookie = get_SetCookie(response);
+      const setCookie = get_SetCookie(response);
 
-      expect(cookie).toBeDefined();
-      expect(cookie).not.toBe('');
+      expect(setCookie).toBeDefined();
+      expect(setCookie).not.toBe('');
     });
 
     test('the id, name and username of the logged in user are returned', async () => {
-      const response = await login(api, credentials);
-
-      const foundUser = await User.findOne({ where: { name, username } });
-
-      // response contains the logged in users id
+      const response = await loginWithResponse(credentials);
       const body = response.body;
-      expect(body.id).toBe(foundUser.id);
 
-      // response contains the logged in users name and username
-      expect(body.name).toBe(name);
-      expect(body.username).toBe(username);
+      // response contains the logged in users id, name and username
+      const foundUser = await User.findOne({ where: { username: credentials.username } });
+
+      expect(body).toStrictEqual({
+        id: foundUser.id,
+        name: foundUser.name,
+        username: foundUser.username,
+      });
       
       // hashed password is not included in the response
       expect(body).not.toHaveProperty('passwordHash');
+    });
+  });
+
+  describe('failed login', () => {
+    const wrongPassword = 'wrongpswd';
+    const wrongCredentials = { ...credentials, password: wrongPassword };
+
+    test('login fails with wrong password', async () => {
+      const response = await loginWithResponse(wrongCredentials, 401);
+  
+      expect(response.body.message).toBe('invalid username or password');
+
+      // authentication cookie is not set
+      expect(() => { get_SetCookie(response) }).toThrow();
+    });
+  
+    test('disabled user can not login', async () => {
+      const disabledCredentials = omit(disabledExistingUserValues, ['name']);
+  
+      const response = await loginWithResponse(disabledCredentials, 401);
+      expect(response.body.message).toBe('user has been disabled');
+
+      // authentication cookie is not set
+      expect(() => { get_SetCookie(response) }).toThrow();
+    });
+  
+    test('can not log in with user that does not exist', async () => {
+      const nonExistingCredentials = omit(nonExistingUserValues, ['name']);
+  
+      const response = await loginWithResponse(nonExistingCredentials, 401);
+      expect(response.body.message).toBe('invalid username or password');
+
+      // authentication cookie is not set
+      expect(() => { get_SetCookie(response) }).toThrow();
     });
   });
 });
@@ -204,20 +217,14 @@ const logout = async (headers = {}, statusCode = 200) => {
 
 describe('loggin out', () => {
   let authHeader;
-  // log in and save cookie
-  beforeEach(async () => {
-    const response = await login(api, credentials, 200);
 
-    const cookie = get_SetCookie(response);
-    authHeader = cookieHeader(cookie);
-    //console.log('authHeader', authHeader);
+  beforeEach(async () => {
+    authHeader = await login(api, credentials);
   });
   
   test('can logout with cookie set (logged in)', async () => {
     const response = await logout(authHeader);
     
-    //console.log('cookie set in request', response.request.getHeader('Cookie'));
-
     // cookie is cleared
     expect(get_SetCookie(response)).toBe('');
   });

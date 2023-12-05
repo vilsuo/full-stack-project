@@ -2,21 +2,13 @@ const supertest = require('supertest');
 const omit = require('lodash.omit');
 
 const app = require('../../../src/app');
-const { User, Image } = require('../../../src/models');
-const { existingUserValues, testImages, } = require('../../helpers/constants');
-const {
-  login, get_SetCookie, cookieHeader,
-  createImage,
-  compareFoundWithResponse
-} = require('../../helpers');
+const { Image } = require('../../../src/models');
+const { existingUserValues, otherExistingUserValues, } = require('../../helpers/constants');
+const { login, compareFoundWithResponse, findPublicAndPrivateImage } = require('../../helpers');
 const { getNonSensitiveImage } = require('../../../src/util/dto');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
-
-const existingUserValue = existingUserValues[0];
-const otherExistingUserValue = existingUserValues[1];
-const { jpg: [ jpg1, jpg2 ], png: [ png1 ] } = testImages;
 
 const editImage = async (username, imageId, imageValues, headers = {}, statusCode = 401) => {
   const response = await api
@@ -29,42 +21,33 @@ const editImage = async (username, imageId, imageValues, headers = {}, statusCod
   return response.body;
 };
 
+const newImageValues = {
+  title: 'this is edited title',
+  caption: 'this is edited caption',
+  privacy: 'public',
+};
+
+const { title, caption, privacy } = newImageValues;
+
 describe('editing images', () => {
-  const credentials = omit(existingUserValue, ['name']);
-  const username = existingUserValue.username;
-  let userPublicImage;
-  let userPrivateImage;
+  const credentials = omit(existingUserValues, ['name']);
+  const username = existingUserValues.username;
+  let publicImage;
+  let privateImage;
 
-  const newImageValues = {
-    title: 'this is edited title',
-    caption: 'this is edited caption',
-    privacy: 'public',
-  };
-  const { title, caption, privacy } = newImageValues;
-
-  // create private & nonprivate images
+  // find a private and a nonprivate image
   beforeEach(async () => {
-    const userId = (await User.findOne({ where: { username } })).id;
-      
-    userPublicImage = await createImage({
-      userId, privacy: 'public',
-      ...omit(png1, ['imagePath']),
-    });
-
-    userPrivateImage = await createImage({
-      userId, privacy: 'private',
-      ...omit(jpg1, ['imagePath']),
-    });
+    ({ publicImage, privateImage } = await findPublicAndPrivateImage(username));
   });
 
   describe('without authentication', () => {
     test('can not edit public image', async () => {
-      const responseBody = await editImage(username, userPublicImage.id);
+      const responseBody = await editImage(username, publicImage.id);
       expect(responseBody.message).toBe('authentication required');
     });
 
     test('can not edit private image', async () => {
-      const responseBody = await editImage(username, userPrivateImage.id, newImageValues);
+      const responseBody = await editImage(username, privateImage.id, newImageValues);
       expect(responseBody.message).toBe('authentication required');
     });
   });
@@ -73,46 +56,45 @@ describe('editing images', () => {
     let authHeader = {};
 
     beforeEach(async () => {
-      // log in and save cookie
-      const response = await login(api, credentials);
-
-      const cookie = get_SetCookie(response);
-      authHeader = cookieHeader(cookie);
+      authHeader = await login(api, credentials);
     });
 
     describe('editing own images', () => {
-      test('can set only a new title', async () => {
+      test('can set new title', async () => {
+        const imageToEdit = publicImage;
         const responseImage = await editImage(
-          username, userPublicImage.id, { title }, authHeader, 200
+          username, imageToEdit.id, { title }, authHeader, 200
         );
 
         // new title is in the response
         expect(responseImage.title).toBe(title);
 
         // other old values are the same
-        expect(responseImage.caption).toBe(userPublicImage.caption);
-        expect(responseImage.private).toBe(userPublicImage.private);
+        expect(responseImage.caption).toBe(imageToEdit.caption);
+        expect(responseImage.private).toBe(imageToEdit.private);
       });
 
-      test('can set only a new caption', async () => {
+      test('can set new caption', async () => {
+        const imageToEdit = publicImage;
         const responseImage = await editImage(
-          username, userPublicImage.id, { caption }, authHeader, 200
+          username, imageToEdit.id, { caption }, authHeader, 200
         );
 
         // new caption is in the response
         expect(responseImage.caption).toBe(caption);
 
         // other old values are the same
-        expect(responseImage.title).toBe(userPublicImage.title);
-        expect(responseImage.private).toBe(userPublicImage.private);
+        expect(responseImage.title).toBe(imageToEdit.title);
+        expect(responseImage.private).toBe(imageToEdit.private);
       });
 
-      test('can set new privacy options', async () => {
+      test('can set new privacy option', async () => {
         const privacyOptions = ['public', 'private'];
+        const imageToEdit = publicImage;
 
         const responseImages = await Promise.all(privacyOptions.map(async option => {
           return await editImage(
-            username, userPublicImage.id, { privacy: option }, authHeader, 200
+            username, imageToEdit.id, { privacy: option }, authHeader, 200
           );
         }));
 
@@ -122,7 +104,7 @@ describe('editing images', () => {
       });
 
       test('can edit private image', async () => {
-        const imageToEdit = userPrivateImage;
+        const imageToEdit = privateImage;
         const returnedImage = await editImage(
           username, imageToEdit.id, newImageValues, authHeader, 200
         );
@@ -146,7 +128,7 @@ describe('editing images', () => {
       });
 
       test('edited image can be found after editing with the new values', async () => {
-        const imageToEditId = userPublicImage.id;
+        const imageToEditId = publicImage.id;
         const editedImage = await editImage(
           username, imageToEditId, newImageValues, authHeader, 200
         );
@@ -156,13 +138,13 @@ describe('editing images', () => {
       });
 
       test('editing updates the field "updatedAt"', async () => {
-        const oldDate = userPublicImage.updatedAt;
+        const oldDate = publicImage.updatedAt;
 
         await editImage(
-          username, userPublicImage.id, newImageValues, authHeader, 200
+          username, publicImage.id, newImageValues, authHeader, 200
         );
 
-        const newDate = (await Image.findByPk(userPublicImage.id)).updatedAt;
+        const newDate = (await Image.findByPk(publicImage.id)).updatedAt;
 
         // new date is after the old date
         expect(newDate.getTime()).toBeGreaterThan(oldDate.getTime());
@@ -170,28 +152,19 @@ describe('editing images', () => {
     });
 
     describe('deleting other users images', () => {
-      const otherUsername = otherExistingUserValue.username;
-      let otherUserPublicImage;
-      let otherUserPrivateImage;
-
-      // create images to other user
+      const otherUsername = otherExistingUserValues.username;
+      let otherPublicImage;
+      let otherPrivateImage;
+      
       beforeEach(async () => {
-        const otherUserId = (await User.findOne({
-          where: { username: otherUsername }
-        })).id;
-    
-        otherUserPublicImage = await createImage({
-          userId: otherUserId, privacy: 'public',
-          ...omit(jpg2, ['imagePath']),
-        });
-        otherUserPrivateImage = await createImage({
-          userId: otherUserId, privacy: 'private'
-        });
+        ({ publicImage : otherPublicImage, privateImage: otherPrivateImage } =
+          await findPublicAndPrivateImage(otherUsername)
+        );
       });
       
       test('can not edit public image', async () => {
         const responseBody = await editImage(
-          otherUsername, otherUserPublicImage.id, newImageValues, authHeader, 401
+          otherUsername, otherPublicImage.id, newImageValues, authHeader, 401
         );
 
         expect(responseBody.message).toBe('can not modify other users images')
@@ -199,7 +172,7 @@ describe('editing images', () => {
 
       test('can not edit private image', async () => {
         const responseBody = await editImage(
-          otherUsername, otherUserPrivateImage.id, newImageValues, authHeader, 401
+          otherUsername, otherPrivateImage.id, newImageValues, authHeader, 401
         );
 
         expect(responseBody.message).toBe('can not modify other users images')

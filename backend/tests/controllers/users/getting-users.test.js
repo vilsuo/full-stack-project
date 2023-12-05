@@ -4,8 +4,8 @@ const app = require('../../../src/app');
 const { User } = require('../../../src/models');
 const {
   existingUserValues,
-  existingDisabledUserValues,
-  nonExistingUserValues
+  disabledExistingUserValues,
+  nonExistingUserValues,
 } = require('../../helpers/constants');
 const {
   compareFoundWithResponse,
@@ -40,20 +40,20 @@ describe('get users', () => {
   describe('all', () => {
     test('users having the query string in their name/username are returned', async () => {
       const user1 = await createUser({
-        name: 'commonhere', // contains 'nher'
+        name:     'commonhere',     // contains 'nher'
         username: 'jaska',
         password: 'asdpojahfipaf'
       });
 
       const user2 = await createUser({
-        name: 'afpohaf',
-        username: 'linHera',  // contains 'nHer'
+        name:     'afpohaf',
+        username: 'linHera',      // contains 'nHer'
         password: 'asdpojahfipaf'
       });
 
       await createUser({
-        name: 'dshegaega',
-        username: 'NHERs',  // contains 'NHER', but is disabled
+        name:     'dshegaega',
+        username: 'NHERs',        // contains 'NHER', but is disabled
         password: 'oasoasugo',
         disabled: true,
       });
@@ -69,6 +69,31 @@ describe('get users', () => {
         matchingUsers.map(user => getNonSensitiveUser(user)),
         returnedUsers
       );
+    });
+
+    test('query with existing users username returns the user', async () => {
+      const existingUsername = existingUserValues.username;
+      const foundUser = await User.findOne({ where: { username: existingUsername }});
+
+      const returnedUsers = await getAll({ search: existingUsername });
+
+      expect(returnedUsers).toContainEqual(getNonSensitiveUser(foundUser));
+    });
+
+    test('query with disabled users username does not return the user', async () => {
+      const disabledUsername = disabledExistingUserValues.username;
+      const foundUser = await User.findOne({ where: { username: disabledUsername }});
+      
+      const returnedUsers = await getAll({ search: disabledUsername });
+
+      expect(returnedUsers).not.toContainEqual(getNonSensitiveUser(foundUser));
+    });
+
+    test('when no users match the query, an empty array is returned', async () => {
+      const badQuery = 'ilafnaygflfalsgf';
+      const returnedUsers = await getAll({ search: badQuery });
+
+      expect(returnedUsers).toHaveLength(0);
     });
 
     test('without query, all non disabled users are returned', async () => {
@@ -94,12 +119,8 @@ describe('get users', () => {
   });
 
   describe('single', () => {
-    const nonExistinguserValue = nonExistingUserValues[0];
-    const existingUserValue = existingUserValues[0];
-    const disabledUserValue = existingDisabledUserValues[0];
-
     test('can access existing user', async () => {
-      const username = existingUserValue.username;
+      const username = existingUserValues.username;
 
       const responseUser = await getOne(username);
       const foundUser = await User.findOne({ where: { username }});
@@ -108,21 +129,21 @@ describe('get users', () => {
     });
 
     test('can not access disabled user', async () => {
-      const username = disabledUserValue.username;
+      const username = disabledExistingUserValues.username;
       const responseBody = await getOne(username, 400);
 
       expect(responseBody.message).toBe('user is disabled');
     });
 
     test('can not access nonexisting user', async () => {
-      const username = nonExistinguserValue.username;
+      const username = nonExistingUserValues.username;
       const responseBody = await getOne(username, 404);
 
       expect(responseBody.message).toBe('user does not exist');
     });
 
     test('password hashes are not returned', async () => {
-      const username = existingUserValue.username;
+      const username = existingUserValues.username;
       const responseUser = await getOne(username);
   
       expect(responseUser).not.toHaveProperty('passwordHash');
