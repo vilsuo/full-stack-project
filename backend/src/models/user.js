@@ -13,9 +13,8 @@ User.init({
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      notEmpty: {
-        msg: 'name can not be empty'
-      },
+      notNull: { msg: 'name can not be null' },
+      notEmpty: { msg: 'name can not be empty' },
     },
   },
   username: {
@@ -26,9 +25,8 @@ User.init({
       msg: 'username has already been taken',
     },
     validate: {
-      notEmpty: {
-        msg: 'username can not be empty'
-      }
+      notNull: { msg: 'username can not be null' },
+      notEmpty: { msg: 'username can not be empty' },
     },
   },
   passwordHash: {
