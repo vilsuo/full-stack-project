@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   Box, Button, Card, 
   //CardContent, CardHeader, Typography,
-  CardMedia, Checkbox, FormControlLabel, FormGroup, Grid, Stack, TextField, 
+  CardMedia, FormControl, FormControlLabel, FormLabel, Grid, Radio, RadioGroup, Stack, TextField, styled, useRadioGroup, 
 } from '@mui/material';
 
 
@@ -42,6 +42,57 @@ const Preview = ({ preview }) => {
   );
 };
 
+const PrivacyGroup = ({ privacy, setPrivacy }) => {
+  const privacyOptions = ['public', 'private'];
+
+  /*
+  const StyledFormControlLabel = styled((props) => (
+    <FormControlLabel { ...props } />
+  ))(({ theme, checked }) => ({
+    '.MuiFormControlLabel-label': checked && {
+      // Change color here
+      color: "red"
+    }
+  }));
+
+  const MyFormControlLabel = (props) => {
+    const radioGroup = useRadioGroup();
+
+    let checked = false;
+
+    if (radioGroup) {
+      checked = radioGroup.value === props.value;
+    }
+
+    return <StyledFormControlLabel checked={checked} { ...props } />;
+  };
+  */
+
+  return (
+    <FormControl>
+      <FormLabel id='file-upload-privacy-group-label'>
+        Privacy
+      </FormLabel>
+      <RadioGroup
+        row
+        aria-labelledby='file-upload-privacy-group-label'
+        name='privacy-buttons-group'
+        value={privacy}
+        onChange={ (event) => setPrivacy(event.target.value) }
+      >
+        {privacyOptions.map((option, index) => 
+          <FormControlLabel 
+            key={index}
+            value={option}
+            control={<Radio />}
+            label={option}
+          />
+        )}
+      </RadioGroup>
+    </FormControl>
+  );
+};
+
 const UserPage = () => {
   const userPage = useParams().username; // username of the page owner
 
@@ -53,7 +104,7 @@ const UserPage = () => {
 
   const [title, setTitle] = useState('');
   const [caption, setCaption] = useState('');
-  const [privacy, setPrivacy] = useState(false);
+  const [privacy, setPrivacy] = useState('public');
 
   const clearMessage = () => setAlertInfo({});
 
@@ -96,7 +147,7 @@ const UserPage = () => {
     );
     formData.append('title', title);
     formData.append('caption', caption);
-    formData.append('private', privacy);
+    formData.append('privacy', privacy);
     
     try {
       await usersService.addImage(userPage, formData);
@@ -148,17 +199,7 @@ const UserPage = () => {
               onChange={(event) => setCaption(event.target.value)}
               multiline={true}
             />
-            <FormGroup>
-              <FormControlLabel
-                label='Private'
-                control={
-                  <Checkbox
-                    checked={privacy}
-                    onChange={ (event) => setPrivacy(event.target.checked) }
-                  />
-                }
-              />
-            </FormGroup>
+            <PrivacyGroup privacy={privacy} setPrivacy={setPrivacy} />
           </Stack>
           <Button
             id='img-button'
