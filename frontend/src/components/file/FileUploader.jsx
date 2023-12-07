@@ -1,4 +1,4 @@
-import { Grid, Button, Typography, Tooltip, IconButton } from '@mui/material';
+import { Grid, Button, Typography, Tooltip, IconButton, Box } from '@mui/material';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -30,22 +30,21 @@ const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
   const handleReset = () => {
     hiddenFileInput.current.value = '';
     setSelectedFile(undefined);
-  }
+  };
 
   return (
     <Grid container
       direction='row'
-      justifyContent='center'
-      alignItems='center'
     >
-      <Grid item>
+      <Grid item xs={12}>
         <Button
           component='label'
           variant='contained'
           onClick={handleClick}
           startIcon={<AttachFileIcon />}
+          fullWidth
         >
-          Choose a file
+          Choose File
         </Button>
         <input
           type='file'
@@ -54,22 +53,22 @@ const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
           style={{ display: 'none' }}
         />
       </Grid>
-      { selectedFile ? (
-        <>
-          <Grid item sx={{ p: 1 }} maxWidth={200}>
-            <Tooltip title={selectedFile.name}>
-              <Typography noWrap>{selectedFile.name}</Typography>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            <Tooltip title='clear'>
-              <IconButton onClick={handleReset}>
-                <ClearIcon />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-        </>
-        ) : null 
+      { selectedFile && 
+        <Box sx={{
+          display: 'flex', flexWrap: 'nowrap', 
+          justifyContent: 'flex-end', alignItems: 'center', 
+          width: 1
+        }}>
+          <Tooltip title={selectedFile.name}>
+            <Typography noWrap>{selectedFile.name}</Typography>
+          </Tooltip>
+
+          <Tooltip title='clear'>
+            <IconButton onClick={handleReset}>
+              <ClearIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       }
     </Grid>
   );

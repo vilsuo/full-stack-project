@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 
 import { 
-  Box, Button, Card, 
-  //CardContent, CardHeader, Typography,
-  CardMedia, FormControl, FormControlLabel, FormLabel, Grid, Radio, RadioGroup, Stack, TextField
+  Box, Button, Card, CardMedia, 
+  FormControl, FormControlLabel, FormLabel, 
+  Radio, RadioGroup, Stack, TextField
 } from '@mui/material';
-
 
 import usersService from '../../services/users';
 import FileUploader from './FileUploader';
 import Alert from '../Alert';
-import { useParams } from 'react-router-dom';
 
 /*
 TODO
@@ -20,17 +18,7 @@ TODO
 const Preview = ({ preview }) => {
   return (
     <Card sx={{ p: 2 }}>
-      { preview && (
-        /*<CardHeader title='preview' />*/
-        <CardMedia component='img' image={preview} />
-        /*
-        <CardContent>
-          <Typography>
-            {caption}
-          </Typography>
-        </CardContent>
-        */
-      )}
+      { preview && <CardMedia component='img' image={preview} />}
     </Card>
   );
 };
@@ -105,7 +93,7 @@ const ImageForm = ({ username }) => {
 
     // reset file uploader
     fileUploaderRef.current.handleReset();
-  }
+  };
 
   // create a preview as a side effect, whenever selected file is changed
   useEffect(() => {
@@ -161,51 +149,49 @@ const ImageForm = ({ username }) => {
   };
 
   return (
-    <Grid container spacing={2} sx={{ mt: 2 }}>
-      <Grid item>
-        <Alert
-          id='upload-alert'
-          clearMessage={clearMessage}
-          { ...alertInfo }
-        />
-        <Box id='image-form' component='form' onSubmit={onFileUpload}>
-          <Stack spacing={2}>
-            <FileUploader
-              ref={fileUploaderRef}
-              selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}
-            />
-            { preview && <Preview preview={preview} title={title} caption={caption} /> }
-            <TextField
-              id='title'
-              type='text'
-              label='Title'
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-            />
-            <TextField
-              id='caption'
-              type='text'
-              label='Caption'
-              value={caption}
-              onChange={(event) => setCaption(event.target.value)}
-              multiline={true}
-            />
-            <PrivacyGroup privacy={privacy} setPrivacy={setPrivacy} />
-          </Stack>
-          <Button
-            id='img-button'
-            type='submit'
-            fullWidth
-            variant='contained'
-            sx={{ mt: 2 }}
-            disabled={!selectedFile}
-          >
-            Upload image
-          </Button>
-        </Box>
-      </Grid>
-    </Grid>
+    <Stack spacing={2} sx={{ mt: 2 }}>
+      <Alert
+        id='upload-alert'
+        clearMessage={clearMessage}
+        { ...alertInfo }
+      />
+      <Box id='image-form' component='form' onSubmit={onFileUpload}>
+        <Stack spacing={2}>
+          <FileUploader
+            ref={fileUploaderRef}
+            selectedFile={selectedFile}
+            setSelectedFile={setSelectedFile}
+          />
+          { preview && <Preview preview={preview} /> }
+          <TextField
+            id='title'
+            type='text'
+            label='Title'
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+          />
+          <TextField
+            id='caption'
+            type='text'
+            label='Caption'
+            value={caption}
+            onChange={(event) => setCaption(event.target.value)}
+            multiline={true}
+          />
+          <PrivacyGroup privacy={privacy} setPrivacy={setPrivacy} />
+        </Stack>
+        <Button
+          id='img-button'
+          type='submit'
+          fullWidth
+          variant='contained'
+          sx={{ mt: 2 }}
+          disabled={!selectedFile}
+        >
+          Upload image
+        </Button>
+      </Box>
+    </Stack>
   );
 };
 
