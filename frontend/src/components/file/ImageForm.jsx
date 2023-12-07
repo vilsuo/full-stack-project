@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 import { 
   Box, Button, Card, CardMedia, 
@@ -6,14 +6,8 @@ import {
   Radio, RadioGroup, Stack, TextField
 } from '@mui/material';
 
-import usersService from '../../services/users';
 import FileUploader from './FileUploader';
 import Alert from '../Alert';
-
-/*
-TODO
-- cache blank image?
-*/
 
 const Preview = ({ preview }) => {
   return (
@@ -74,9 +68,8 @@ const PrivacyGroup = ({ privacy, setPrivacy }) => {
   );
 };
 
-const ImageForm = ({ username }) => {
+const ImageForm = ({ onSubmit, username }) => {
   const [alertInfo, setAlertInfo] = useState({});
-  const fileUploaderRef = useRef();
 
   const [selectedFile, setSelectedFile] = useState(undefined);
   const [preview, setPreview] = useState(undefined);
@@ -86,14 +79,6 @@ const ImageForm = ({ username }) => {
   const [privacy, setPrivacy] = useState('public');
 
   const clearMessage = () => setAlertInfo({});
-
-  const reset = () => {
-    setTitle('');
-    setCaption('');
-
-    // reset file uploader
-    fileUploaderRef.current.handleReset();
-  };
 
   // create a preview as a side effect, whenever selected file is changed
   useEffect(() => {
@@ -112,40 +97,17 @@ const ImageForm = ({ username }) => {
     }
   }, [selectedFile])
 
-  // On file upload (click the upload button)
   const onFileUpload = async (event) => {
     event.preventDefault();
     clearMessage();
 
-    // Create an object of formData
     const formData = new FormData();
-    formData.append(
-      'image',
-      selectedFile,
-      selectedFile.name
-    );
+    formData.append('image', selectedFile, selectedFile.name);
     formData.append('title', title);
     formData.append('caption', caption);
     formData.append('privacy', privacy);
     
-    try {
-      await usersService.addImage(username, formData);
-      setAlertInfo({
-        severity: 'success',
-        title: 'File uploaded',
-        message: selectedFile.name
-      });
-      reset();
-
-    } catch (error) {
-      console.log('error', error);
-      const errorMessages = error.response.data.message;
-      setAlertInfo({
-        severity: 'error',
-        title: 'Upload failed',
-        message: errorMessages,
-      });
-    }
+    onSubmit(formData);
   };
 
   return (
@@ -158,7 +120,6 @@ const ImageForm = ({ username }) => {
       <Box id='image-form' component='form' onSubmit={onFileUpload}>
         <Stack spacing={2}>
           <FileUploader
-            ref={fileUploaderRef}
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
           />

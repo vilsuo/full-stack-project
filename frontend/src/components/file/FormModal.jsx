@@ -3,16 +3,20 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import ImageForm from './ImageForm';
+import Alert from '../Alert';
 
-const FormModal = ({ username, modalOpen, onClose, /*onSubmit, error*/ }) => {
+const FormModal = ({ modalOpen, onClose, onSubmit, error, clearError, username }) => {
   return (
     <Dialog open={modalOpen} onClose={onClose}>
       <DialogContent>
-        {/*error && <Alert severity="error">{error}</Alert>*/}
+        <Alert
+          id='upload-alert'
+          clearMessage={clearError}
+          { ...error }
+        />
         <ImageForm
           username={username}
-          //onSubmit={onSubmit}
-          //onCancel={onClose}
+          onSubmit={onSubmit}
         />
       </DialogContent>
       <DialogActions>

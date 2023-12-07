@@ -1,15 +1,11 @@
 import { Grid, Button, Typography, Tooltip, IconButton, Box } from '@mui/material';
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { useRef } from 'react';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 
-const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
+const FileUploader = ({ selectedFile, setSelectedFile }) => {
   // Create a reference to the hidden file input element
   const hiddenFileInput = useRef(null);
-
-  useImperativeHandle(refs, () => {
-    return { handleReset }
-  });
   
   // Programatically click the hidden file input element
   // when the Button component is clicked
@@ -72,8 +68,6 @@ const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
       }
     </Grid>
   );
-});
-
-FileUploader.displayName = 'FileUploader';
+};
 
 export default FileUploader;
