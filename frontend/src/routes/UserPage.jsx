@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import FormModal from '../components/file/FormModal';
+import ImageFormModal from '../components/image/upload/ImageFormModal';
 import { Button } from '@mui/material';
 
 import usersService from '../services/users';
@@ -55,7 +55,7 @@ const UserPage = ({ setSuccessMessage }) => {
   return (
     <>
       { isOwnPage && <>
-          <FormModal
+          <ImageFormModal
             modalOpen={modalOpen}
             onSubmit={onFileUpload}
             error={error}

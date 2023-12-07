@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 
-const FileUploader = ({ selectedFile, setSelectedFile }) => {
+const ImageInput = ({ selectedFile, setSelectedFile }) => {
   // Create a reference to the hidden file input element
   const hiddenFileInput = useRef(null);
   
@@ -70,4 +70,4 @@ const FileUploader = ({ selectedFile, setSelectedFile }) => {
   );
 };
 
-export default FileUploader;
+export default ImageInput;

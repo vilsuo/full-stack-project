@@ -6,8 +6,8 @@ import {
   Radio, RadioGroup, Stack, TextField
 } from '@mui/material';
 
-import FileUploader from './FileUploader';
-import Alert from '../Alert';
+import ImageInput from './ImageInput';
+import Alert from '../../Alert';
 
 const Preview = ({ preview }) => {
   return (
@@ -119,7 +119,7 @@ const ImageForm = ({ onSubmit, username }) => {
       />
       <Box id='image-form' component='form' onSubmit={onFileUpload}>
         <Stack spacing={2}>
-          <FileUploader
+          <ImageInput
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
           />

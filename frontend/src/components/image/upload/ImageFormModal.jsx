@@ -3,9 +3,9 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import ImageForm from './ImageForm';
-import Alert from '../Alert';
+import Alert from '../../Alert';
 
-const FormModal = ({ modalOpen, onClose, onSubmit, error, clearError, username }) => {
+const ImageFormModal = ({ modalOpen, onClose, onSubmit, error, clearError, username }) => {
   return (
     <Dialog open={modalOpen} onClose={onClose}>
       <DialogContent>
@@ -26,4 +26,4 @@ const FormModal = ({ modalOpen, onClose, onSubmit, error, clearError, username }
   );
 };
 
-export default FormModal;
+export default ImageFormModal;
