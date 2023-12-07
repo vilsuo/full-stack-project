@@ -35,10 +35,10 @@ const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
   return (
     <Grid container
       direction='row'
-      justifyContent="space-between"
+      justifyContent='center'
       alignItems='center'
     >
-      <Grid item xs={12}>
+      <Grid item>
         <Button
           component='label'
           variant='contained'

@@ -31,13 +31,6 @@ const Preview = ({ preview }) => {
         </CardContent>
         */
       )}
-      { !preview && (
-        <CardMedia
-          component='img'
-          image='/static/images/blank.jpg'
-          alt='blank image'
-        />
-      )}
     </Card>
   );
 };
@@ -169,7 +162,7 @@ const ImageForm = ({ username }) => {
 
   return (
     <Grid container spacing={2} sx={{ mt: 2 }}>
-      <Grid item xs={12} sm={6}>
+      <Grid item>
         <Alert
           id='upload-alert'
           clearMessage={clearMessage}
@@ -182,6 +175,7 @@ const ImageForm = ({ username }) => {
               selectedFile={selectedFile}
               setSelectedFile={setSelectedFile}
             />
+            { preview && <Preview preview={preview} title={title} caption={caption} /> }
             <TextField
               id='title'
               type='text'
@@ -207,16 +201,9 @@ const ImageForm = ({ username }) => {
             sx={{ mt: 2 }}
             disabled={!selectedFile}
           >
-            Upload
+            Upload image
           </Button>
         </Box>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <Preview
-          preview={preview}
-          title={title}
-          caption={caption}
-        />
       </Grid>
     </Grid>
   );
