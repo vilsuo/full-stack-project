@@ -45,7 +45,7 @@ const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
           onClick={handleClick}
           startIcon={<AttachFileIcon />}
         >
-          Upload a file
+          Choose a file
         </Button>
         <input
           type='file'
@@ -56,8 +56,10 @@ const FileUploader = forwardRef(({ selectedFile, setSelectedFile }, refs) => {
       </Grid>
       { selectedFile ? (
         <>
-          <Grid item sx={{ p: 1 }}>
-            <Typography>{selectedFile.name}</Typography>
+          <Grid item sx={{ p: 1 }} maxWidth={200}>
+            <Tooltip title={selectedFile.name}>
+              <Typography noWrap>{selectedFile.name}</Typography>
+            </Tooltip>
           </Grid>
           <Grid item>
             <Tooltip title='clear'>
