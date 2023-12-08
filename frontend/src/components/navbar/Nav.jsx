@@ -20,6 +20,8 @@ const LoggedInMenu = ({ user }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const username = user.username;
+
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -30,7 +32,7 @@ const LoggedInMenu = ({ user }) => {
 
   const handleProfileClick = () => {
     handleClose();
-    navigate('/profile');
+    navigate(`/users/${username}`);
   };
 
   const handleLogout = () => {
@@ -52,7 +54,7 @@ const LoggedInMenu = ({ user }) => {
           id='nav-username'
           sx={{ ml: .5 }}
         >
-          {user.username}
+          {username}
         </Typography>
       </IconButton>
       <Menu

@@ -1,17 +1,15 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import usersService from '../services/users';
 import { Backdrop, CircularProgress, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+
+import usersService from '../services/users';
+import util from '../util';
 
 /*
 TODO
 - add sorting to columns
 */
-
-const formatDate = date => {
-  return date.split('T')[0];
-}
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
@@ -81,12 +79,12 @@ const SearchPage = () => {
             {users.map(user =>
               <TableRow key={user.id}>
                 <TableCell>
-                  <Link to={`/user/${user.username}`} key={user.username}>
+                  <Link to={`/users/${user.username}`} key={user.username}>
                     {user.username}
                   </Link>
                 </TableCell>
                 <TableCell>{user.name}</TableCell>
-                <TableCell>{formatDate(user.createdAt)}</TableCell>
+                <TableCell>{util.formatDate(user.createdAt)}</TableCell>
               </TableRow>
             )}
           </TableBody>

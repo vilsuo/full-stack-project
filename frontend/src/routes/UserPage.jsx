@@ -1,26 +1,22 @@
 import { useEffect, useState } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ImageFormModal from '../components/image/upload/ImageFormModal';
 import { Button } from '@mui/material';
 
 import usersService from '../services/users';
 import ImageList from '../components/image/ImageList';
+import Info from '../components/user/Info';
 
-/*
-TODO
-- create new userpage
-  - change this page to 
-- where to show success message?
-- add image to (new) user page
-*/
+const UserPage = () => {
+  const pageUsername = useParams().username;  // username of the page owner
+  const [pageUser, setPageUser] = useState(); // user details of the page owner
 
-const UserPage = ({ setSuccessMessage }) => {
   const currentUser = useSelector(state => state.auth.user);
-  const pageUsername = useParams().username; // username of the page owner
-
   const isOwnPage = currentUser && (currentUser.username === pageUsername);
+
+  const navigate = useNavigate();
 
   const [images, setImages] = useState([]);
 
@@ -32,27 +28,36 @@ const UserPage = ({ setSuccessMessage }) => {
   const clearError = () => setError({});
 
   useEffect(() => {
-    const fetch = async () => {
-      const returnedImages = await usersService.getImages(pageUsername);
+    const fetchPageUser = async () => {
+      const returnedUser = await usersService.getUser(pageUsername);
+      setPageUser(returnedUser);
+    };
 
+    const fetchPageUserImages = async () => {
+      const returnedImages = await usersService.getImages(pageUsername);
       setImages(returnedImages);
+    };
+
+    const fetch = async () => {
+      try {
+        await fetchPageUser();
+        await fetchPageUserImages();
+
+      } catch (error) {
+        const message = error.response.data.message;
+        navigate('/error', { state: { message } });
+      }
     };
 
     fetch();
   }, [pageUsername]);
 
+  // TODO set success message?
   const onFileUpload = async (formData) => {
     try {
       const addedImage = await usersService.addImage(pageUsername, formData);
 
       setImages([ ...images, addedImage ]);
-      /*
-      setSuccessMessage({
-        severity: 'success',
-        title: 'File uploaded',
-      });
-      */
-
       closeModal();
 
     } catch (error) {
@@ -66,8 +71,14 @@ const UserPage = ({ setSuccessMessage }) => {
     }
   };
 
+  if (!pageUser) {
+    return 'loading';
+  }
+
   return (
     <>
+      <Info userDetails={pageUser}/>
+
       { isOwnPage && <>
           <ImageFormModal
             modalOpen={modalOpen}
