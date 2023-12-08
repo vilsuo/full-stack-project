@@ -7,10 +7,18 @@ const getUsers = async query => {
   return data;
 };
 
-const addImage = async (userPage, formData) => {
+const addImage = async (username, formData) => {
   const { data } = await axios.post(
-    `${BASE_URL}/${userPage}/images`,
+    `${BASE_URL}/${username}/images`,
     formData,
+    { withCredentials: true }
+  );
+  return data;
+};
+
+const getImages = async (username) => {
+  const { data } = await axios.get(
+    `${BASE_URL}/${username}/images`,
     { withCredentials: true }
   );
   return data;
@@ -19,4 +27,5 @@ const addImage = async (userPage, formData) => {
 export default {
   getUsers,
   addImage,
+  getImages,
 };

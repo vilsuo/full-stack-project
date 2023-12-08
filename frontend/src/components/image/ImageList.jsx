@@ -1,10 +1,14 @@
 
+const ImageList = ({ images }) => {
 
-const ImageList = () => {
   return (
-    <>
-    
-    </>
+    <ul>
+      {images.map(img =>
+        <li key={img.id}>
+          {img.title} {img.privacy}
+        </li>  
+      )}
+    </ul>
   );
 };
 

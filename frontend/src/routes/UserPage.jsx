@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -6,6 +6,7 @@ import ImageFormModal from '../components/image/upload/ImageFormModal';
 import { Button } from '@mui/material';
 
 import usersService from '../services/users';
+import ImageList from '../components/image/ImageList';
 
 /*
 TODO
@@ -16,6 +17,13 @@ TODO
 */
 
 const UserPage = ({ setSuccessMessage }) => {
+  const currentUser = useSelector(state => state.auth.user);
+  const pageUsername = useParams().username; // username of the page owner
+
+  const isOwnPage = currentUser && (currentUser.username === pageUsername);
+
+  const [images, setImages] = useState([]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const openModal = () => setModalOpen(true);
   const closeModal = () => { setModalOpen(false); };
@@ -23,15 +31,21 @@ const UserPage = ({ setSuccessMessage }) => {
   const [error, setError] = useState();
   const clearError = () => setError({});
 
-  const currentUser = useSelector(state => state.auth.user);
-  const pageUsername = useParams().username; // username of the page owner
+  useEffect(() => {
+    const fetch = async () => {
+      const returnedImages = await usersService.getImages(pageUsername);
 
-  const isOwnPage = currentUser && (currentUser.username === pageUsername);
+      setImages(returnedImages);
+    };
+
+    fetch();
+  }, [pageUsername]);
 
   const onFileUpload = async (formData) => {
     try {
-      await usersService.addImage(pageUsername, formData);
+      const addedImage = await usersService.addImage(pageUsername, formData);
 
+      setImages([ ...images, addedImage ]);
       /*
       setSuccessMessage({
         severity: 'success',
@@ -68,7 +82,8 @@ const UserPage = ({ setSuccessMessage }) => {
           </Button>
         </>
       }
-      { !isOwnPage && <p>Not own page</p> }
+
+      <ImageList images={images} />
     </>
   );
 };
