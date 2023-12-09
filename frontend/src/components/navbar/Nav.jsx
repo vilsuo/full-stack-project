@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import HomeIcon from '@mui/icons-material/Home';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import Typography from '@mui/material/Typography';
@@ -13,6 +14,10 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import SearchBar from './SearchBar';
 import { logout } from '../../reducers/auth';
+import { styled } from '@mui/material';
+
+// see: https://mui.com/material-ui/react-app-bar/#fixed-placement
+const Offset = styled('div')(({ theme }) => theme.mixins.toolbar);
 
 const LoggedInMenu = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -72,7 +77,7 @@ const LoggedInMenu = ({ user }) => {
 
 const NotLoggedInMenu = () => {
   return (
-    <Box sx={{ flexDirection: 'row' }}>
+    <Box sx={{ display: 'inline-flex', flexDirection: 'row' }}>
       <Button id='nav-login' color='inherit' component={Link} to='/login'>
         Login
       </Button>
@@ -83,36 +88,26 @@ const NotLoggedInMenu = () => {
   );
 };
 
+
 const Nav = () => {
+
   const currentUser = useSelector(state => state.auth.user);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position='static'>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-            <Button color='inherit' component={Link} to='/'>
-              Home
-            </Button>
+      <AppBar position='fixed'>
+        <Toolbar sx={{ justifyContent: 'space-between' }} >
+          <IconButton size='large' color='inherit' component={Link} to='/'>
+            <HomeIcon />
+          </IconButton>
             <SearchBar />
-            {/*
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder='Search…'
-                inputProps={{ 'aria-label': 'search' }}
-              />
-            </Search>
-            */}
-          <Box sx={{ justifyContent: 'flex-end' }}>
             { currentUser && <LoggedInMenu user={currentUser} /> }
             { !currentUser && <NotLoggedInMenu /> }
-          </Box>
         </Toolbar>
       </AppBar>
+      <Offset />
     </Box>
   );
-}
+};
 
 export default Nav;

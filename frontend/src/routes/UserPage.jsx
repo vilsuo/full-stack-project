@@ -3,11 +3,20 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ImageFormModal from '../components/image/upload/ImageFormModal';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 
 import usersService from '../services/users';
 import ImageList from '../components/image/ImageList';
 import Info from '../components/user/Info';
+
+/*
+TODO
+- continue working on
+  - Info.jsx
+  - ImageList.jsx
+- add loading animations
+- (show success message on image post?)
+*/
 
 const UserPage = () => {
   const pageUsername = useParams().username;  // username of the page owner
@@ -76,7 +85,7 @@ const UserPage = () => {
   }
 
   return (
-    <>
+    <Box>
       <Info userDetails={pageUser}/>
 
       { isOwnPage && <>
@@ -95,7 +104,7 @@ const UserPage = () => {
       }
 
       <ImageList images={images} />
-    </>
+    </Box>
   );
 };
 
