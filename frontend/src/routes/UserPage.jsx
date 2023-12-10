@@ -11,9 +11,6 @@ import Info from '../components/user/Info';
 
 /*
 TODO
-- continue working on
-  - Info.jsx
-  - ImageList.jsx
 - add loading animations
 - (show success message on image post?)
 */
@@ -25,16 +22,16 @@ const UserPage = () => {
   const currentUser = useSelector(state => state.auth.user);
   const isOwnPage = currentUser && (currentUser.username === pageUsername);
 
-  const navigate = useNavigate();
-
   const [images, setImages] = useState([]);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => { setModalOpen(false); };
+  const navigate = useNavigate();
 
-  const [error, setError] = useState();
-  const clearError = () => setError({});
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const openUploadModal = () => setUploadModalOpen(true);
+  const closeUploadModal = () => { setUploadModalOpen(false); };
+
+  const [uploadError, setUploadError] = useState();
+  const clearUploadError = () => setUploadError({});
 
   useEffect(() => {
     const fetchPageUser = async () => {
@@ -67,12 +64,12 @@ const UserPage = () => {
       const addedImage = await usersService.addImage(pageUsername, formData);
 
       setImages([ ...images, addedImage ]);
-      closeModal();
+      closeUploadModal();
 
     } catch (error) {
       const errorMessages = error.response.data.message;
 
-      setError({
+      setUploadError({
         severity: 'error',
         title: 'Upload failed',
         message: errorMessages,
@@ -86,24 +83,24 @@ const UserPage = () => {
 
   return (
     <Box>
-      <Info userDetails={pageUser}/>
+      <Info userDetails={pageUser} />
 
       { isOwnPage && <>
           <ImageFormModal
-            modalOpen={modalOpen}
+            modalOpen={uploadModalOpen}
             onSubmit={onFileUpload}
-            error={error}
-            clearError={clearError}
-            onClose={closeModal}
+            error={uploadError}
+            clearError={clearUploadError}
+            onClose={closeUploadModal}
             username={pageUsername}
           />
-          <Button variant='contained' onClick={() => openModal()}>
+          <Button variant='contained' onClick={() => openUploadModal()}>
             Add New Image
           </Button>
         </>
       }
 
-      <ImageList images={images} />
+      <ImageList images={images} pageUsername={pageUsername} />
     </Box>
   );
 };

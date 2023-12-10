@@ -29,9 +29,22 @@ const getImages = async (username) => {
   return data;
 };
 
+const getImageContent = async (username, imageId) => {
+  const { data } = await axios.get(
+    `${BASE_URL}/${username}/images/${imageId}/content`,
+    { 
+      withCredentials: true,
+      responseType: 'blob',
+    },
+  );
+
+  return data;
+};
+
 export default {
   getUsers,
   getUser,
   addImage,
   getImages,
+  getImageContent,
 };
