@@ -1,4 +1,5 @@
 import { 
+  Avatar,
   Button, Dialog, DialogActions, DialogContent, DialogContentText,
   DialogTitle, Stack, Typography
 } from '@mui/material';
@@ -56,6 +57,8 @@ const ImageViewForm = ({ image, content, close, canModify, deleteImage }) => {
         handleDelete={handleDelete}
       />
 
+      <Avatar src={content} />
+      
       <Typography variant='body1'>{title}</Typography>
 
       <Preview preview={content} />

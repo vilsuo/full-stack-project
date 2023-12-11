@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { Box } from '@mui/material';
 
 import usersService from '../services/users';
@@ -16,10 +15,7 @@ TODO
 
 const UserPage = () => {
   const pageUsername = useParams().username;  // username of the page owner
-  const [pageUser, setPageUser] = useState(); // user details of the page owner
-
-  const currentUser = useSelector(state => state.auth.user);
-  const isOwnPage = currentUser && (currentUser.username === pageUsername);
+  const [user, setUser] = useState(); // user details of the page owner
 
   const navigate = useNavigate();
 
@@ -28,7 +24,7 @@ const UserPage = () => {
     const fetch = async () => {
       try {
         const returnedUser = await usersService.getUser(pageUsername);
-        setPageUser(returnedUser);
+        setUser(returnedUser);
 
       } catch (error) {
         const message = error.response.data.message;
@@ -39,15 +35,15 @@ const UserPage = () => {
     fetch();
   }, [pageUsername]);
 
-  if (!pageUser) {
+  if (!user) {
     return 'loading';
   }
 
   return (
     <Box>
-      <Info userDetails={pageUser} />
+      <Info user={user} />
 
-      <ImageView pageUsername={pageUsername} isOwnPage={isOwnPage} />
+      <ImageView user={user} />
     </Box>
   );
 };

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import ImageUpload from '../upload/ImageUpload';
 import ImageList from './ImageList';
+import { useSelector } from 'react-redux';
 
 /*
 TODO
@@ -14,8 +15,12 @@ TODO
 - implement editing/deleting
 */
 
-const ImageView = ({ pageUsername, isOwnPage }) => {
+const ImageView = ({ user }) => {
   const [images, setImages] = useState([]);
+  const username = user.username;
+
+  const currentUser = useSelector(state => state.auth.user);
+  const canModify = currentUser && (currentUser.id === user.id);
 
   const navigate = useNavigate();
 
@@ -23,7 +28,7 @@ const ImageView = ({ pageUsername, isOwnPage }) => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const returnedImages = await usersService.getImages(pageUsername);
+        const returnedImages = await usersService.getImages(username);
         setImages(returnedImages);
 
       } catch (error) {
@@ -33,15 +38,15 @@ const ImageView = ({ pageUsername, isOwnPage }) => {
     };
 
     fetch();
-  }, [pageUsername]);
+  }, [username]);
 
   const addImage = async (formData) => {
-    const addedImage = await usersService.addImage(pageUsername, formData);
+    const addedImage = await usersService.addImage(username, formData);
     setImages([ ...images, addedImage ]);
   };
 
   const deleteImage = async (imageId) => {
-    await usersService.deleteImage(pageUsername, imageId);
+    await usersService.deleteImage(username, imageId);
 
     const filteredImages = images.filter(image => image.id !== imageId);
     setImages(filteredImages);
@@ -53,12 +58,12 @@ const ImageView = ({ pageUsername, isOwnPage }) => {
 
   return (
     <>
-      { isOwnPage && <ImageUpload pageUsername={pageUsername} addImage={addImage} /> }
+      { canModify && <ImageUpload username={username} addImage={addImage} /> }
 
       <ImageList
-        username={pageUsername}
+        username={username}
         images={images}
-        canModify={isOwnPage}
+        canModify={canModify}
         deleteImage={deleteImage}
       />
     </>

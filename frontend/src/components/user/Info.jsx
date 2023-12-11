@@ -10,8 +10,8 @@ TODO
 - implement blocking/following of users
 */
 
-const Info = ({ userDetails }) => {
-  const { name, username, createdAt } = userDetails;
+const Info = ({ user }) => {
+  const { name, username, createdAt } = user;
 
   return (
     <Card>
