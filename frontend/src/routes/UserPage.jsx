@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import ImageFormModal from '../components/image/upload/ImageFormModal';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 
 import usersService from '../services/users';
 import ImageList from '../components/image/ImageList';
@@ -22,32 +21,14 @@ const UserPage = () => {
   const currentUser = useSelector(state => state.auth.user);
   const isOwnPage = currentUser && (currentUser.username === pageUsername);
 
-  const [images, setImages] = useState([]);
-
   const navigate = useNavigate();
 
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const openUploadModal = () => setUploadModalOpen(true);
-  const closeUploadModal = () => { setUploadModalOpen(false); };
-
-  const [uploadError, setUploadError] = useState();
-  const clearUploadError = () => setUploadError({});
-
+  // load users details
   useEffect(() => {
-    const fetchPageUser = async () => {
-      const returnedUser = await usersService.getUser(pageUsername);
-      setPageUser(returnedUser);
-    };
-
-    const fetchPageUserImages = async () => {
-      const returnedImages = await usersService.getImages(pageUsername);
-      setImages(returnedImages);
-    };
-
     const fetch = async () => {
       try {
-        await fetchPageUser();
-        await fetchPageUserImages();
+        const returnedUser = await usersService.getUser(pageUsername);
+        setPageUser(returnedUser);
 
       } catch (error) {
         const message = error.response.data.message;
@@ -58,25 +39,6 @@ const UserPage = () => {
     fetch();
   }, [pageUsername]);
 
-  // TODO set success message?
-  const onFileUpload = async (formData) => {
-    try {
-      const addedImage = await usersService.addImage(pageUsername, formData);
-
-      setImages([ ...images, addedImage ]);
-      closeUploadModal();
-
-    } catch (error) {
-      const errorMessages = error.response.data.message;
-
-      setUploadError({
-        severity: 'error',
-        title: 'Upload failed',
-        message: errorMessages,
-      });
-    }
-  };
-
   if (!pageUser) {
     return 'loading';
   }
@@ -85,22 +47,7 @@ const UserPage = () => {
     <Box>
       <Info userDetails={pageUser} />
 
-      { isOwnPage && <>
-          <ImageFormModal
-            modalOpen={uploadModalOpen}
-            onSubmit={onFileUpload}
-            error={uploadError}
-            clearError={clearUploadError}
-            onClose={closeUploadModal}
-            username={pageUsername}
-          />
-          <Button variant='contained' onClick={() => openUploadModal()}>
-            Add New Image
-          </Button>
-        </>
-      }
-
-      <ImageList images={images} pageUsername={pageUsername} />
+      <ImageList pageUsername={pageUsername} isOwnPage={isOwnPage} />
     </Box>
   );
 };

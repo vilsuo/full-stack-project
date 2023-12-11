@@ -20,29 +20,6 @@ const Preview = ({ preview }) => {
 const PrivacyGroup = ({ privacy, setPrivacy }) => {
   const privacyOptions = ['public', 'private'];
 
-  /*
-  const StyledFormControlLabel = styled((props) => (
-    <FormControlLabel { ...props } />
-  ))(({ theme, checked }) => ({
-    '.MuiFormControlLabel-label': checked && {
-      // Change color here
-      color: "red"
-    }
-  }));
-
-  const MyFormControlLabel = (props) => {
-    const radioGroup = useRadioGroup();
-
-    let checked = false;
-
-    if (radioGroup) {
-      checked = radioGroup.value === props.value;
-    }
-
-    return <StyledFormControlLabel checked={checked} { ...props } />;
-  };
-  */
-
   return (
     <FormControl>
       <FormLabel id='file-upload-privacy-group-label'>
@@ -68,7 +45,7 @@ const PrivacyGroup = ({ privacy, setPrivacy }) => {
   );
 };
 
-const ImageForm = ({ onSubmit, username }) => {
+const ImageUploadForm = ({ onSubmit }) => {
   const [alertInfo, setAlertInfo] = useState({});
 
   const [selectedFile, setSelectedFile] = useState(undefined);
@@ -156,4 +133,4 @@ const ImageForm = ({ onSubmit, username }) => {
   );
 };
 
-export default ImageForm;
+export default ImageUploadForm;

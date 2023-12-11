@@ -1,11 +1,11 @@
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import ImageForm from './ImageForm';
+import ImageUploadForm from './ImageUploadForm';
 import Alert from '../../Alert';
 import { DialogTitle, Divider, IconButton, Tooltip, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-const ImageFormModal = ({ modalOpen, onClose, onSubmit, error, clearError, username }) => {
+const ImageUploadFormModal = ({ modalOpen, onClose, onSubmit, error, clearError }) => {
   return (
     <Dialog open={modalOpen}>
       <DialogTitle sx={{
@@ -27,8 +27,7 @@ const ImageFormModal = ({ modalOpen, onClose, onSubmit, error, clearError, usern
           clearMessage={clearError}
           { ...error }
         />
-        <ImageForm
-          username={username}
+        <ImageUploadForm
           onSubmit={onSubmit}
         />
       </DialogContent>
@@ -36,4 +35,4 @@ const ImageFormModal = ({ modalOpen, onClose, onSubmit, error, clearError, usern
   );
 };
 
-export default ImageFormModal;
+export default ImageUploadFormModal;
