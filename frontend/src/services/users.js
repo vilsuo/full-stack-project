@@ -41,10 +41,20 @@ const getImageContent = async (username, imageId) => {
   return data;
 };
 
+const deleteImage = async (username, imageId) => {
+  const { data } = await axios.delete(
+    `${BASE_URL}/${username}/images/${imageId}`,
+    { withCredentials: true }
+  );
+
+  return data;
+};
+
 export default {
   getUsers,
   getUser,
   addImage,
   getImages,
   getImageContent,
+  deleteImage,
 };

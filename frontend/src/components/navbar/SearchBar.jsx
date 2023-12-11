@@ -52,7 +52,6 @@ const SearchBar = () => {
 
   const search = async event => {
     event.preventDefault();
-    console.log('navigating to ', query)
     navigate(`/users?search=${query}`);
   };
 

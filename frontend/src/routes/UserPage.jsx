@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { Box } from '@mui/material';
 
 import usersService from '../services/users';
-import ImageList from '../components/image/ImageList';
+import ImageView from '../components/image/view/ImageView';
 import Info from '../components/user/Info';
 
 /*
@@ -47,7 +47,7 @@ const UserPage = () => {
     <Box>
       <Info userDetails={pageUser} />
 
-      <ImageList pageUsername={pageUsername} isOwnPage={isOwnPage} />
+      <ImageView pageUsername={pageUsername} isOwnPage={isOwnPage} />
     </Box>
   );
 };

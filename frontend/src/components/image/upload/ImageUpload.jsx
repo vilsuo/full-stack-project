@@ -1,6 +1,6 @@
-import { Button } from "@mui/material";
-import ImageUploadFormModal from "./ImageUploadFormModal";
-import { useState } from "react";
+import { Button } from '@mui/material';
+import ImageUploadFormModal from './ImageUploadFormModal';
+import { useState } from 'react';
 
 const ImageUpload = ({ addImage }) => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);

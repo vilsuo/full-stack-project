@@ -3,28 +3,11 @@ import authService from '../services/auth';
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
-  /*
-  errors: {
-    //register: [],
-    login: [],
-    //logout: [],
-  },
-  */
 };
 
 const userSlice = createSlice({
   name: 'auth', // defines the prefix which is used in the action's type values
   initialState,
-  /*
-  reducers: {
-    setLoginError: (state, action) => {
-      state.errors.login.append(action.payload);
-    },
-    clearLoginError: (state, action) => {
-      state.errors.login = [];
-    },
-  },
-  */
   extraReducers: (builder) => {
     builder
       .addCase(login.fulfilled, (state, action) => {
@@ -32,7 +15,7 @@ const userSlice = createSlice({
         // add user to local storage
         localStorage.setItem('user', JSON.stringify(user));
 
-        console.log('login fulfilled');
+        console.log('login fullfilled');
         return { ...state, user };
       })
       .addCase(login.rejected, (state, action) => {
@@ -44,7 +27,7 @@ const userSlice = createSlice({
         // remove user from local storage
         localStorage.removeItem('user');
 
-        console.log('logout fulfilled');
+        console.log('logout fullfilled');
         return { ...state, user: null };
       })
       .addCase(logout.rejected, (state, action) => {
