@@ -1,21 +1,13 @@
 import { useState, useEffect } from 'react';
 
 import { 
-  Box, Button, Card, CardMedia, 
-  FormControl, FormControlLabel, FormLabel, 
+  Box, Button, FormControl, FormControlLabel, FormLabel, 
   Radio, RadioGroup, Stack, TextField
 } from '@mui/material';
 
 import ImageInput from './ImageInput';
 import Alert from '../../Alert';
-
-const Preview = ({ preview }) => {
-  return (
-    <Card sx={{ p: 2 }}>
-      { preview && <CardMedia component='img' image={preview} />}
-    </Card>
-  );
-};
+import Preview from '../Preview';
 
 const PrivacyGroup = ({ privacy, setPrivacy }) => {
   const privacyOptions = ['public', 'private'];

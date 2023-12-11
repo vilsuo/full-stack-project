@@ -1,110 +1,72 @@
-import util from '../../../util';
-
 import { 
-  Box,
-  Card, CardMedia, IconButton, Stack, Tooltip, Typography
+  Button, Dialog, DialogActions, DialogContent, DialogContentText,
+  DialogTitle, Stack, Typography
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined';
-
+import ImageInfo from './ImageInfo';
+import Preview from '../Preview';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const Preview = ({ preview }) => {
+const DeleteDialog = ({ open, close, handleDelete }) => {
   return (
-    <Card sx={{ p: 2 }}>
-      { preview && <CardMedia component='img' image={preview} />}
-    </Card>
-  );
-};
-
-const ImageEditOptions = () => {
-  return (
-    <Box sx={{
-      display: 'flex', flexWrap: 'nowrap', 
-      justifyContent: 'flex-start', alignItems: 'center', 
-    }}>
-      <Tooltip title='edit'>
-        <IconButton size='small'>
-          <EditIcon fontSize='inherit' />
-        </IconButton>
-      </Tooltip>
-
-      <Tooltip title='remove'>
-        <IconButton size='small'>
-          <DeleteIcon fontSize='inherit' />
-        </IconButton>
-      </Tooltip>
-    </Box>
-  );
-};
-
-const ImageOptions = ({ canModify }) => {
-  const [like, setLike] = useState(false);
-  
-  return (
-    <Box sx={{
-      display: 'flex', flexWrap: 'nowrap', 
-      justifyContent: 'flex-end', alignItems: 'center', 
-    }}>
-      { canModify && <ImageEditOptions /> }
-
-      { !like && <Tooltip title='like'>
-          <IconButton size='small'>
-            <FavoriteBorderOutlinedIcon fontSize='inherit' />
-          </IconButton>
-        </Tooltip>
-      }
-      { like && <Tooltip title='unlike'>
-          <IconButton size='small'>
-            <FavoriteOutlinedIcon fontSize='inherit' />
-          </IconButton>
-        </Tooltip>
-      }
-    </Box>
-  );
-};
-
-const ImageInfo = ({ image, canModify }) => {
-  const { createdAt } = image;
-
-  return (
-    <Box sx={{
-      display: 'flex', flexWrap: 'nowrap', 
-      justifyContent: 'space-between', alignItems: 'center', 
-      width: 1
-    }}>
-      <Typography variant='body2' color='text.secondary'>
-        {util.formatDate(createdAt)}
-      </Typography>
-
-      <ImageOptions canModify={canModify} />
-    </Box>
+    <Dialog open={open}>
+      <DialogTitle>
+        Delete image
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Are sure you want to delete this image permanently?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button autoFocus onClick={close}>
+          Cancel
+        </Button>
+        <Button onClick={handleDelete}>Ok</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
 /*
 TODO
 - Add profile picture to header avatar
-- implement editing
 */
-const ImageViewForm = ({ image, content, canModify }) => {
-  const { title, caption, privacy, createdAt, updatedAt } = image;
+const ImageViewForm = ({ image, content, close, canModify, deleteImage }) => {
+  const navigate = useNavigate();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  
+  const { id, title, caption } = image;
+
+  const handleDelete = async () => {
+    try {
+      await deleteImage(id);
+      close();
+    } catch (error) {
+      const message = error.response.data.message;
+      navigate('/error', { state: { message } });
+    }
+  };
 
   return (
     <Stack spacing={1}>
-      <Typography variant='body1'>
-        {title}
-      </Typography>
+      <DeleteDialog
+        open={deleteOpen}
+        close={() => setDeleteOpen(false)}
+        handleDelete={handleDelete}
+      />
+
+      <Typography variant='body1'>{title}</Typography>
 
       <Preview preview={content} />
 
-      <ImageInfo image={image} canModify={canModify} />
+      <ImageInfo
+        image={image}
+        canModify={canModify}
+        handleDelete={() => setDeleteOpen(true)}
+      />
 
-      <Typography variant='body1' color='text.secondary'>
-        {caption}
-      </Typography>
+      <Typography variant='body1' color='text.secondary'>{caption}</Typography>
     </Stack>
   );
 };

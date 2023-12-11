@@ -40,8 +40,8 @@ const ImageView = ({ pageUsername, isOwnPage }) => {
     setImages([ ...images, addedImage ]);
   };
 
-  const deleteImage = async (username, imageId) => {
-    await usersService.deleteImage(username, imageId);
+  const deleteImage = async (imageId) => {
+    await usersService.deleteImage(pageUsername, imageId);
 
     const filteredImages = images.filter(image => image.id !== imageId);
     setImages(filteredImages);
@@ -56,7 +56,7 @@ const ImageView = ({ pageUsername, isOwnPage }) => {
       { isOwnPage && <ImageUpload pageUsername={pageUsername} addImage={addImage} /> }
 
       <ImageList
-        pageUsername={pageUsername}
+        username={pageUsername}
         images={images}
         canModify={isOwnPage}
         deleteImage={deleteImage}

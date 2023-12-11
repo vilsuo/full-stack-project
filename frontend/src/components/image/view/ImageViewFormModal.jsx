@@ -4,7 +4,7 @@ import ImageViewForm from './ImageViewForm';
 import { Box, DialogTitle, IconButton, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-const ImageViewFormModal = ({ modalOpen, onClose, image, content, canModify }) => {
+const ImageViewFormModal = ({ modalOpen, onClose, image, content, canModify, deleteImage }) => {
   return (
     <Dialog open={modalOpen} onClose={onClose} fullWidth>
       <DialogTitle sx={{
@@ -24,7 +24,9 @@ const ImageViewFormModal = ({ modalOpen, onClose, image, content, canModify }) =
           <ImageViewForm
             image={image}
             content={content}
+            close={onClose}
             canModify={canModify}
+            deleteImage={deleteImage}
           />
         </Box>
       </DialogContent>

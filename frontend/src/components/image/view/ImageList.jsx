@@ -3,7 +3,7 @@ import Image from './Image';
 import { useState } from 'react';
 import ImageViewFormModal from './ImageViewFormModal';
 
-const ImageList = ({ pageUsername, images, canModify, deleteImage }) => {
+const ImageList = ({ username, images, canModify, deleteImage }) => {
   const [currentImage, setCurrentImage] = useState();
   const [currentContent, setCurrentContent] = useState();
 
@@ -31,12 +31,13 @@ const ImageList = ({ pageUsername, images, canModify, deleteImage }) => {
           image={currentImage}
           content={currentContent}
           canModify={canModify}
+          deleteImage={deleteImage}
         />
       }
       <List sx={{ maxWidth: 600 }} cols={3} rowHeight={164}>
         {images.map((img) => (
           <Image key={img.id} 
-            username={pageUsername} 
+            username={username} 
             image={img}
             handleImageClick={openViewModal}
           />
