@@ -8,7 +8,10 @@ const { DATABASE_URL, REDIS_URL } = require('./config');
 const { createClient } = require('redis');
 
 const sequelize = new Sequelize(
-  DATABASE_URL, { logging: false }
+  DATABASE_URL, { 
+    logging: false, 
+    pool: { max: 4 }, // ElephantSQL allows 5 connections: save one for psql
+  },
 );
 
 const redisClient = createClient({ url: REDIS_URL });
