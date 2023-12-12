@@ -7,6 +7,7 @@ const { FiletypeError } = require('./error');
 const options = {};
 if (process.env.NODE_ENV === 'test') {
   // throw away the image after upload
+  // filepath is null in tests!
   options.storage = multer.memoryStorage();
 } else {
   // save image locally

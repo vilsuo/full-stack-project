@@ -1,9 +1,9 @@
 const router = require('express').Router({ mergeParams: true }); // use parameter 'username'
 
 const { Image, User } = require('../../models');
-const { userFinder } = require('../../util/middleware/finder');
+const { userFinder, userImageFinder } = require('../../util/middleware/finder');
 const { isAllowedToPostImage, isAllowedToViewImage, isAllowedToEditImage } = require('../../util/middleware/auth');
-const { getNonSensitiveImage } = require('../../util/dto');
+const { getNonSensitiveImage, getNonSensitiveUser } = require('../../util/dto');
 const logger = require('../../util/logger');
 const imageStorage = require('../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
 
@@ -98,13 +98,29 @@ router.delete('/:imageId', isAllowedToEditImage, async (req, res) => {
 
   await image.destroy();
 
-  // filepath is null in tests!
   imageStorage.removeFile(image.filepath);
   
   return res.status(204).end();
 });
 
-// TODO test
+//TODO
+router.put('/:imageId/profile', isAllowedToEditImage, async (req, res) => {
+  const image = req.image;
+  const user = req.user;
+
+  user.imageId = image.id;
+  const updatedUser = await user.save();
+  return res.send(getNonSensitiveUser(updatedUser));
+});
+
+router.delete('/:imageId/profile', isAllowedToEditImage, async (req, res) => {
+  const user = req.user;
+
+  user.imageId = null;
+  const updatedUser = await user.save();
+  return res.send(getNonSensitiveUser(updatedUser));
+});
+
 router.get('/:imageId/content', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
   const fullfilepath = imageStorage.getImageFilePath(image.filepath);

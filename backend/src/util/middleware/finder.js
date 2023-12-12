@@ -12,18 +12,24 @@ const { User, Image } = require('../../models');
  *  - '400' if said user is disabled
  */
 const userFinder = async (req, res, next) => {
-  const { username } = req.params;
-  const user = await User.findOne({ where: { username } });
-  
-  if (!user) {
-    return res.status(404).send({ message: 'user does not exist' });
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({ where: { username } });
+    
+    if (!user) {
+      return res.status(404).send({ message: 'user does not exist' });
 
-  } else if (user.disabled) {
-    return res.status(400).send({ message: 'user is disabled' })
+    } else if (user.disabled) {
+      return res.status(400).send({ message: 'user is disabled' })
+    }
+
+    req.foundUser = user;
+    next();
+    
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).send({ error });
   }
-
-  req.foundUser = user;
-  next();
 };
 
 /**
@@ -40,18 +46,23 @@ const userFinder = async (req, res, next) => {
  * - '404' if the image owner is not the request.foundUser
  */
 const imageFinder = async (req, res, next) => {
-  const imageId = Number(req.params.imageId);
+  try {
+    const imageId = Number(req.params.imageId);
 
-  if (!isNaN(imageId)) {
-    const image = await Image.findByPk(imageId);
+    if (!isNaN(imageId)) {
+      const image = await Image.findByPk(imageId);
 
-    if (image && image.userId === req.foundUser.id) {
-      req.image = image;
-      return next();
+      if (image && image.userId === req.foundUser.id) {
+        req.image = image;
+        return next();
+      }
     }
-  }
 
-  return res.status(404).send({ message: 'image does not exist' });
+    return res.status(404).send({ message: 'image does not exist' });
+  } catch (error) {
+    console.log('error');
+    return res.status(500).send({ error });
+  }
 };
 
 /**
