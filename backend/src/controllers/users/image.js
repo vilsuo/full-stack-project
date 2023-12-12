@@ -1,8 +1,10 @@
-const router = require('express').Router({ mergeParams: true }); // use parameter 'username'
+const router = require('express').Router({ mergeParams: true });
 
 const { isAllowedToViewImage, isSessionUser } = require('../../util/middleware/auth');
-const { getNonSensitiveImage, getNonSensitiveUser } = require('../../util/dto');
+const { getNonSensitiveImage } = require('../../util/dto');
+const { sequelize } = require('./../../util/db');
 const imageStorage = require('../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
+const logger = require('../../util/logger');
 
 router.get('/', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
@@ -23,10 +25,26 @@ router.put('/', isSessionUser, async (req, res) => {
 
 router.delete('/', isSessionUser, async (req, res) => {
   const image = req.image;
+  const user = req.user;
 
-  await image.destroy();
+  // image being deleted is users profile picture
+  if (image.id === user.imageId) {
+    user.imageId = null;
+  }
 
-  imageStorage.removeFile(image.filepath);
+  const transaction = await sequelize.transaction();
+
+  try {
+    await user.save({ transaction })
+    await image.destroy({ transaction });
+
+    await transaction.commit();
+    imageStorage.removeFile(image.filepath);
+
+  } catch (error) {
+    logger.error('Error deleting image:', error);
+    await transaction.rollback();
+  }
   
   return res.status(204).end();
 });
@@ -38,41 +56,6 @@ router.get('/content', isAllowedToViewImage, async (req, res) => {
   return res
     .type(image.mimetype)
     .sendFile(fullfilepath);
-});
-
-/*
-router.get('/profile', async (req, res) => {
-  const imageId = req.foundUser.imageId;
-
-  if (imageId) {
-    const image = await Image.findByPk(imageId);
-
-    if (image) {
-      const fullfilepath = imageStorage.getImageFilePath(image.filepath);
-
-      return res
-        .type(image.mimetype)
-        .sendFile(fullfilepath);
-    }
-  }
-});
-*/
-
-router.put('/profile', isSessionUser, async (req, res) => {
-  const image = req.image;
-  const user = req.user;
-
-  user.imageId = image.id;
-  const updatedUser = await user.save();
-  return res.send(getNonSensitiveUser(updatedUser));
-});
-
-router.delete('/profile', isSessionUser, async (req, res) => {
-  const user = req.user;
-
-  user.imageId = null;
-  const updatedUser = await user.save();
-  return res.send(getNonSensitiveUser(updatedUser));
 });
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { Op } = require('sequelize');
 const imagesRouter = require('./images');
+const profileRouter = require('./profile');
 const { sequelize } = require('../../util/db');
 const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
@@ -36,6 +37,8 @@ router.get('/:username', userFinder, async (req, res) => {
   const user = req.foundUser;
   return res.send(getNonSensitiveUser(user));
 });
+
+router.use('/:username/profile', userFinder, profileRouter);
 
 router.use('/:username/images', userFinder, imagesRouter);
 

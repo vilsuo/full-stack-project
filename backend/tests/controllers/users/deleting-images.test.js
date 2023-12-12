@@ -13,6 +13,7 @@ const baseUrl = '/api/users';
 /*
 TODO
 - reset mock after each test
+- test deleting image that is also profile picture
 */
 
 const deleteImage = async (username, imageId, headers = {}, statusCode = 401) => {
