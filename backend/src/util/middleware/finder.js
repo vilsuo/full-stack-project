@@ -1,4 +1,4 @@
-const { User, Image } = require('../../models');
+const { User, Image, Potrait } = require('../../models');
 
 /**
  * Extracts the User from request parameter 'username' to request.foundUser.
@@ -54,7 +54,31 @@ const imageFinder = async (req, res, next) => {
   return res.status(404).send({ message: 'image does not exist' });
 };
 
+/**
+ * Extracts the {@link Potrait} of the from the request.foundUser to request.potrait.
+ * 
+ * Expects the middleware {@link userFinder} to have been handled beforehand.
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ * 
+ * @returns response with status
+ * - '404' if the user does not have potrait
+ */
+const potraitFinder = async (req, res, next) => {
+  const foundUser = req.foundUser;
+  const potrait = await Potrait.findOne({ where: { userId: foundUser.id } });
+  if (potrait) {
+    req.potrait = potrait;
+    return next();
+  }
+
+  return res.status(404).send({ message: 'user does not have a potrait' });
+};
+
 module.exports = {
   userFinder,
   imageFinder,
+  potraitFinder,
 };

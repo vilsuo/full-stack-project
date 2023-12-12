@@ -18,7 +18,17 @@ const getNonSensitiveImage = image => {
   return values;
 };
 
+const getNonSensitivePotrait = potrait => {
+  // do not return the filepath
+  const values = omit(potrait.toJSON(), ['filepath']);
+  values.createdAt = values.createdAt.toJSON();
+  values.updatedAt = values.updatedAt.toJSON();
+
+  return values;
+};
+
 module.exports = {
   getNonSensitiveUser,
   getNonSensitiveImage,
+  getNonSensitivePotrait,
 };

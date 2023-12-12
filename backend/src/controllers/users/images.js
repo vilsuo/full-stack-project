@@ -54,8 +54,8 @@ router.post('/', isSessionUser, async (req, res, next) => {
     const file = req.file;
     const fields = req.body;
 
-    logger.info('File:    ', file);
-    logger.info('Fields:  ', fields);
+    logger.info('Image file:    ', file);
+    logger.info('Image fields:  ', fields);
 
     if (!file) {
       return res.status(400).send({ message: 'file is missing' });

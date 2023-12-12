@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { Op } = require('sequelize');
 const imagesRouter = require('./images');
-const profileRouter = require('./profile');
+const potraitRouter = require('./potrait');
 const { sequelize } = require('../../util/db');
 const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
@@ -38,7 +38,7 @@ router.get('/:username', userFinder, async (req, res) => {
   return res.send(getNonSensitiveUser(user));
 });
 
-router.use('/:username/profile', userFinder, profileRouter);
+router.use('/:username/potrait', userFinder, potraitRouter);
 
 router.use('/:username/images', userFinder, imagesRouter);
 

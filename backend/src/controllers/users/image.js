@@ -2,9 +2,12 @@ const router = require('express').Router({ mergeParams: true });
 
 const { isAllowedToViewImage, isSessionUser } = require('../../util/middleware/auth');
 const { getNonSensitiveImage } = require('../../util/dto');
-const { sequelize } = require('./../../util/db');
 const imageStorage = require('../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
-const logger = require('../../util/logger');
+
+/*
+TODO
+- convert put to patch?
+*/
 
 router.get('/', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
@@ -25,27 +28,11 @@ router.put('/', isSessionUser, async (req, res) => {
 
 router.delete('/', isSessionUser, async (req, res) => {
   const image = req.image;
-  const user = req.user;
-
-  // image being deleted is users profile picture
-  if (image.id === user.imageId) {
-    user.imageId = null;
-  }
-
-  const transaction = await sequelize.transaction();
-
-  try {
-    await user.save({ transaction })
-    await image.destroy({ transaction });
-
-    await transaction.commit();
-    imageStorage.removeFile(image.filepath);
-
-  } catch (error) {
-    logger.error('Error deleting image:', error);
-    await transaction.rollback();
-  }
   
+  await image.destroy();
+
+  imageStorage.removeFile(image.filepath);
+
   return res.status(204).end();
 });
 
