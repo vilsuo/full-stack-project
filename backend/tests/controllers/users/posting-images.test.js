@@ -224,7 +224,7 @@ describe('posting images', () => {
         otherUsername, authHeader, formValues, 401
       );
 
-      expect(responseBody.message).toBe('can not add images to other users');
+      expect(responseBody.message).toBe('session user is not the owner');
     });
   });
 });

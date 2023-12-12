@@ -118,7 +118,7 @@ describe('deleting images', () => {
           otherUsername, otherPublicImage.id, authHeader
         );
 
-        expect(responseBody.message).toBe('can not modify other users images')
+        expect(responseBody.message).toBe('session user is not the owner')
       });
 
       test('can not delete private image', async () => {
@@ -126,7 +126,7 @@ describe('deleting images', () => {
           otherUsername, otherPrivateImage.id, authHeader
         );
 
-        expect(responseBody.message).toBe('can not modify other users images')
+        expect(responseBody.message).toBe('session user is not the owner')
       });
     });
   })

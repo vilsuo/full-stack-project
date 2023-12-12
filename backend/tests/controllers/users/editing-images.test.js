@@ -167,7 +167,7 @@ describe('editing images', () => {
           otherUsername, otherPublicImage.id, newImageValues, authHeader, 401
         );
 
-        expect(responseBody.message).toBe('can not modify other users images')
+        expect(responseBody.message).toBe('session user is not the owner')
       });
 
       test('can not edit private image', async () => {
@@ -175,7 +175,7 @@ describe('editing images', () => {
           otherUsername, otherPrivateImage.id, newImageValues, authHeader, 401
         );
 
-        expect(responseBody.message).toBe('can not modify other users images')
+        expect(responseBody.message).toBe('session user is not the owner')
       });
     });
   });

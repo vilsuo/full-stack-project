@@ -37,6 +37,6 @@ router.get('/:username', userFinder, async (req, res) => {
   return res.send(getNonSensitiveUser(user));
 });
 
-router.use('/:username/images', imagesRouter);
+router.use('/:username/images', userFinder, imagesRouter);
 
 module.exports = router;

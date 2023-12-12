@@ -1,11 +1,12 @@
 const router = require('express').Router({ mergeParams: true }); // use parameter 'username'
+const imageRouter = require('./image');
 
 const { Image, User } = require('../../models');
-const { userFinder, userImageFinder } = require('../../util/middleware/finder');
-const { isAllowedToPostImage, isAllowedToViewImage, isAllowedToEditImage } = require('../../util/middleware/auth');
-const { getNonSensitiveImage, getNonSensitiveUser } = require('../../util/dto');
+const { isSessionUser } = require('../../util/middleware/auth');
+const { getNonSensitiveImage } = require('../../util/dto');
 const logger = require('../../util/logger');
 const imageStorage = require('../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
+const { imageFinder } = require('../../util/middleware/finder');
 
 const imageUpload = imageStorage.upload.single('image');
 
@@ -27,7 +28,7 @@ const createImage = async (filepath, file, fields, userId) => {
   return image;
 };
 
-router.get('/', userFinder, async (req, res) => {
+router.get('/', async (req, res) => {
   const foundUser = req.foundUser;
 
   const where = { userId: foundUser.id, privacy: 'public' };
@@ -46,12 +47,7 @@ router.get('/', userFinder, async (req, res) => {
   return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
-router.get('/:imageId', isAllowedToViewImage, async (req, res) => {
-  const image = req.image;
-  return res.send(getNonSensitiveImage(image));
-});
-
-router.post('/', isAllowedToPostImage, async (req, res, next) => {
+router.post('/', isSessionUser, async (req, res, next) => {
   imageUpload(req, res, async (error) => {
     if (error) return next(error);
 
@@ -81,53 +77,6 @@ router.post('/', isAllowedToPostImage, async (req, res, next) => {
   });
 });
 
-router.put('/:imageId', isAllowedToEditImage, async (req, res) => {
-  const image = req.image;
-
-  const { title, caption, privacy } = req.body;
-  if (title !== undefined)    { image.title = title; }
-  if (caption !== undefined)  { image.caption = caption; }
-  if (privacy !== undefined)  { image.privacy = privacy; }
-
-  const updatedImage = await image.save();
-  return res.send(getNonSensitiveImage(updatedImage));
-});
-
-router.delete('/:imageId', isAllowedToEditImage, async (req, res) => {
-  const image = req.image;
-
-  await image.destroy();
-
-  imageStorage.removeFile(image.filepath);
-  
-  return res.status(204).end();
-});
-
-//TODO
-router.put('/:imageId/profile', isAllowedToEditImage, async (req, res) => {
-  const image = req.image;
-  const user = req.user;
-
-  user.imageId = image.id;
-  const updatedUser = await user.save();
-  return res.send(getNonSensitiveUser(updatedUser));
-});
-
-router.delete('/:imageId/profile', isAllowedToEditImage, async (req, res) => {
-  const user = req.user;
-
-  user.imageId = null;
-  const updatedUser = await user.save();
-  return res.send(getNonSensitiveUser(updatedUser));
-});
-
-router.get('/:imageId/content', isAllowedToViewImage, async (req, res) => {
-  const image = req.image;
-  const fullfilepath = imageStorage.getImageFilePath(image.filepath);
-
-  return res
-    .type(image.mimetype)
-    .sendFile(fullfilepath);
-});
+router.use('/:imageId', imageFinder, imageRouter);
 
 module.exports = router;
