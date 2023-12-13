@@ -69,12 +69,13 @@ const nonExistingImageValues = {
   caption: 'testing posting',
   mimetype: 'image/png',
   originalname: 'new.PNG',
-  imagePath: 'tests/test-files/new.PNG',
+  size: 8183,
+  filepath: 'tests/test-files/new.PNG',
 };
 
 const invalidImageTypes = [
   {
-    imagePath: 'tests/test-files/text.txt',
+    filepath: 'tests/test-files/text.txt',
   },
 ];
 

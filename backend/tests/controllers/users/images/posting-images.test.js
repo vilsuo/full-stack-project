@@ -26,7 +26,7 @@ TODO
 */
 
 const postImage = async (username, extraHeaders, formValues, statusCode = 201) => {
-  const { imagePath, ...fieldValues } = formValues;
+  const { filepath, ...fieldValues } = formValues;
 
   const headers = {
     'Content-Type': 'multipart/form-data',
@@ -37,7 +37,7 @@ const postImage = async (username, extraHeaders, formValues, statusCode = 201) =
     .post(`${baseUrl}/${username}/images`)
     .set(headers)
     .field(fieldValues)
-    .attach('image', imagePath)
+    .attach('image', filepath)
     .expect(statusCode)
     .expect('Content-Type', /application\/json/);
 
@@ -67,7 +67,7 @@ describe('posting images', () => {
     };
 
     const responseBody = await postImage(
-      username, headers, formValues, 401
+      username, {} /*headers*/, formValues, 401
     );
 
     expect(responseBody.message).toBe('authentication required');
@@ -173,7 +173,7 @@ describe('posting images', () => {
         const responseBody = await postImage(
           postingUsersUsername,
           authHeader,
-          omit(formValues, ['imagePath']),
+          omit(formValues, ['filepath']),
           400
         );
 
