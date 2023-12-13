@@ -1,5 +1,6 @@
 const router = require('express').Router({ mergeParams: true });
 
+const { sequelize } = require('../../util/db');
 const { isSessionUser } = require('../../util/middleware/auth');
 const { potraitFinder } = require('../../util/middleware/finder');
 const { getNonSensitivePotrait } = require('../../util/dto');
@@ -14,25 +15,32 @@ TODO
 - write tests
 */
 
-const createPotrait = async (filepath, file, userId) => {
+const createPotrait = async (filepath, file, userId, transaction = {}) => {
   const { mimetype, size } = file;
 
-  const image = await Potrait.create({
-    filepath,
-    mimetype, 
-    size,
-    userId,
-  });
+  const image = await Potrait.create(
+    { filepath, mimetype, size, userId },
+    transaction
+  );
 
   return image;
 };
 
+// TODO make route for user only?
 router.get('/', potraitFinder, async (req, res) => {
   const potrait = req.potrait;
   return res.send(getNonSensitivePotrait(potrait));
 });
 
-router.post('/', isSessionUser, async (req, res, next) => {
+// TODO write tests
+/**
+ * create/replace a {@link Potrait} to user.
+ * 
+ * responses with
+ * - 201 if a new potrait was created
+ * - 200 if old potrait was replace by a new potrait
+ */
+router.put('/', isSessionUser, async (req, res, next) => {
   imageUpload(req, res, async (error) => {
     if (error) return next(error);
 
@@ -47,19 +55,53 @@ router.post('/', isSessionUser, async (req, res, next) => {
     // The full path to the uploaded file (DiskStorage only)
     const filepath = file.path;
 
-    try {
-      const userId = req.user.id;
-      const potrait = await createPotrait(filepath, file, userId);
-      return res.status(201).send(getNonSensitivePotrait(potrait));
+    const userId = req.user.id;
+    const oldPotrait = await Potrait.findOne({ where: { userId } });
 
-    } catch (error) {
-      // Image validation failed, image was already saved to the filesystem
-      imageStorage.removeFile(filepath);
-      return next(error);
+    if (!oldPotrait) {
+      // user does not have a potrait: simply create one
+      let newPotrait;
+      try {
+        newPotrait = await createPotrait(filepath, file, userId);
+
+      } catch (error) {
+        // error happened but, posted file was already saved to the filesystem
+        imageStorage.removeFile(filepath);
+        return next(error);
+      }
+      // successfull create: return '201'
+      return res.status(201).send(getNonSensitivePotrait(newPotrait));
+
+    } else {
+      // user has a potrait: try to replace the old one with the new one
+      let newPotrait;
+      const transaction = await sequelize.transaction();
+      try {
+        // 1. delete old one
+        await oldPotrait.destroy({ transaction });
+
+        // 2. create a new one
+        newPotrait = await createPotrait(filepath, file, userId, { transaction });
+
+        await transaction.commit();
+
+        // transaction on remove old file from the filesystem
+        imageStorage.removeFile(oldPotrait.filepath);
+
+      } catch (error) {
+        await transaction.rollback();
+
+        // error happened but, posted file was already saved to the filesystem
+        imageStorage.removeFile(filepath);
+        return next(error);
+      }
+      // successfull update: return '200'
+      return res.status(200).send(getNonSensitivePotrait(newPotrait));
     }
   });
 });
 
+// TODO write tests
 router.delete('/', potraitFinder, isSessionUser, async (req, res) => {
   const potrait = req.potrait;
   
