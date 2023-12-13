@@ -29,11 +29,7 @@ const createPotrait = async (filepath, file, userId) => {
 
 router.get('/', potraitFinder, async (req, res) => {
   const potrait = req.potrait;
-  const fullfilepath = imageStorage.getImageFilePath(potrait.filepath);
-
-  return res
-    .type(potrait.mimetype)
-    .sendFile(fullfilepath);
+  return res.send(getNonSensitivePotrait(potrait));
 });
 
 router.post('/', isSessionUser, async (req, res, next) => {
@@ -72,6 +68,15 @@ router.delete('/', potraitFinder, isSessionUser, async (req, res) => {
   imageStorage.removeFile(potrait.filepath);
 
   return res.status(204).end();
+});
+
+router.get('/content', potraitFinder, async (req, res) => {
+  const potrait = req.potrait;
+  const fullfilepath = imageStorage.getImageFilePath(potrait.filepath);
+
+  return res
+    .type(potrait.mimetype)
+    .sendFile(fullfilepath);
 });
 
 module.exports = router;

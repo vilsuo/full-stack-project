@@ -1,21 +1,22 @@
 const supertest = require('supertest');
 const omit = require('lodash.omit');
 const path = require('path');
-const app = require('../../../src/app');
+const app = require('../../../../src/app');
 
-const { User, Image } = require('../../../src/models');
-const imageStorage = require('../../../src/util/image-storage');
+const { User, Image } = require('../../../../src/models');
+const imageStorage = require('../../../../src/util/image-storage');
 const {
   existingUserValues, otherExistingUserValues,
   disabledExistingUserValues, nonExistingUserValues,
   existingUserImageValues, otherExistingUserImageValues,
-} = require('../../helpers/constants');
+} = require('../../../helpers/constants');
 const {
-  login, createUser, createImage,
+  login, createImage,
   compareFoundWithResponse, compareFoundArrayWithResponseArray, 
   findPublicAndPrivateImage,
-} = require('../../helpers');
-const { getNonSensitiveImage } = require('../../../src/util/dto');
+  createUser
+} = require('../../../helpers');
+const { getNonSensitiveImage } = require('../../../../src/util/dto');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -68,7 +69,7 @@ describe('find users images', () => {
     expect(responseBody.message).toBe('user is disabled');
   });
 
-  test('if user does not have any images, an empty array is returned', async () => {
+  test('if user does not have any images an empty array is returned', async () => {
     // create a new user that does not have any images
     const newUser = await createUser(nonExistingUserValues);
 

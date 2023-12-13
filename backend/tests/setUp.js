@@ -6,8 +6,9 @@ const { sequelize, connectToDatabases } = require('../src/util/db');
 const { 
   existingUserValues, otherExistingUserValues, disabledExistingUserValues,
   existingUserImageValues, otherExistingUserImageValues,
+  existingUserPotraitValues, otherExistingUserPotraitValues,
 } = require('./helpers/constants');
-const { createPublicAndPrivateImage } = require('./helpers');
+const { createPublicAndPrivateImage, createPotrait } = require('./helpers');
 
 const userValues = [ existingUserValues, otherExistingUserValues, disabledExistingUserValues ];
 
@@ -41,6 +42,10 @@ beforeEach(async () => {
 
   await createPublicAndPrivateImage(id, existingUserImageValues);
   await createPublicAndPrivateImage(otherId, otherExistingUserImageValues);
+
+  // create potrait to 2 first users
+  await createPotrait(id, existingUserPotraitValues);
+  await createPotrait(otherId, otherExistingUserPotraitValues);
 });
 
 // reset redis db with redisClient.flushAll?

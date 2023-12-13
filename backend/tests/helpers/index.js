@@ -1,6 +1,6 @@
 const omit = require('lodash.omit');
 
-const { User, Image } = require('../../src/models');
+const { User, Image, Potrait } = require('../../src/models');
 const { encodePassword } = require('../../src/util/auth');
 const { cookieKey } = require('../../src/constants');
 
@@ -95,6 +95,10 @@ const createPublicAndPrivateImage = async (userId, { publicImageValues, privateI
 const findPublicAndPrivateImage = async (username) => {
   const userId = (await User.findOne({ where: { username }})).id;
 
+  if (!userId) {
+    throw new Error(`user with username ${username} does not exist`);
+  }
+
   publicImage = await Image.findOne({
     where: { userId, privacy: 'public' }
   });
@@ -116,7 +120,21 @@ const getUsersImageCount = async username => {
   return usersImageCount;
 };
 
-// TODO change!
+// missing 'filepath'
+const createPotrait = async (userId, potraitValues) => {
+  return await Potrait.create({ userId, ...potraitValues });
+};
+
+const findPotrait = async (username) => {
+  const userId = (await User.findOne({ where: { username }})).id;
+
+  if (!userId) {
+    throw new Error(`user with username ${username} does not exist`);
+  }
+  
+  return await Potrait.findOne({ where: { userId } });
+};
+
 const compareFoundArrayWithResponseArray = (foundNonSensitiveValuesArray, responseArray) => {
   expect(responseArray).toHaveLength(foundNonSensitiveValuesArray.length);
 
@@ -142,6 +160,8 @@ module.exports = {
   createImage,
   createPublicAndPrivateImage,
   findPublicAndPrivateImage,
+  createPotrait,
+  findPotrait,
   getUsersImageCount,
   compareFoundArrayWithResponseArray,
   compareFoundWithResponse,

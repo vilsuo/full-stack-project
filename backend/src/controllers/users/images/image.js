@@ -1,8 +1,8 @@
 const router = require('express').Router({ mergeParams: true });
 
-const { isAllowedToViewImage, isSessionUser } = require('../../util/middleware/auth');
-const { getNonSensitiveImage } = require('../../util/dto');
-const imageStorage = require('../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
+const { isAllowedToViewImage, isSessionUser } = require('../../../util/middleware/auth');
+const { getNonSensitiveImage } = require('../../../util/dto');
+const imageStorage = require('../../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
 
 /*
 TODO

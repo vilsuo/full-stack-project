@@ -2,8 +2,10 @@ const omit = require('lodash.omit');
 const supertest = require('supertest');
 const app = require('../../src/app');
 
-const { User } = require('../../src/models');
-const { get_SetCookie, compareFoundWithResponse, login } = require('../helpers');
+const { User, Potrait } = require('../../src/models');
+const { 
+  get_SetCookie, compareFoundWithResponse, login, getUsersImageCount
+} = require('../helpers');
 const {
   existingUserValues,
   disabledExistingUserValues,
@@ -56,6 +58,23 @@ describe('registering', () => {
     const responseBody = await register(nonExistingUserValues);
   
     expect(responseBody).not.toHaveProperty('passwordHash');
+  });
+
+  test('new user does not have any images', async () => {
+    // create a new user that does not have any images
+    const newUser = await register(nonExistingUserValues);
+
+    const imageCount = await getUsersImageCount(newUser.username);
+  
+    expect(imageCount).toBe(0);
+  });
+
+  test('new user does not have a potrait', async () => {
+    // create a new user that does not have any images
+    const newUser = await register(nonExistingUserValues);
+  
+    const potrait = await Potrait.findOne({ where: { userId: newUser.id }});
+    expect(potrait).toBeFalsy();
   });
 
   describe('fails with', () => {

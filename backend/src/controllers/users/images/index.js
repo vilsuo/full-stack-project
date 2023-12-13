@@ -1,12 +1,12 @@
 const router = require('express').Router({ mergeParams: true }); // use parameter 'username'
 const imageRouter = require('./image');
 
-const { Image, User } = require('../../models');
-const { isSessionUser } = require('../../util/middleware/auth');
-const { getNonSensitiveImage } = require('../../util/dto');
-const logger = require('../../util/logger');
-const imageStorage = require('../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
-const { imageFinder } = require('../../util/middleware/finder');
+const { Image, User } = require('../../../models');
+const { isSessionUser } = require('../../../util/middleware/auth');
+const { getNonSensitiveImage } = require('../../../util/dto');
+const logger = require('../../../util/logger');
+const imageStorage = require('../../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
+const { imageFinder } = require('../../../util/middleware/finder');
 
 const imageUpload = imageStorage.upload.single('image');
 

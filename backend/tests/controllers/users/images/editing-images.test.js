@@ -1,11 +1,11 @@
 const supertest = require('supertest');
 const omit = require('lodash.omit');
 
-const app = require('../../../src/app');
-const { Image } = require('../../../src/models');
-const { existingUserValues, otherExistingUserValues, } = require('../../helpers/constants');
-const { login, compareFoundWithResponse, findPublicAndPrivateImage } = require('../../helpers');
-const { getNonSensitiveImage } = require('../../../src/util/dto');
+const app = require('../../../../src/app');
+const { Image } = require('../../../../src/models');
+const { existingUserValues, otherExistingUserValues, } = require('../../../helpers/constants');
+const { login, compareFoundWithResponse, findPublicAndPrivateImage } = require('../../../helpers');
+const { getNonSensitiveImage } = require('../../../../src/util/dto');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
