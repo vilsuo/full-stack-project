@@ -8,7 +8,7 @@ const imageStorage = require('../../../../src/util/image-storage');
 const {
   existingUserValues, otherExistingUserValues,
   disabledExistingUserValues, nonExistingUserValues,
-  existingUserImageValues, otherExistingUserImageValues,
+  existingUserImageValues, otherExistingUserImageValues, nonExistingImageValues
 } = require('../../../helpers/constants');
 const {
   login, createImage,
@@ -51,10 +51,6 @@ const getImageContent = async (username, imageId, statusCode = 200, headers = {}
 describe('find users images', () => {
   const getImageFilePathSpy = jest.spyOn(imageStorage, 'getImageFilePath');
 
-  afterEach(() => {    
-    getImageFilePathSpy.mockClear();
-  });
-
   test('can not view non-existing users images', async () => {
     const username = nonExistingUserValues.username;
     const responseBody = await getImages(username, 404)
@@ -93,9 +89,6 @@ describe('find users images', () => {
     let publicImage;
     let privateImage;
 
-    const publicImageFilepath = existingUserImageValues.publicImageValues.filepath
-    const privateImageFilepath = existingUserImageValues.privateImageValues.filepath;
-
     // find a private and a nonprivate image
     beforeEach(async () => {
       ({ publicImage, privateImage } = await findPublicAndPrivateImage(username));
@@ -125,12 +118,12 @@ describe('find users images', () => {
 
       test('can view public image content', async () => {
         getImageFilePathSpy.mockImplementationOnce(filepath => {
-          return path.join(path.resolve(), publicImageFilepath);
+          return path.join(path.resolve(), publicImage.filepath);
         });
 
         const response = await getImageContent(username, publicImage.id);
 
-        expect(getImageFilePathSpy).toHaveBeenCalled();
+        expect(getImageFilePathSpy).toHaveBeenCalledWith(publicImage.filepath);
 
         // returned image has the correct mimetype
         expect(response.get('content-type')).toBe(publicImage.mimetype);
@@ -142,7 +135,7 @@ describe('find users images', () => {
     
         // create image to disabled user
         const disabledImageId = (await createImage({
-          userId: disabledUserId, privacy: 'public'
+          userId: disabledUserId, privacy: 'public', ...nonExistingImageValues
         })).id;
     
         const responseBody = await getImage(
@@ -162,6 +155,8 @@ describe('find users images', () => {
         const response = await getImageContent(username, privateImage.id, 401);
 
         expect(response.body.message).toBe('authentication required');
+
+        expect(getImageFilePathSpy).not.toHaveBeenCalled();
       });
     });
   
@@ -197,12 +192,12 @@ describe('find users images', () => {
 
         test('can view private image content', async () => {
           getImageFilePathSpy.mockImplementationOnce(filepath => {
-            return path.join(path.resolve(), privateImageFilepath);
+            return path.join(path.resolve(), privateImage.filepath);
           });
   
           const response = await getImageContent(username, privateImage.id, 200, authHeader);
   
-          expect(getImageFilePathSpy).toHaveBeenCalled();
+          expect(getImageFilePathSpy).toHaveBeenCalledWith(privateImage.filepath);
   
           // returned image has the correct mimetype
           expect(response.get('content-type')).toBe(privateImage.mimetype);
@@ -213,9 +208,6 @@ describe('find users images', () => {
         const otherUsername = otherExistingUserValues.username;
         let otherPublicImage;
         let otherPrivateImage;
-
-        const otherPublicImageFilepath = otherExistingUserImageValues
-          .publicImageValues.filepath
         
         beforeEach(async () => {
           ({ publicImage : otherPublicImage, privateImage: otherPrivateImage } =
@@ -248,14 +240,14 @@ describe('find users images', () => {
 
         test('can view public image content', async () => {
           getImageFilePathSpy.mockImplementationOnce(filepath => {
-            return path.join(path.resolve(), otherPublicImageFilepath);
+            return path.join(path.resolve(), otherPublicImage.filepath);
           });
   
           const response = await getImageContent(
             otherUsername, otherPublicImage.id, 200, authHeader
           );
   
-          expect(getImageFilePathSpy).toHaveBeenCalled();
+          expect(getImageFilePathSpy).toHaveBeenCalledWith(otherPublicImage.filepath);
   
           // returned image has the correct mimetype
           expect(response.get('content-type')).toBe(otherPublicImage.mimetype);
@@ -275,6 +267,8 @@ describe('find users images', () => {
           );
   
           expect(response.body.message).toBe('image is private');
+
+          expect(getImageFilePathSpy).not.toHaveBeenCalled();
         });
       });
     });

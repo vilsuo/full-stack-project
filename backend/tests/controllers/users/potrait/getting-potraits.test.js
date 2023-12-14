@@ -35,10 +35,6 @@ const getPotraitContent = async (username, statusCode = 200, headers = {}) => {
 describe('find users potrait', () => {
   const getImageFilePathSpy = jest.spyOn(imageStorage, 'getImageFilePath');
 
-  afterEach(() => {    
-    getImageFilePathSpy.mockClear();
-  });
-
   test('can not get non-existing users potrait', async () => {
     const username = nonExistingUserValues.username;
     const responseBody = await getPotrait(username, 404)
@@ -72,35 +68,41 @@ describe('find users potrait', () => {
 
   describe('when potraits have been created', () => {
     const username = existingUserValues.username;
-    let potrait;
 
-    const potraitFilepath = existingUserPotraitValues.filepath
-
-    // find a potrait
+    let foundPotrait;
     beforeEach(async () => {
-      potrait = await findPotrait(username);
+      foundPotrait = await findPotrait(username);
     });
 
     test('can get a potrait without authentication', async () => {
       const returnedPotrait = await getPotrait(username);
 
       compareFoundWithResponse(
-        getNonSensitivePotrait(potrait),
+        getNonSensitivePotrait(foundPotrait),
         returnedPotrait
       );
     });
 
-    test('can view a potrait content without authentication', async () => {
-      getImageFilePathSpy.mockImplementationOnce(filepath => {
-        return path.join(path.resolve(), potraitFilepath);
+    describe('getting potrait content', () => {
+      beforeEach(async () => {
+        getImageFilePathSpy.mockImplementationOnce(filepath => {
+          return path.join(path.resolve(), foundPotrait.filepath);
+        });
       });
 
-      const response = await getPotraitContent(username);
+      afterEach(async () => {
+        expect(getImageFilePathSpy).toHaveBeenCalledWith(foundPotrait.filepath);
+      });
 
-      expect(getImageFilePathSpy).toHaveBeenCalled();
-
-      // returned image has the correct mimetype
-      expect(response.get('content-type')).toBe(potrait.mimetype);
+      test('can view a potrait content without authentication', async () => {
+        await getPotraitContent(username);
+      });
+  
+      test('potrait content response has correct content-type', async () => {
+        const response = await getPotraitContent(username);
+  
+        expect(response.get('content-type')).toBe(foundPotrait.mimetype);
+      });
     });
   });
 });

@@ -151,7 +151,7 @@ describe('editing images', () => {
       });
     });
 
-    describe('deleting other users images', () => {
+    describe('editing other users images', () => {
       const otherUsername = otherExistingUserValues.username;
       let otherPublicImage;
       let otherPrivateImage;

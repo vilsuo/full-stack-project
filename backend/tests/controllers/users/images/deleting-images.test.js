@@ -10,12 +10,6 @@ const { login, getUsersImageCount, findPublicAndPrivateImage, } = require('../..
 const api = supertest(app);
 const baseUrl = '/api/users';
 
-/*
-TODO
-- reset mock after each test
-- test deleting image that is also profile picture
-*/
-
 const deleteImage = async (username, imageId, headers = {}, statusCode = 401) => {
   const response = await api
     .delete(`${baseUrl}/${username}/images/${imageId}`)
@@ -26,14 +20,12 @@ const deleteImage = async (username, imageId, headers = {}, statusCode = 401) =>
 };
 
 describe('deleting images', () => {
+  const removeFileSpy = jest.spyOn(imageStorage, 'removeFile');
+
   const credentials = omit(existingUserValues, ['name']);
   const username = existingUserValues.username;
   let publicImage;
   let privateImage;
-
-  const removeFileSpy = jest
-    .spyOn(imageStorage, 'removeFile')
-    .mockImplementation((filepath) => console.log(`spy called with ${filepath}`));
 
   // find a private and a nonprivate image
   beforeEach(async () => {
@@ -60,6 +52,12 @@ describe('deleting images', () => {
     });
 
     describe('deleting own images', () => {
+      beforeEach(() => {
+        removeFileSpy.mockImplementation((filepath) => {
+          console.log(`spy called with ${filepath}`)
+        });
+      });
+
       test('can delete public image', async () => {
         await deleteImage(username, publicImage.id, authHeader, 204);
       });
@@ -98,7 +96,7 @@ describe('deleting images', () => {
         test('attempt is made to remove file from the filesystem', async () => {
           await deleteImage(username, publicImage.id, authHeader, 204);
   
-          expect(removeFileSpy).toHaveBeenCalled();
+          expect(removeFileSpy).toHaveBeenCalledWith(publicImage.filepath);
         });
       });
     });

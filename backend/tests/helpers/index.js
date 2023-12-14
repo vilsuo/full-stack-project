@@ -62,31 +62,19 @@ const createUser = async ({ name, username, password, disabled = false }) => {
  * 
  * @returns the created image
  */
-const createImage = async ({
-    userId,
-    title,
-    caption,
-    privacy, 
-    mimetype = 'image/jpeg',
-    originalname = 'test.jpeg',
-    size = 1000
-  }) => {
-
-  return await Image.create({
-    originalname, mimetype, size,
-    title, caption, privacy, userId,
-  });
+const createImage = async (values) => {
+  return await Image.create(values);
 };
 
 const createPublicAndPrivateImage = async (userId, { publicImageValues, privateImageValues }) => {
   const publicImage = await createImage({
     userId, privacy: 'public',
-    ...omit(publicImageValues, ['filepath']),
+    ...publicImageValues,
   });
 
   const privateImage = await createImage({
     userId, privacy: 'private',
-    ...omit(privateImageValues, ['filepath']),
+    ...privateImageValues,
   });
 
   return { publicImage, privateImage };

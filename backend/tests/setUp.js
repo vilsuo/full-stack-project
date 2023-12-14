@@ -48,6 +48,10 @@ beforeEach(async () => {
   await createPotrait(otherId, otherExistingUserPotraitValues);
 });
 
+afterEach(() => {
+  jest.clearAllMocks();
+})
+
 // reset redis db with redisClient.flushAll?
 afterAll(async () => {
   await sequelize.drop({});

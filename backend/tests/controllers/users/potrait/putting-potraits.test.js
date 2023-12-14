@@ -17,6 +17,12 @@ const { ValidationError } = require('sequelize');
 const api = supertest(app);
 const baseUrl = '/api/users';
 
+/*
+TODO
+- 'on unsuccessull put':
+  - how to check that file being removed was the posted one?
+*/
+
 const putPotrait = async (username, extraHeaders, filepath, statusCode = 201) => {
   const headers = {
     'Content-Type': 'multipart/form-data',
@@ -40,12 +46,8 @@ describe('putting potraits', () => {
 
   beforeEach(() => {
     removeFileSpy.mockImplementation((filepath) => {
-      console.log(`spy called with ${filepath}`)
+      console.log(`'removeFileSpy' called with '${filepath}'`)
     });
-  });
-
-  afterEach(() => {    
-    jest.clearAllMocks();
   });
 
   test('can not put without authentication', async () => {
@@ -184,12 +186,19 @@ describe('putting potraits', () => {
           });
 
           test('there is an attempt to remove the old potrait file from the filesystem', async () => {
+            const oldPotraitBefore = await findPotrait(postingUsersUsername);
+
             await putPotrait(postingUsersUsername, authHeader, filepath, 200);
 
-            expect(removeFileSpy).toHaveBeenCalled();
+            // mock was called with old potraits filepath
+            expect(removeFileSpy).toHaveBeenCalledWith(oldPotraitBefore.filepath);
           });
         });
 
+        /*
+        TODO
+        -  how to check that file being removed was the posted one?
+        */
         describe('on unsuccessull put', () => {
           describe('when failing potrait validation', () => {
             const createPotraitSpy = jest.spyOn(Potrait, 'create');

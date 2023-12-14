@@ -67,7 +67,7 @@ describe('posting images', () => {
     };
 
     const responseBody = await postImage(
-      username, {} /*headers*/, formValues, 401
+      username, headers, formValues, 401
     );
 
     expect(responseBody.message).toBe('authentication required');
