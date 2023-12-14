@@ -26,13 +26,11 @@ const createPotrait = async (filepath, file, userId, transaction = {}) => {
   return image;
 };
 
-// TODO make route for user only?
 router.get('/', potraitFinder, async (req, res) => {
   const potrait = req.potrait;
   return res.send(getNonSensitivePotrait(potrait));
 });
 
-// TODO write tests
 /**
  * create/replace a {@link Potrait} to user.
  * 
@@ -85,9 +83,6 @@ router.put('/', isSessionUser, async (req, res, next) => {
 
         await transaction.commit();
 
-        // transaction on remove old file from the filesystem
-        imageStorage.removeFile(oldPotrait.filepath);
-
       } catch (error) {
         await transaction.rollback();
 
@@ -95,6 +90,9 @@ router.put('/', isSessionUser, async (req, res, next) => {
         imageStorage.removeFile(filepath);
         return next(error);
       }
+      // transaction successfull: remove old file from the filesystem
+      imageStorage.removeFile(oldPotrait.filepath);
+
       // successfull update: return '200'
       return res.status(200).send(getNonSensitivePotrait(newPotrait));
     }
