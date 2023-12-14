@@ -10,11 +10,6 @@ const logger = require('../../util/logger');
 
 const imageUpload = imageStorage.upload.single('image');
 
-/*
-TODO
-- write tests
-*/
-
 const createPotrait = async (filepath, file, userId, transaction = {}) => {
   const { mimetype, size } = file;
 
@@ -99,7 +94,6 @@ router.put('/', isSessionUser, async (req, res, next) => {
   });
 });
 
-// TODO write tests
 router.delete('/', potraitFinder, isSessionUser, async (req, res) => {
   const potrait = req.potrait;
   
