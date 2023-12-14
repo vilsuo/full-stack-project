@@ -132,7 +132,7 @@ describe('putting potraits', () => {
       // expect status '200'
       describe('putting when user already has a potrait', () => {
         const credentials = omit(existingUserValues, ['name']);
-        const postingUsersUsername = credentials.username;
+        const puttingUsersUsername = credentials.username;
 
         let authHeader = {};
 
@@ -142,11 +142,11 @@ describe('putting potraits', () => {
 
         test('can put a potrait', async () => {
           const returnedPotrait = await putPotrait(
-            postingUsersUsername, authHeader, filepath, 200
+            puttingUsersUsername, authHeader, filepath, 200
           );
 
           const foundUser = await User.findOne({ 
-            where: { username: postingUsersUsername }
+            where: { username: puttingUsersUsername }
           });
 
           // details from the posted file are saved
@@ -158,17 +158,21 @@ describe('putting potraits', () => {
         });
 
         describe('on successfull put', () => {
-          test('putting replaces the old potrait', async () => {
-            const foundPotraitBefore = await findPotrait(postingUsersUsername);
-            expect(foundPotraitBefore).not.toBeFalsy();
+          let oldPotraitBefore;
+          let returnedPotrait;
+          beforeEach(async () => {
+            oldPotraitBefore = await findPotrait(puttingUsersUsername);
+            expect(oldPotraitBefore).not.toBeFalsy();
 
-            const returnedPotrait = await putPotrait(
-              postingUsersUsername, authHeader, filepath, 200
+            returnedPotrait = await putPotrait(
+              puttingUsersUsername, authHeader, filepath, 200
             );
+          });
 
-            expect(returnedPotrait.id).not.toBe(foundPotraitBefore.id);
+          test('putting replaces the old potrait', async () => {
+            expect(returnedPotrait.id).not.toBe(oldPotraitBefore.id);
 
-            const foundPotrait = await findPotrait(postingUsersUsername);
+            const foundPotrait = await findPotrait(puttingUsersUsername);
             compareFoundWithResponse(
               getNonSensitivePotrait(foundPotrait),
               returnedPotrait
@@ -176,29 +180,23 @@ describe('putting potraits', () => {
           });
 
           test('old potrait is no longer found after succesfull put', async () => {
-            const oldPotraitBefore = await findPotrait(postingUsersUsername);
-            expect(oldPotraitBefore).not.toBeFalsy();
-
-            await putPotrait(postingUsersUsername, authHeader, filepath, 200);
-
             const oldPotraitAfter = await Potrait.findByPk(oldPotraitBefore.id);
             expect(oldPotraitAfter).toBeFalsy();
           });
 
+          test('user has only one potrait', async () => {
+            const user = await User.findOne({ where: { username: puttingUsersUsername } });
+            const usersPotraits = await Potrait.findAll({ where: { userId: user.id } });
+
+            expect(usersPotraits).toHaveLength(1);
+          });
+
           test('there is an attempt to remove the old potrait file from the filesystem', async () => {
-            const oldPotraitBefore = await findPotrait(postingUsersUsername);
-
-            await putPotrait(postingUsersUsername, authHeader, filepath, 200);
-
             // mock was called with old potraits filepath
             expect(removeFileSpy).toHaveBeenCalledWith(oldPotraitBefore.filepath);
           });
         });
 
-        /*
-        TODO
-        -  how to check that file being removed was the posted one?
-        */
         describe('on unsuccessull put', () => {
           describe('when failing potrait validation', () => {
             const createPotraitSpy = jest.spyOn(Potrait, 'create');
@@ -215,16 +213,16 @@ describe('putting potraits', () => {
             });
 
             test('old potrait can be found after failing to create a potrait', async () => {
-              const potraitBefore = await findPotrait(postingUsersUsername);
+              const potraitBefore = await findPotrait(puttingUsersUsername);
 
-              await putPotrait(postingUsersUsername, authHeader, filepath, 400);
+              await putPotrait(puttingUsersUsername, authHeader, filepath, 400);
 
-              const potraitAfter = await findPotrait(postingUsersUsername);
+              const potraitAfter = await findPotrait(puttingUsersUsername);
               expect(potraitAfter).toStrictEqual(potraitBefore);
             });
 
             test('there is an attempt to remove a file from the filesystem', async () => {
-              await putPotrait(postingUsersUsername, authHeader, filepath, 400);
+              await putPotrait(puttingUsersUsername, authHeader, filepath, 400);
 
               expect(removeFileSpy).toHaveBeenCalled();
             });
@@ -236,7 +234,7 @@ describe('putting potraits', () => {
 
             test('text files are not allowed', async () => {
               const responseBody = await putPotrait(
-                postingUsersUsername, authHeader, txtFilepath, 400
+                puttingUsersUsername, authHeader, txtFilepath, 400
               );
       
               expect(responseBody.message).toMatch(
@@ -245,17 +243,17 @@ describe('putting potraits', () => {
             });
 
             test('old potrait can be found after putting invalid file', async () => {
-              const potraitBefore = await findPotrait(postingUsersUsername);
+              const potraitBefore = await findPotrait(puttingUsersUsername);
   
-              await putPotrait(postingUsersUsername, authHeader, filepathToInvalidFile, 400);
+              await putPotrait(puttingUsersUsername, authHeader, filepathToInvalidFile, 400);
   
-              const potraitAfter = await findPotrait(postingUsersUsername);
+              const potraitAfter = await findPotrait(puttingUsersUsername);
   
               expect(potraitAfter).toStrictEqual(potraitBefore);
             });
 
             test('there is no attempt to remove a file from the filesystem', async () => {
-              await putPotrait(postingUsersUsername, authHeader, filepathToInvalidFile, 400);
+              await putPotrait(puttingUsersUsername, authHeader, filepathToInvalidFile, 400);
 
               expect(removeFileSpy).not.toHaveBeenCalled();
             });
