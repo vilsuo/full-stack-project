@@ -74,6 +74,12 @@ describe('deleting potraits', () => {
         test('attempt is made to remove file from the filesystem', async () => {
           expect(removeFileSpy).toHaveBeenCalledWith(potrait.filepath);
         });
+
+        test('user is not deleted', async () => {
+          const foundUser = await User.findOne({ where: { username }});
+          expect(foundUser).not.toBeFalsy();
+          expect(foundUser.id).not.toBeFalsy();
+        });
       });
     });
 

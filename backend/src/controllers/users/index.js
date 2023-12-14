@@ -6,6 +6,7 @@ const { sequelize } = require('../../util/db');
 const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
+const { isSessionUser } = require('../../util/middleware/auth');
 
 router.get('/', async (req, res) => {
   const searchFilters = {};
@@ -36,6 +37,13 @@ router.get('/', async (req, res) => {
 router.get('/:username', userFinder, async (req, res) => {
   const user = req.foundUser;
   return res.send(getNonSensitiveUser(user));
+});
+
+router.delete('/:username', userFinder, isSessionUser, async (req, res) => {
+  const user = req.foundUser;
+  await user.destroy();
+
+  return res.status(204).send();
 });
 
 router.use('/:username/potrait', userFinder, potraitRouter);

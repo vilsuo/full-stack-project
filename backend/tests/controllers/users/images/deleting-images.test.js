@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const omit = require('lodash.omit');
 
 const app = require('../../../../src/app');
-const { Image } = require('../../../../src/models');
+const { Image, User } = require('../../../../src/models');
 const imageStorage = require('../../../../src/util/image-storage');
 const { existingUserValues, otherExistingUserValues } = require('../../../helpers/constants');
 const { login, getUsersImageCount, findPublicAndPrivateImage, } = require('../../../helpers');
@@ -97,6 +97,12 @@ describe('deleting images', () => {
           await deleteImage(username, publicImage.id, authHeader, 204);
   
           expect(removeFileSpy).toHaveBeenCalledWith(publicImage.filepath);
+        });
+
+        test('user is not deleted', async () => {
+          const foundUser = await User.findOne({ where: { username }});
+          expect(foundUser).not.toBeFalsy();
+          expect(foundUser.id).not.toBeFalsy();
         });
       });
     });
