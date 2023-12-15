@@ -19,13 +19,13 @@ import { styled } from '@mui/material';
 // see: https://mui.com/material-ui/react-app-bar/#fixed-placement
 const Offset = styled('div')(({ theme }) => theme.mixins.toolbar);
 
-const LoggedInMenu = ({ user }) => {
+const LoggedInMenu = ({ currentUser }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const username = user.username;
+  const username = currentUser.username;
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -38,6 +38,11 @@ const LoggedInMenu = ({ user }) => {
   const handleProfileClick = () => {
     handleClose();
     navigate(`/users/${username}`);
+  };
+
+  const handleSettingsClick = () => {
+    handleClose();
+    navigate(`/users/${username}/settings`);
   };
 
   const handleLogout = () => {
@@ -69,6 +74,7 @@ const LoggedInMenu = ({ user }) => {
         onClose={handleClose}
       >
         <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+        <MenuItem onClick={handleSettingsClick}>Settings</MenuItem>
         <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
     </div>
@@ -88,7 +94,6 @@ const NotLoggedInMenu = () => {
   );
 };
 
-
 const Nav = () => {
 
   const currentUser = useSelector(state => state.auth.user);
@@ -101,7 +106,7 @@ const Nav = () => {
             <HomeIcon />
           </IconButton>
             <SearchBar />
-            { currentUser && <LoggedInMenu user={currentUser} /> }
+            { currentUser && <LoggedInMenu currentUser={currentUser} /> }
             { !currentUser && <NotLoggedInMenu /> }
         </Toolbar>
       </AppBar>

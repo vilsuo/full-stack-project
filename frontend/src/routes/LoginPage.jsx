@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { useDispatch } from 'react-redux';
 import { login } from '../reducers/auth';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -20,6 +20,7 @@ const LoginPage = () => {
   const [message, setMessage] = useState(null);
 
   const dispatch = useDispatch();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const clearMessage = () => setMessage(null);
@@ -31,7 +32,8 @@ const LoginPage = () => {
     dispatch(login({ username, password }))
       .unwrap()
       .then((user) => {
-        navigate('/');
+        const { from } = location.state || { from: { pathname: '/' } };
+        navigate(from, { replace: true });
       })
       .catch((error) => {
         setMessage(error);
