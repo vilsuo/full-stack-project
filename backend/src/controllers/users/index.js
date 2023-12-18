@@ -7,31 +7,48 @@ const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
 const { isSessionUser } = require('../../util/middleware/auth');
+const { paginationParser } = require('../../util/middleware/parser');
 
-router.get('/', async (req, res) => {
+/**
+ * Implements searching based on user name and username. 
+ * Does not return disabled users. Response is paginated, 
+ * see {@link paginationParser}.
+ */
+router.get('/', paginationParser, async (req, res) => {
   const searchFilters = {};
 
-  if (req.query.search) {
+  const { search } = req.query;
+
+  if (search) {
     searchFilters[Op.or] = [
       sequelize.where(
         sequelize.fn('lower', sequelize.col('name')),
-        { [Op.substring] : req.query.search.toLowerCase() }
+        { [Op.substring] : search.toLowerCase() }
       ),
       sequelize.where(
         sequelize.fn('lower', sequelize.col('username')),
-        { [Op.substring] : req.query.search.toLowerCase() }
+        { [Op.substring] : search.toLowerCase() }
       ),
     ];
   }
 
-  const users = await User.findAll({
+  const { pageNumber, pageSize } = req;
+
+  const { count, rows } = await User.findAndCountAll({
     where: { ...searchFilters, disabled: false },
-    order: [
-      ['username', 'ASC']
-    ],
+    // descending: from largest to smallest
+    order: [['createdAt', 'DESC']],
+    // pagination
+    offset: pageSize * pageNumber,
+    limit: pageSize,
   });
 
-  return res.json(users.map(user => getNonSensitiveUser(user)));
+  const users = rows.map(user => getNonSensitiveUser(user));
+
+  // total number of pages: the available pages number are [0, pages)
+  const pages = Math.ceil(count / pageSize);
+  
+  return res.send({ users, pages });
 });
 
 router.get('/:username', userFinder, async (req, res) => {

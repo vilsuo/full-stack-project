@@ -41,11 +41,7 @@ router.post('/login', async (req, res) => {
         username: user.username,
       };
 
-      return res.send({
-        id: user.id,
-        name: user.name,
-        username: user.username,
-      });
+      return res.send(getNonSensitiveUser(user));
     }
   }
 

@@ -1,36 +1,47 @@
-const parseNonNegative = (value, name) => {
-  const n = Number(value);
-  if (isNaN(n) || n < 0) {
-    throw new Error(`${name} must be non-negative number`);
+/**
+ * 
+ * @param {*} value 
+ * @param {*} defaultValue 
+ * @returns value, if it can be parsed to positive number
+ */
+const parsePositiveOrDefault = (value, defaultValue) => {
+  if (value) {
+    const nValue = Number(value);
+    if (Number.isInteger(nValue) && nValue > 0) {
+      return nValue;
+    }
   }
-  return n;
+  return defaultValue;
 };
 
-// use sequelize 'findAndCountAll'
-// https://sequelize.org/docs/v6/core-concepts/model-querying-finders/#findandcountall
-const pageParser = async (req, res, next) => {
+/**
+ * Parse the 'page' and 'size' query parameters from the request and
+ * attach them to req.pageNumber and req.pageSize.
+ * 
+ * If the query parameters are invalid, silently falls to default values:
+ * - default page number = 0
+ * - default page size = 10
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const paginationParser = (req, res, next) => {
+  const { page, size } = req.query;
+
+  // default has to be zero
   const defaultPageNumber = 0;
+  
   const defaultPageSize = 10;
 
-  try {
-    const pageNumber = req.query.page
-      ? parseNonNegative(req.query.page, 'page')
-      : defaultPageNumber;
+  // if page is zero, the default is returned, which is zero
+  req.pageNumber = parsePositiveOrDefault(page, defaultPageNumber);
 
-    const pageSize = req.query.size
-      ? parseNonNegative(req.query.size, 'size')
-      : defaultPageSize;
-
-    req.offset = pageNumber * pageSize;
-    req.limit = pageSize;
-  } catch (error) {
-    return res.status(400).send({ message: error.message });
-  }
-
+  // page size can no be 0
+  req.pageSize = parsePositiveOrDefault(size, defaultPageSize);
   next();
 };
 
 module.exports = {
-  parseNonNegative,
-  pageParser,
+  paginationParser,
 };
