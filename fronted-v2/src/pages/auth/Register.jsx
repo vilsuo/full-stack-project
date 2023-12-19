@@ -89,7 +89,7 @@ const Register = () => {
         <button>Register</button>
       </form>
 
-      <p>Already have a user? <Link to='/auth/login'>Login</Link>.</p>
+      <p>Already have a user? Login <Link to='/auth/login'>here</Link>.</p>
     </div>
   );
 };

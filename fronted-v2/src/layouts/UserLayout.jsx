@@ -1,6 +1,6 @@
-import { useLoaderData } from "react-router-dom";
+import { Outlet, useLoaderData } from 'react-router-dom';
 
-import usersService from '../../services/users';
+import usersService from '../services/users';
 
 export const userLoader = async ({ params }) => {
   const { username } = params;
@@ -8,14 +8,16 @@ export const userLoader = async ({ params }) => {
   return await usersService.getUser(username);
 };
 
-const User = () => {
+const UserLayout = () => {
   const user = useLoaderData();
 
   return (
-    <div className='user'>
+    <div className='user-layout'>
       <h2>username from loaderData: {user.username}</h2>
+
+      <Outlet context={user} />
     </div>
   );
 };
 
-export default User;
+export default UserLayout;

@@ -2,8 +2,11 @@ import axios from 'axios';
 
 const BASE_URL = '/api/users';
 
-const getUsers = async query => {
-  const { data } = await axios.get(`${BASE_URL}?search=${query}`);
+const getUsers = async (queryParams) => {
+  const { data } = await axios.get(
+    `${BASE_URL}`,
+    { params: queryParams }
+  );
   return data;
 };
 

@@ -1,6 +1,6 @@
 import { useRouteError } from "react-router-dom";
 
-const UserFinderErrorBoundary = () => {
+const UserErrorBoundary = () => {
   const error = useRouteError();
 
   let { message } = error.response.data;
@@ -16,4 +16,4 @@ const UserFinderErrorBoundary = () => {
   );
 };
 
-export default UserFinderErrorBoundary;
+export default UserErrorBoundary;

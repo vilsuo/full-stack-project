@@ -64,7 +64,7 @@ const Login = () => {
         <button>Login</button>
       </form>
 
-      <p>Do not have a user? <Link to='/auth/register'>Register</Link>.</p>
+      <p>Do not have a user? Register <Link to='/auth/register'>here</Link>.</p>
     </div>
   );
 };
