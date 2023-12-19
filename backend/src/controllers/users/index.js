@@ -17,7 +17,7 @@ const { paginationParser } = require('../../util/middleware/parser');
 router.get('/', paginationParser, async (req, res) => {
   const searchFilters = {};
 
-  const { search } = req.query;
+  const { q: search } = req.query;
 
   if (search) {
     searchFilters[Op.or] = [
@@ -48,7 +48,7 @@ router.get('/', paginationParser, async (req, res) => {
   // total number of pages: the available pages number are [0, pages)
   const pages = Math.ceil(count / pageSize);
   
-  return res.send({ users, pages });
+  return res.send({ users, page: pageNumber, pages });
 });
 
 router.get('/:username', userFinder, async (req, res) => {
