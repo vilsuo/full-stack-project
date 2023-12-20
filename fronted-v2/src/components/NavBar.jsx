@@ -22,7 +22,7 @@ const LoggedInMenu = ({ user }) => {
 
   const handleLogout = async () => {
     dispatch(logout());
-    navigate('/auth/login');
+    navigate('/login');
   };
 
   const { username } = user;
@@ -47,7 +47,7 @@ const NavBar = ({ user }) => {
       <NavLink to='about'>About</NavLink>
       { user
         ? <LoggedInMenu user={user} />
-        : <NavLink to='auth/login'>Login</NavLink>
+        : <NavLink to='login'>Login</NavLink>
       }
     </nav>
   );

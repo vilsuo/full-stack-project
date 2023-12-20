@@ -2,8 +2,8 @@ import { useDispatch } from 'react-redux';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-import { login } from '../../reducers/auth';
-import ErrorAlert from '../../components/ErrorAlert';
+import { login } from '../reducers/auth';
+import ErrorAlert from '../components/ErrorAlert';
 
 const Login = () => {
   const [message, setMessage] = useState(null);
@@ -33,7 +33,7 @@ const Login = () => {
   };
 
   return (
-    <div className='login'>
+    <div className='login container'>
       <h3>Login</h3>
 
       <ErrorAlert message={message} clearMessage={clearMessage} />
@@ -64,7 +64,7 @@ const Login = () => {
         <button>Login</button>
       </form>
 
-      <p>Do not have a user? Register <Link to='/auth/register'>here</Link>.</p>
+      <p>Do not have a user? Register <Link to='/register'>here</Link>.</p>
     </div>
   );
 };

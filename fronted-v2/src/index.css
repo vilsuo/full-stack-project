@@ -10,6 +10,7 @@
   --btn-bg: grey;
   --btn-bg-hover: rgb(92, 88, 88);
 }
+
 body {
   margin: 0;
   padding: 20px;
@@ -18,9 +19,14 @@ body {
 * {
   color: #fff;
   margin: 0;
+  box-sizing: border-box;
 }
 p {
   margin: 20px 0;
+}
+
+h1, h2, h3, h4, h5, h5 {
+  text-align: center;
 }
 
 /* buttons */
@@ -43,45 +49,6 @@ button:disabled {
   background-color: transparent;
   border: 0;
   opacity: 0.5;
-}
-
-/* forms and inputs */
-form {
-  margin-top: 20px;
-}
-form label {
-  display: flex;
-  flex-flow: column nowrap;
-  margin-bottom: 10px;
-}
-form input:focus {
-  background-color: burlywood;
-  outline: none;
-}
-form label span {
-  margin-bottom: 4px;
-}
-form input, form label span, form textarea {
-  display: block;
-}
-form input, form textarea {
-  padding: 8px;
-  border: var(--border);
-  border-radius: var(--border-radius);
-  color: black;
-  flex: 1;
-}
-.required:after {
-  content: ' *';
-}
-.resettable {
-  display: flex;
-  flex: 1;
-  margin: 0;
-  gap: 1px;
-}
-.resettable input {
-  width: 0;
 }
 
 /* page content */
@@ -111,6 +78,29 @@ header nav a {
 }
 header nav a.active {
   background-color: var(--primary);
+}
+
+/* potrait */
+.potrait-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+}
+.potrait-btn span {
+  font-size: 150%;
+  border-bottom: 2px solid var(--primary);
+}
+.avatar {
+  object-fit: cover;
+  object-position: top center;
+  border-radius:50%;
+  width: 40px;
+  height: 40px;
+}
+.avatar.profile {
+  width: 150px;
+  height: 150px;
 }
 
 /* dropdown */
@@ -186,22 +176,43 @@ header nav a.active {
   transform: rotate(45deg);
 }
 
-/* potrait */
-.potrait-btn {
+/* forms and inputs */
+form {
+  margin-top: 20px;
+}
+form label {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 10px;
+  flex-flow: column nowrap;
+  margin-bottom: 10px;
 }
-.potrait-btn span {
-  font-size: 150%;
-  border-bottom: 2px solid var(--primary);
+form input:focus {
+  background-color: burlywood;
+  outline: none;
 }
-.avatar {
-  border-radius: 50%;
-  vertical-align: middle;
-  width: 40px;
-  height: 40px;
+form label span {
+  margin-bottom: 4px;
+}
+form input, form label span, form textarea {
+  display: block;
+}
+form input, form textarea {
+  padding: 8px;
+  border: var(--border);
+  border-radius: var(--border-radius);
+  color: black;
+  flex: 1;
+}
+.required:after {
+  content: ' *';
+}
+.resettable {
+  display: flex;
+  flex: 1;
+  margin: 0;
+  gap: 1px;
+}
+.resettable input {
+  width: 0;
 }
 
 /* generic */
@@ -213,40 +224,31 @@ header nav a.active {
   border-radius: var(--border-radius);
 }
 
-/* Layouts */
 /* auth layout */
-.auth-layout.container {
-  max-width: 350px;
-}
-.auth-layout .login, 
-.auth-layout .register {
+.login, 
+.register {
   display: flex;
   flex-direction: column;
   justify-items: end;
+  max-width: 350px;
 }
 
-/* search layout  */
-.search-layout > :first-child {
+/* search layout */
+.search-form {
   max-width: 350px;
   margin: 0 auto;
 }
-.search-form {
+.search-form form {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-/* results layout */
+/* results */
 .pagination-nav {
   display: flex;
   justify-content: center;
   gap: 5px;
-  /*
-  background-color: var(--secondary);
-  border: var(--border);
-  border-radius: var(--border-radius);
-  padding: 6px;
-  */
 }
 .pagination-nav button {
   padding: 2px 4px;
@@ -269,7 +271,7 @@ table {
 thead {
   border-bottom: var(--border);
 }
-tbody > tr:hover {
+.users-table tbody > tr:hover {
   background-color: var(--btn-bg);
 }
 th {
@@ -278,4 +280,26 @@ th {
 th,
 td {
   color: black;
+}
+
+.profile-banner {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 10px;
+}
+.profile-banner-info {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: end;
+}
+.profile-info span {
+  display: block;
+}
+.banner-actions {
+  display: flex;
+  flex-flow: row nowrap;
+  flex: 1;
+  justify-content: end;
+  align-items: flex-end;
+  gap: 5px;
 }

@@ -7,7 +7,6 @@ import {
 
 // LAYOUTS
 import RootLayout from './layouts/RootLayout';
-import AuthLayout from './layouts/AuthLayout';
 import SearchLayout from './layouts/SearchLayout';
 import UserLayout, { userLoader } from './layouts/UserLayout';
 
@@ -15,8 +14,8 @@ import UserLayout, { userLoader } from './layouts/UserLayout';
 import Home from './pages/Home';
 import About from './pages/Abouts';
 // auth
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+import Login from './pages/Login';
+import Register from './pages/Register';
 // search
 import Results from './pages/search/Results';
 // user
@@ -46,10 +45,8 @@ const router = createBrowserRouter(
 
       <Route path='about' element={<About />} />
 
-      <Route path='auth' element={<AuthLayout />}>
-        <Route path='login' element={<Login />} />
-        <Route path='register' element={<Register />} />
-      </Route>
+      <Route path='login' element={<Login />} />
+      <Route path='register' element={<Register />} />
     </Route>
   )
 );

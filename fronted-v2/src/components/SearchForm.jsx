@@ -22,10 +22,10 @@ const SearchForm = () => {
   };
 
   return (
-    <div className='container'>
+    <div className='search-form'>
       <h2>Search for users</h2>
 
-      <form className='search-form' action='post' onSubmit={handleSubmit}>
+      <form action='post' onSubmit={handleSubmit}>
         <div className='resettable'>
           <input
             type='text'

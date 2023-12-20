@@ -1,8 +1,9 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import util from '../util';
 
 const UsersTable = ({ users }) => {
 
+  const navigate = useNavigate();
   // <Navigate to={`/users/${user.username}`} />
 
   return (
@@ -16,7 +17,7 @@ const UsersTable = ({ users }) => {
       </thead>
       <tbody>
         {users.map(user => (
-          <tr key={user.id} className='user-row' onClick={() => console.log(`/users/${user.username}`)}>
+          <tr key={user.id} className='user-row' onClick={() => navigate(`/users/${user.username}/profile`)}>
             <td>{user.name}</td>
             <td>{user.username}</td>
             <td>{util.formatDate(user.createdAt)}</td>

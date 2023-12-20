@@ -1,8 +1,8 @@
 
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../../services/auth';
+import authService from '../services/auth';
 import { useState } from 'react';
-import ErrorAlert from '../../components/ErrorAlert';
+import ErrorAlert from '../components/ErrorAlert';
 
 const Register = () => {
   const [message, setMessage] = useState(null);
@@ -37,7 +37,7 @@ const Register = () => {
   };
 
   return (
-    <div className='register'>
+    <div className='register container'>
       <h3>Register</h3>
 
       <ErrorAlert message={message} clearMessage={clearMessage} />
@@ -89,7 +89,7 @@ const Register = () => {
         <button>Register</button>
       </form>
 
-      <p>Already have a user? Login <Link to='/auth/login'>here</Link>.</p>
+      <p>Already have a user? Login <Link to='/login'>here</Link>.</p>
     </div>
   );
 };

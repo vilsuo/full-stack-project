@@ -5,7 +5,9 @@ const SearchLayout = () => {
 
   return (
     <div className='search-layout'>
-      <SearchForm />
+      <div className='container'>
+        <SearchForm />
+      </div>
 
       <Outlet />
     </div>

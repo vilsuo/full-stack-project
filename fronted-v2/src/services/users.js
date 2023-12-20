@@ -72,6 +72,6 @@ export default {
   getImages,
   getImageContent,
   deleteImage,
-  getPotraitContent,
   */
+  getPotraitContent,
 };

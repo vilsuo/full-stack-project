@@ -11,11 +11,9 @@ TODO
 - add error handler
 */
 
-const Summary = ({ query, total, time }) => {
+const SearchInfo = ({ total, time }) => {
   return (
-    <div>
-      <p>{total} results in {time} ms</p>
-    </div>
+    <span>Results: {total}. Time {time} ms</span>
   );
 };
 
@@ -77,8 +75,8 @@ const Results = () => {
   }
 
   return (
-    <div className='container'>
-      <Summary query={q} total={total} time={time} />
+    <div className='search-results container'>
+      <SearchInfo total={total} time={time} />
 
       <UsersTable users={users} />
 

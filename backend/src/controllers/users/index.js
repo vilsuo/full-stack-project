@@ -48,7 +48,7 @@ router.get('/', paginationParser, async (req, res) => {
   // total number of pages: the available pages number are [0, pages)
   const pages = Math.ceil(count / pageSize);
   
-  return res.send({ users, page: pageNumber, pages });
+  return res.send({ users, page: pageNumber, pages, count });
 });
 
 router.get('/:username', userFinder, async (req, res) => {

@@ -1,19 +1,70 @@
 import { Outlet, useLoaderData } from 'react-router-dom';
 
 import usersService from '../services/users';
+import util from '../util';
 
 export const userLoader = async ({ params }) => {
   const { username } = params;
 
-  return await usersService.getUser(username);
+  const user = await usersService.getUser(username);
+  let imageUrl;
+
+  try {
+    const data = await usersService.getPotraitContent(username);
+    imageUrl = URL.createObjectURL(data);
+
+  } catch (error) {
+    if (error.response.status === 404) {
+      // show default avatar?
+      // make sure this is not the 'user not found' case
+
+    } else {
+      throw error;
+    }
+  }
+
+  return { user, imageUrl }
+};
+
+const BannerActions = () => {
+  return (
+    <div className='banner-actions'>
+      <button className='follow-btn'>Follow</button>
+      <button className='block-btn'>Block</button>
+    </div>
+  );
+};
+
+const Banner = ({ user, imageUrl }) => {
+  const { name, username, createdAt } = user;
+
+  return (
+    <div className='profile-banner container'>
+      <img className='avatar profile'
+        src={imageUrl}
+        alt={`${username} profile picture`}
+      />
+      <div className='profile-banner-info'>
+        <span>{name}</span>
+        <span>{username}</span>
+        <span className='date'>
+          Since {util.formatDate(createdAt)}
+        </span>
+      </div>
+
+      <BannerActions />
+    </div>
+  );
 };
 
 const UserLayout = () => {
-  const user = useLoaderData();
+  const { user, imageUrl } = useLoaderData();
+
+  const { name, username, createdAt } = user;
 
   return (
     <div className='user-layout'>
-      <h2>username from loaderData: {user.username}</h2>
+      <Banner user={user} imageUrl={imageUrl} />
 
       <Outlet context={user} />
     </div>
