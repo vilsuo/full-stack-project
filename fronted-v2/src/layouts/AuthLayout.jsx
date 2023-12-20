@@ -8,7 +8,7 @@ const AuthLayout = () => {
   const clearMessage = () => setMessage(null);
 
   return (
-    <div className='auth-layout'>
+    <div className='auth-layout container'>
       <ErrorAlert message={message} clearMessage={clearMessage} />
 
       <Outlet context={[message, setMessage]} />

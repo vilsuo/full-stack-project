@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { createSearchParams, useNavigate } from 'react-router-dom';
+import { createSearchParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 const SearchForm = () => {
-  const [query, setQuery] = useState('');
+  const [searchParams] = useSearchParams();
+
+  const [query, setQuery] = useState(searchParams.get('q'));
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {
@@ -14,25 +16,29 @@ const SearchForm = () => {
       searchParams.search = `?${createSearchParams(params)}`;
     }
     navigate({
-      pathname: '/users',
+      pathname: '/search/results',
       ...searchParams
     });
   };
 
   return (
-    <form className='search-form' action='post' onSubmit={handleSubmit}>
-      <div className='resettable'>
-        <input
-          type='text'
-          name='query'
-          placeholder='Search...'
-          value={query}
-          onChange={event => setQuery(event.target.value)}
-        />
-        <button type='button' onClick={() => setQuery('')}>×</button>
-      </div>
-      <button type='submit'>Search</button>
-    </form>
+    <div className='container'>
+      <h2>Search for users</h2>
+
+      <form className='search-form' action='post' onSubmit={handleSubmit}>
+        <div className='resettable'>
+          <input
+            type='text'
+            name='query'
+            placeholder='Search...'
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+          />
+          <button type='button' onClick={() => setQuery('')}>×</button>
+        </div>
+        <button type='submit'>Search</button>
+      </form>
+    </div>
   );
 };
 

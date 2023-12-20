@@ -17,8 +17,9 @@ import About from './pages/Abouts';
 // auth
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+// search
+import Results from './pages/search/Results';
 // user
-import ResultsPage from './pages/user/ResultsPage';
 import UserErrorBoundary from './pages/user/UserErrorBoundary';
 import Profile from './pages/user/Profile';
 import Settings from './pages/user/Settings';
@@ -28,10 +29,11 @@ const router = createBrowserRouter(
     <Route path='/' element={<RootLayout />}>
       <Route index element={<Home />} />
 
-      <Route path='search' element={<SearchLayout />} />
+      <Route path='search' element={<SearchLayout />}>
+        <Route path='results' element={<Results />} />
+      </Route>
 
       <Route path='users'>
-        <Route index element={<ResultsPage />} />
         <Route path=':username'
           element={<UserLayout />}
           loader={userLoader}

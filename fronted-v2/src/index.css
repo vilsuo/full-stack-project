@@ -3,6 +3,12 @@
   --primary: #10470b;
   --secondary: #3b55ac;
   --tertiary: #ac7b3b;
+
+  --border: 2px solid black;
+  --border-radius: 4px;
+
+  --btn-bg: grey;
+  --btn-bg-hover: rgb(92, 88, 88);
 }
 body {
   margin: 0;
@@ -16,20 +22,27 @@ body {
 p {
   margin: 20px 0;
 }
+
+/* buttons */
 button {
-  border: 2px solid black;
-  padding: 8px;
-  border-radius: 4px;
+  border: var(--border);
+  border-radius: var(--border-radius);
   color: white;
-  background: grey;
+  background: var(--btn-bg);
+  padding: 8px;
   cursor: pointer;
 }
 button:not(:disabled):hover {
-  background-color: rgb(92, 88, 88);
+  background-color: var(--btn-bg-hover);
 }
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.close-btn {
+  background-color: transparent;
+  border: 0;
+  opacity: 0.5;
 }
 
 /* forms and inputs */
@@ -53,23 +66,23 @@ form input, form label span, form textarea {
 }
 form input, form textarea {
   padding: 8px;
-  border-radius: 4px;
-  border: 2px solid black;
+  border: var(--border);
+  border-radius: var(--border-radius);
   color: black;
   flex: 1;
 }
 .required:after {
   content: ' *';
 }
-
-/* table 
-table {
-  width: 100%;
-  background-color: var(--secondary);
-  border-radius: 4px;
-  padding: 10px;
+.resettable {
+  display: flex;
+  flex: 1;
+  margin: 0;
+  gap: 1px;
 }
-*/
+.resettable input {
+  width: 0;
+}
 
 /* page content */
 main {
@@ -87,8 +100,8 @@ header nav {
   margin: 0 auto;
   padding: 6px;
   gap: 10px;
-  border-radius: 4px;
-  border: 2px solid black;
+  border: var(--border);
+  border-radius: var(--border-radius);
   background-color: var(--secondary);
 }
 header nav a {
@@ -109,24 +122,19 @@ header nav a.active {
   list-style-type: none;
   margin: 5px 0;
   padding: 0;
-  border: 2px solid black;
-  border-radius: 4px;
+  border: var(--border);
+  border-radius: var(--border-radius);
 }
 .menu-item {
   margin: 0;
 }
-.menu-item:hover {
-  background-color: lightgray;
-}
 .menu-item > button {
   width: 100%;
-  height: 100%;
   text-align: left;
   border: none;
   font: inherit;
-  cursor: pointer;
   border-radius: 0;
-  border-bottom: 2px solid black;
+  border-bottom: var(--border);
 }
 .menu :last-child > button {
   border-bottom: none;
@@ -137,9 +145,9 @@ header nav a.active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius: 4px;
   padding: 20px;
-  border: 2px solid black;
+  border: var(--border);
+  border-radius: var(--border-radius);
   margin: 20px 0;
 }
 .alert.error {
@@ -151,12 +159,8 @@ header nav a.active {
 .alert p {
   margin: 0;
 }
-.alert .close-btn {
-  background-color: transparent;
-  border: 0;
-  opacity: 0.5;
-}
 .alert .close-btn:hover {
+  background-color: transparent;
   opacity: 1;
 }
 
@@ -200,18 +204,20 @@ header nav a.active {
   height: 40px;
 }
 
-/* Layouts */
-.search-layout,
-.auth-layout {
+/* generic */
+.container {
   background-color: var(--secondary);
   padding: 20px;
-  border-radius: 4px;
-  max-width: 350px;
-  margin: 0px auto;
-  border: 2px solid black;
+  margin: 20px auto;
+  border: var(--border);
+  border-radius: var(--border-radius);
 }
 
+/* Layouts */
 /* auth layout */
+.auth-layout.container {
+  max-width: 350px;
+}
 .auth-layout .login, 
 .auth-layout .register {
   display: flex;
@@ -219,20 +225,15 @@ header nav a.active {
   justify-items: end;
 }
 
-/* search layout */
-.search-layout form {
+/* search layout  */
+.search-layout > :first-child {
+  max-width: 350px;
+  margin: 0 auto;
+}
+.search-form {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-}
-.resettable {
-  display: flex;
-  flex: 1;
-  margin: 0;
-  gap: 1px;
-}
-.resettable input {
-  width: 0;
 }
 
 /* results layout */
@@ -240,14 +241,41 @@ header nav a.active {
   display: flex;
   justify-content: center;
   gap: 5px;
+  /*
   background-color: var(--secondary);
-  border-radius: 4px;
-  border: 2px solid black;
+  border: var(--border);
+  border-radius: var(--border-radius);
   padding: 6px;
+  */
 }
 .pagination-nav button {
   padding: 2px 4px;
 }
 .pagination-nav span {
   padding: 5px;
+}
+
+/* table */
+table {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: var(--border);
+  border-radius: var(--border-radius);
+  background-color: white;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+thead {
+  border-bottom: var(--border);
+}
+tbody > tr:hover {
+  background-color: var(--btn-bg);
+}
+th {
+  text-align: start;
+}
+th,
+td {
+  color: black;
 }

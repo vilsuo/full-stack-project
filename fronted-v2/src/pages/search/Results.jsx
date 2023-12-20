@@ -1,5 +1,5 @@
 
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import usersService from '../../services/users';
 import { useEffect, useState } from 'react';
 import PaginationNav from '../../components/PaginationNav';
@@ -7,24 +7,25 @@ import UsersTable from '../../components/UsersTable';
 
 /*
 TODO
-- show total number of results
 - show proper loader
 - add error handler
 */
 
-const Summary = () => {
+const Summary = ({ query, total, time }) => {
   return (
     <div>
-
+      <p>{total} results in {time} ms</p>
     </div>
   );
 };
 
-const ResultsPage = () => {
+const Results = () => {
   const [users, setUsers] = useState();
-  const [pages, setPages] = useState();
   const [currentPage, setCurrentPage] = useState();
+  const [pages, setPages] = useState();
+  const [total, setTotal] = useState();
 
+  const [time, setTime] = useState();
   const [loading, setLoading] = useState(true);
 
   // search parameters
@@ -35,15 +36,26 @@ const ResultsPage = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);
-      const { users: returnedUsers, page: returnedPage, pages: totalPages }
-        = await usersService.getUsers({ q, page, size });
+      const startTime = new Date();
 
-      console.log({ q, page, size, returnedPage, totalPages });
+      setLoading(true);
+
+      const { 
+        users: returnedUsers,
+        page: returnedPage,
+        pages: totalPages,
+        count: totalUsers
+      } = await usersService.getUsers({ q, page, size });
+
+      const endTime = new Date();
+      setTime(endTime - startTime); //in ms
+
+      //console.log({ q, page, size, returnedPage, totalPages, totalUsers });
 
       setUsers(returnedUsers);
       setCurrentPage(Number(returnedPage));
       setPages(Number(totalPages));
+      setTotal(Number(totalUsers));
 
       setLoading(false);
     };
@@ -65,23 +77,19 @@ const ResultsPage = () => {
   }
 
   return (
-    <div className='user-search-results'>
-      <h2>Search Results for: {q}</h2>
-      <p>Returned users: {users.length}</p>
-      <p>Pages in total: {pages}</p>
-      
-      <Link to='/search'>Do another search</Link>
+    <div className='container'>
+      <Summary query={q} total={total} time={time} />
+
+      <UsersTable users={users} />
 
       <PaginationNav
         currentPage={currentPage}
         lastPage={lastPage}
         setPage={setPageParam}
       />
-
-      <UsersTable users={users} />
     </div>
   );
 };
 
 
-export default ResultsPage;
+export default Results;

@@ -5,7 +5,6 @@ const SearchLayout = () => {
 
   return (
     <div className='search-layout'>
-      <h2>Search users</h2>
       <SearchForm />
 
       <Outlet />
