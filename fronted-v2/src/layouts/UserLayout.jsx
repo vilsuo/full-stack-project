@@ -26,6 +26,20 @@ export const userLoader = async ({ params }) => {
   return { user, imageUrl }
 };
 
+const BannerInfo = ({ user }) => {
+  const { name, username, createdAt } = user;
+
+  return (
+    <div className='banner-info'>
+      <span>{name}</span>
+      <span>{username}</span>
+      <span className='date'>
+        {util.formatDate(createdAt)}
+      </span>
+    </div>
+  );
+};
+
 const BannerActions = () => {
   return (
     <div className='banner-actions'>
@@ -39,20 +53,16 @@ const Banner = ({ user, imageUrl }) => {
   const { name, username, createdAt } = user;
 
   return (
-    <div className='profile-banner container'>
+    <div className='banner container'>
       <img className='avatar profile'
         src={imageUrl}
-        alt={`${username} profile picture`}
+        alt={`${user.username} profile picture`}
       />
-      <div className='profile-banner-info'>
-        <span>{name}</span>
-        <span>{username}</span>
-        <span className='date'>
-          Since {util.formatDate(createdAt)}
-        </span>
-      </div>
+      <div className='banner-details'>
+        <BannerInfo user={user} />
 
-      <BannerActions />
+        <BannerActions />
+      </div>
     </div>
   );
 };
