@@ -4,7 +4,7 @@ import { createSearchParams, useNavigate, useSearchParams } from 'react-router-d
 const SearchForm = () => {
   const [searchParams] = useSearchParams();
 
-  const [query, setQuery] = useState(searchParams.get('q'));
+  const [query, setQuery] = useState(searchParams.get('q') || '');
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {

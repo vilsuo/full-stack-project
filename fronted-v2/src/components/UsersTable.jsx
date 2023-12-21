@@ -1,10 +1,17 @@
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+
 import util from '../util';
+import { addUser } from '../reducers/users';
 
 const UsersTable = ({ users }) => {
-
   const navigate = useNavigate();
-  // <Navigate to={`/users/${user.username}`} />
+  const dispatch = useDispatch();
+
+  const handleClick = (user) => {
+    dispatch(addUser(user));
+    navigate(`/users/${user.username}/profile`);
+  };
 
   return (
     <table className='users-table'>
@@ -17,7 +24,7 @@ const UsersTable = ({ users }) => {
       </thead>
       <tbody>
         {users.map(user => (
-          <tr key={user.id} className='user-row' onClick={() => navigate(`/users/${user.username}/profile`)}>
+          <tr key={user.id} className='user-row' onClick={() => handleClick(user)}>
             <td>{user.name}</td>
             <td>{user.username}</td>
             <td>{util.formatDate(user.createdAt)}</td>

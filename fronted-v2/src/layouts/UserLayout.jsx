@@ -1,8 +1,11 @@
-import { Outlet, useLoaderData } from 'react-router-dom';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-import usersService from '../services/users';
 import util from '../util';
+import { loadUser } from '../reducers/users';
 
+/*
 export const userLoader = async ({ params }) => {
   const { username } = params;
 
@@ -25,6 +28,7 @@ export const userLoader = async ({ params }) => {
 
   return { user, imageUrl }
 };
+*/
 
 const BannerInfo = ({ user }) => {
   const { name, username, createdAt } = user;
@@ -68,9 +72,33 @@ const Banner = ({ user, imageUrl }) => {
 };
 
 const UserLayout = () => {
-  const { user, imageUrl } = useLoaderData();
+  const { username } = useParams();
 
-  const { name, username, createdAt } = user;
+  const [user, setUser] = useState();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const loadedUser = await dispatch(loadUser(username)).unwrap();
+        setUser(loadedUser);
+      } catch (rejectedValueError) {
+        return navigate('/error', { 
+          replace: true, 
+          state: { error: rejectedValueError } 
+        });
+      }
+    };
+
+    fetchUser();
+  }, [username]);
+
+  if (!user) {
+    return <p>loading</p>
+  }
+
+  const imageUrl = null;
 
   return (
     <div className='user-layout'>

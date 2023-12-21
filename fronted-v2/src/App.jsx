@@ -8,7 +8,7 @@ import {
 // LAYOUTS
 import RootLayout from './layouts/RootLayout';
 import SearchLayout from './layouts/SearchLayout';
-import UserLayout, { userLoader } from './layouts/UserLayout';
+import UserLayout from './layouts/UserLayout';
 
 // PAGES
 import Home from './pages/Home';
@@ -22,6 +22,7 @@ import Results from './pages/search/Results';
 import UserErrorBoundary from './pages/user/UserErrorBoundary';
 import Profile from './pages/user/Profile';
 import Settings from './pages/user/Settings';
+import ErrorPage from './pages/ErrorPage';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -35,7 +36,6 @@ const router = createBrowserRouter(
       <Route path='users'>
         <Route path=':username'
           element={<UserLayout />}
-          loader={userLoader}
           errorElement={<UserErrorBoundary />}
         >
           <Route path='profile' element={<Profile />} />
@@ -47,6 +47,7 @@ const router = createBrowserRouter(
 
       <Route path='login' element={<Login />} />
       <Route path='register' element={<Register />} />
+      <Route path='error' element={<ErrorPage />} />
     </Route>
   )
 );

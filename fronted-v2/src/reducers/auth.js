@@ -1,11 +1,11 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../services/auth';
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
 };
 
-const userSlice = createSlice({
+const authSlice = createSlice({
   name: 'auth', // defines the prefix which is used in the action's type values
   initialState,
   extraReducers: (builder) => {
@@ -14,30 +14,24 @@ const userSlice = createSlice({
         const user = action.payload;
         // add user to local storage
         localStorage.setItem('user', JSON.stringify(user));
-
-        console.log('login fullfilled');
         return { ...state, user };
       })
       .addCase(login.rejected, (state, action) => {
-        console.log('login rejected');
         return state;
       })
 
       .addCase(logout.fulfilled, (state, action) => {
         // remove user from local storage
         localStorage.removeItem('user');
-
-        console.log('logout fullfilled');
         return { ...state, user: null };
       })
       .addCase(logout.rejected, (state, action) => {
-        console.log('logout rejected');
         return state;
       })
   }
 });
 
-export const { sigIn, signOut } = userSlice.actions;
+export const { sigIn, signOut } = authSlice.actions;
 
 export const login = createAsyncThunk(
   // A string that will be used to generate additional Redux action type constants, 
@@ -85,4 +79,4 @@ export const logout = createAsyncThunk(
   },
 );
 
-export default userSlice.reducer;
+export default authSlice.reducer;

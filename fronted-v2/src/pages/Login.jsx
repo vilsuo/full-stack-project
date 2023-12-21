@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { login } from '../reducers/auth';
 import ErrorAlert from '../components/ErrorAlert';
+import { addUser } from '../reducers/users';
 
 const Login = () => {
   const [message, setMessage] = useState(null);
@@ -23,6 +24,8 @@ const Login = () => {
     dispatch(login({ username, password }))
       .unwrap()
       .then((user) => {
+        dispatch(addUser(user));
+        
         const { from } = location.state || { from: { pathname: '/' } };
         navigate(from, { replace: true });
       })
