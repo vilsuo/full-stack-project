@@ -1,34 +1,29 @@
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import util from '../util';
 import { loadUser } from '../reducers/users';
+import usersService from '../services/users';
+import axios from 'axios';
 
-/*
-export const userLoader = async ({ params }) => {
-  const { username } = params;
+const BannerPotrait = ({ potrait }) => {
 
-  const user = await usersService.getUser(username);
-  let imageUrl;
-
-  try {
-    const data = await usersService.getPotraitContent(username);
-    imageUrl = URL.createObjectURL(data);
-
-  } catch (error) {
-    if (error.response.status === 404) {
-      // show default avatar?
-      // make sure this is not the 'user not found' case
-
-    } else {
-      throw error;
-    }
+  // if user does not have a potrait, show default
+  if (!potrait.url) {
+    return (
+      <img className='avatar profile'
+        src={'/static/images/blank.jpg'}
+      />
+    );
   }
 
-  return { user, imageUrl }
+  return (
+    <img className='avatar profile'
+      src={potrait.url}
+    />
+  );
 };
-*/
 
 const BannerInfo = ({ user }) => {
   const { name, username, createdAt } = user;
@@ -53,26 +48,56 @@ const BannerActions = () => {
   );
 };
 
-const Banner = ({ user, imageUrl }) => {
-  const { name, username, createdAt } = user;
+const Banner = ({ user, viewer }) => {
+  const [potrait, setPotrait] = useState({ loading: true });
+  const showActions = (viewer.isAuthenticated && !viewer.isOwnPage);
+
+  const { username } = user;
+
+  useEffect(() => {
+    const fetchPotrait = async () => {
+      try {
+        const data = await usersService.getPotraitContent(username);
+        const potraitUrl = URL.createObjectURL(data);
+
+        setPotrait({
+          loading: false,
+          url: potraitUrl,
+        });
+    
+      } catch (error) {
+        setPotrait({ loading: false });
+
+        if (error.response.status !== 404) {
+          throw error;
+        }
+      }
+    };
+
+    fetchPotrait();
+  }, [username]);
 
   return (
     <div className='banner container'>
-      <img className='avatar profile'
-        src={imageUrl}
-        alt={`${user.username} profile picture`}
-      />
+      <BannerPotrait potrait={potrait} />
+
       <div className='banner-details'>
         <BannerInfo user={user} />
 
-        <BannerActions />
+        { showActions && <BannerActions /> }
       </div>
     </div>
   );
 };
 
 const UserLayout = () => {
+  const currentUser = useSelector(state => state.auth.user);
   const { username } = useParams();
+
+  const viewer = {
+    isAuthenticated: currentUser ? true : false,
+    isOwnPage: currentUser && (currentUser.username === username),
+  };
 
   const [user, setUser] = useState();
   const dispatch = useDispatch();
@@ -98,13 +123,11 @@ const UserLayout = () => {
     return <p>loading</p>
   }
 
-  const imageUrl = null;
-
   return (
     <div className='user-layout'>
-      <Banner user={user} imageUrl={imageUrl} />
+      <Banner user={user} viewer={viewer} />
 
-      <Outlet context={user} />
+      <Outlet context={{ user, viewer }} />
     </div>
   );
 };

@@ -20,7 +20,7 @@ import Register from './pages/Register';
 import Results from './pages/search/Results';
 // user
 import UserErrorBoundary from './pages/user/UserErrorBoundary';
-import Profile from './pages/user/Profile';
+import Profile, { imageLoader } from './pages/user/Profile';
 import Settings from './pages/user/Settings';
 import ErrorPage from './pages/ErrorPage';
 
@@ -38,7 +38,7 @@ const router = createBrowserRouter(
           element={<UserLayout />}
           errorElement={<UserErrorBoundary />}
         >
-          <Route path='profile' element={<Profile />} />
+          <Route path='profile' element={<Profile />} loader={imageLoader} />
           <Route path='settings' element={<Settings />} />
         </Route>
       </Route>

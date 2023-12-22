@@ -60,18 +60,15 @@ const getPotraitContent = async (username) => {
       responseType: 'blob',
     },
   );
-
   return data;
 };
 
 export default {
   getUsers,
   getUser,
-  /*
-  addImage,
+  //addImage,
   getImages,
   getImageContent,
-  deleteImage,
-  */
+  //deleteImage,
   getPotraitContent,
 };
