@@ -1,26 +1,16 @@
-const { Follow, User } = require('../../models');
-const { isSessionUser, sessionExtractor } = require('../../util/middleware/auth');
-
 const router = require('express').Router({ mergeParams: true });
 
-/*
-TODO
-- how to pass target user?
-  - post: has to be valited that the user exists
-    - can follow disabled user?
-  - delete: without validation
-
-- get: do not return user
-*/
+const { Follow, User } = require('../../models');
+const { isSessionUser } = require('../../util/middleware/auth');
+const { getNonSensitiveUser } = require('../../util/dto');
 
 router.get('/', async (req, res) => {
   const user = req.foundUser;
 
-  const follows = await User.findByPk(user.id, {
+  const userWithFollowTargets = await User.findByPk(user.id, {
     include: [{
       model: User,
       as: 'follows',
-      duplicating: false,
       attributes: { exclude: ['follows'] },
       through: {
         attributes: [], // has to be included: otherwise causes nested including
@@ -28,28 +18,52 @@ router.get('/', async (req, res) => {
     }]
   });
 
-  return res.send({ follows });
+  const follows = userWithFollowTargets.follows
+    .map(target => getNonSensitiveUser(target));
+
+  return res.send(follows);
 });
 
-router.post('/', sessionExtractor, /* isSessionUser ,*/ async (req, res) => {
-  const source = req.user;
-  const target = req.foundUser;
+router.post('/', isSessionUser, async (req, res) => {
+  const sourceUser = req.user;
+  const { id: targetId } = req.body;
 
-  // return res.status(200).send({ follow: Follow.getAttributes() });
+  // target user must exist
+  const targetUser = await User.findByPk(targetId);
+  if (!targetUser) {
+    return res.status(404).send({ message: 'user does not exist' });
+  }
+
+  // target user can not be the source user
+  if (sourceUser.id === targetUser.id) {
+    return res.status(400).send({ message: 'you can not follow yourself' });
+  }
+
+  // relation must not already exist
+  const followFound = await Follow.findOne({
+    where: {
+      sourceUserId: sourceUser.id,
+      targetUserId: targetUser.id,
+    }
+  });
+
+  if (followFound) {
+    return res.status(400).send({ message: 'you are already following the user' });
+  }
 
   const follow = await Follow.create({
-    sourceUserId: source.id,
-    targetUserId: target.id
+    sourceUserId: sourceUser.id,
+    targetUserId: targetUser.id,
   });
 
   return res.status(201).send({ follow });
 });
 
-router.delete('/', isSessionUser, async (req, res) => {
-  const source = req.user;
-  const target = req.foundUser;
+router.delete('/:id', isSessionUser, async (req, res) => {
+  const sourceUser = req.user;
+  const { id: targetUserId } = req.params;
 
-  await Follow.destroy({ where: { sourceUserId: source.id, targetUserId: target.id } });
+  await Follow.destroy({ where: { sourceUserId: sourceUser.id, targetUserId } });
 
   return res.status(204).end();
 });
