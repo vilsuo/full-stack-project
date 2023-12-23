@@ -2,12 +2,12 @@ const router = require('express').Router();
 const { Op } = require('sequelize');
 const imagesRouter = require('./images');
 const potraitRouter = require('./potrait');
-const followsRouter = require('./follows');
+const relationsRouter = require('./relations');
 const { sequelize } = require('../../util/db');
-const { User, Follow } = require('../../models');
+const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
-const { isSessionUser, sessionExtractor } = require('../../util/middleware/auth');
+const { isSessionUser } = require('../../util/middleware/auth');
 const { paginationParser } = require('../../util/middleware/parser');
 
 /**
@@ -64,35 +64,10 @@ router.delete('/:username', userFinder, isSessionUser, async (req, res) => {
   return res.status(204).send();
 });
 
-/*
-router.post('/:username/follow', userFinder, sessionExtractor, async (req, res) => {
-  const source = req.user;
-  const target = req.foundUser;
-
-  // return res.status(200).send({ follow: Follow.getAttributes() });
-
-  const follow = await Follow.create({
-    sourceUserId: source.id,
-    targetUserId: target.id
-  });
-
-  return res.status(201).send({ follow });
-});
-
-router.delete('/:username/follow', userFinder, sessionExtractor, async (req, res) => {
-  const source = req.user;
-  const target = req.foundUser;
-
-  await Follow.destroy({ where: { sourceUserId: source.id, targetUserId: target.id } });
-
-  return res.status(204).end();
-});
-*/
-
 router.use('/:username/potrait', userFinder, potraitRouter);
 
 router.use('/:username/images', userFinder, imagesRouter);
 
-router.use('/:username/follows', userFinder, followsRouter);
+router.use('/:username/relations', userFinder, relationsRouter);
 
 module.exports = router;

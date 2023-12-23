@@ -1,7 +1,7 @@
 const User = require('./user');
 const Image = require('./image');
 const Potrait = require('./potrait');
-const Follow = require('./follow');
+const Relation = require('./relation');
 
 User.hasMany(Image, {
   foreignKey: { allowNull: false} , // Image can not exist without User
@@ -17,8 +17,8 @@ User.hasOne(Potrait, {
 Potrait.belongsTo(User);
 
 User.belongsToMany(User, { 
-  through: Follow, 
-  as: 'follows',
+  through: Relation, 
+  as: 'relations',
 
   // The name of the foreign key in the join table (representing the source model)
   // or an object representing the type definition for the foreign column (see 
@@ -34,12 +34,12 @@ User.belongsToMany(User, {
   otherKey: 'targetUserId',
 });
 
-//Follow.belongsTo(User, { as: 'sourceUser', onDelete: 'CASCADE'});
-//Follow.belongsTo(User, { as: 'targetUser', onDelete: 'CASCADE' });
+// to see follow table
+// return res.status(200).send({ follow: Relation.getAttributes() });
 
 module.exports = {
   User,
   Image,
   Potrait,
-  Follow,
+  Relation,
 };
