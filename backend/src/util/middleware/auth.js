@@ -92,6 +92,7 @@ const isSessionUser = async (req, res, next) => {
 };
 
 module.exports = {
+  sessionExtractor,
   isAllowedToViewImage,
   isSessionUser,
 };
