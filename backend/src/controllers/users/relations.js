@@ -1,55 +1,61 @@
 const router = require('express').Router({ mergeParams: true });
 
-const { Relation, User, Image } = require('../../models');
+const { Relation, User } = require('../../models');
 const { isSessionUser } = require('../../util/middleware/auth');
-const { getNonSensitiveUser } = require('../../util/dto');
-const { sequelize } = require('../../util/db');
 
 /*
 TODO
 - add optional query param to filter relation type
-- group by relation type?
+- how to group?
 */
 router.get('/', async (req, res) => {
   const user = req.foundUser;
 
-  return res.status(200).send({ relation: Relation.getAttributes() });
+  // return res.status(200).send({ relation: Relation.getAttributes() });
+
+  /*
+  const results = await sequelize.query(
+    `SELECT ut.id as id, ut.username as username, r.type as type
+    FROM Users us 
+    JOIN Relations r ON r.source_user_id = us.id 
+    JOIN Users ut ON r.target_user_id = ut.id;`,
+    { type: QueryTypes.SELECT }
+  );
+
+  return res.send({ results });
+  */
 
   try {
     const userWithRelationTargets = await User.findByPk(user.id, {
-      attributes: [
-        'id',
-        'username',
-      ],
-      //includeIgnoreAttributes: false,
-      include: [{
-        model: User,
-        as: 'relations',
-        attributes: [
-          'id', 
-          'username',
-          //'relation.type'
-        ],
-        through: {
-          //where: { type: 'follow' },
-          attributes: ['type'],
-          //group: 'type'
-        },
-      }],
-      //group: 'relations.relation.type'
+      attributes: ['id', 'username'],
+      include: [
+        {
+          model: Relation, 
+          as: 'sources', 
+          attributes: ['id', 'type'],
+          include: [
+            {
+              model: User, 
+              as: 'targets',
+            }
+          ]
+        }
+      ]
     });
-
-    //const follows = userWithRelationTargets.relations
-    //.map(target => getNonSensitiveUser(target));
 
     return res.send(userWithRelationTargets);
 
   } catch (err) {
     console.log('err', err)
+
     return res.status(500).send({ err })
   }
 });
 
+/*
+TODO
+- need to check that relation type is valid before checking if it exists
+*/
 router.post('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
   const { id: targetId, type } = req.body;
@@ -60,7 +66,7 @@ router.post('/', isSessionUser, async (req, res) => {
     return res.status(404).send({ message: 'user does not exist' });
   }
 
-  // target user can not be the source user
+  // can not create relation to self
   if (sourceUser.id === targetUser.id) {
     return res.status(400).send({
       message: 'you can not have a relation with yourself'
@@ -91,9 +97,15 @@ router.post('/', isSessionUser, async (req, res) => {
   return res.status(201).send({ relation });
 });
 
-router.delete('/:id', isSessionUser, async (req, res) => {
+/*
+TODO
+- pass id OR username of the target user?
+- how to pass type and id?
+  - parameter? query? body? or mix?
+*/
+router.delete('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
-  const { id: targetUserId, type } = req.params;
+  const { id: targetUserId, type } = req.body;
 
   await Relation.destroy({ 
     where: { 
