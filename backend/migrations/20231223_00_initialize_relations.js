@@ -2,17 +2,24 @@ const { DataTypes } = require('sequelize');
 
 module.exports = {
   up: async ({ context: queryInterface }) => {
-    await queryInterface.createTable('follows', {
+    await queryInterface.createTable('relations', {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      type: {
+        type: DataTypes.ENUM('public', 'private'),
+        allowNull: false,
+      },
       source_user_id: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
         allowNull: false,
         onDelete: 'CASCADE',
         references: { model: 'users', key: 'id'},
       },
       target_user_id: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
         allowNull: false,
         onDelete: 'CASCADE',
         references: { model: 'users', key: 'id'}
@@ -20,6 +27,6 @@ module.exports = {
     });
   },
   down: async ({ context: queryInterface }) => {
-    await queryInterface.dropTable('follows');
+    await queryInterface.dropTable('relations');
   }
 };

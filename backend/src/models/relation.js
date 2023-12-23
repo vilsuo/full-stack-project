@@ -4,9 +4,13 @@ const { sequelize } = require('../util/db');
 class Relation extends Model {}
 
 Relation.init({
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   type: {
     type: DataTypes.ENUM('follow', 'block'),
-    primaryKey: true,
     allowNull: false,
     validate: {
       isIn: {

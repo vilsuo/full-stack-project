@@ -17,7 +17,7 @@ User.hasOne(Potrait, {
 Potrait.belongsTo(User);
 
 User.belongsToMany(User, { 
-  through: Relation, 
+  through: { model: Relation, unique: false },
   as: 'relations',
 
   // The name of the foreign key in the join table (representing the source model)
@@ -35,7 +35,7 @@ User.belongsToMany(User, {
 });
 
 // to see follow table
-// return res.status(200).send({ follow: Relation.getAttributes() });
+// return res.status(200).send({ relation: Relation.getAttributes() });
 
 module.exports = {
   User,
