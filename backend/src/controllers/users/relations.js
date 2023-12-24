@@ -1,20 +1,33 @@
 const router = require('express').Router({ mergeParams: true });
 
 const { Relation, User } = require('../../models');
+const { EnumError } = require('../../util/error');
 const { isSessionUser } = require('../../util/middleware/auth');
 
 /*
 TODO
-- check passed relation type before
-  - get: applying search filter
-  - post: checking if a relation with the type exists
+- post:
+  - what target user values to return?
+    - all non sensitive?
+    - just id AND/OR username?
 */
+
+const isValidRelationType = type => {
+  const relationTypes = Relation.getAttributes().type.values;
+
+  return relationTypes.includes(type);
+};
+
+
 router.get('/', async (req, res) => {
   const user = req.foundUser;
 
   const searchFilters = {};
   const { type } = req.query;
   if (type) {
+    if (!isValidRelationType(type)) {
+      throw new EnumError(`invalid relation type '${type}'`);
+    }
     searchFilters.type = type;
   }
 
@@ -43,16 +56,20 @@ router.post('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
   const { targetUserId, type } = req.body;
 
+  if (!type || !isValidRelationType(type)) {
+    throw new EnumError(`invalid relation type '${type}'`);
+  }
+
   // target user must exist
   const targetUser = await User.findByPk(targetUserId);
   if (!targetUser) {
-    return res.status(404).send({ message: 'user does not exist' });
+    return res.status(404).send({ message: 'target user does not exist' });
   }
 
   // can not create relation to self
   if (sourceUser.id === targetUser.id) {
     return res.status(400).send({
-      message: 'you can not have a relation with yourself'
+      message: 'user can not have a relation with itself'
     });
   }
 
@@ -67,7 +84,7 @@ router.post('/', isSessionUser, async (req, res) => {
 
   if (relationFound) {
     return res.status(400).send({ 
-      message: `you are already have a relation '${type}' with the user` 
+      message: `relation with type '${type}' already exists` 
     });
   }
 
@@ -82,9 +99,16 @@ router.post('/', isSessionUser, async (req, res) => {
 
 router.delete('/:relationId', isSessionUser, async (req, res) => {
   const { relationId } = req.params;
-  const nDetroyed = await Relation.destroy({ where: { id: relationId, } });
+  const sourceUser = req.user;
 
-  if (!nDetroyed) {
+  const nDestroyed = await Relation.destroy({ 
+    where: { 
+      id: relationId, 
+      sourceUserId: sourceUser.id,
+    } 
+  });
+
+  if (!nDestroyed) {
     return res.status(404).send({ message: 'relation does not exist' });
   }
 

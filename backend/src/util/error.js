@@ -5,6 +5,14 @@ class FiletypeError extends Error {
   }
 };
 
+class EnumError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'EnumError';
+  }
+};
+
 module.exports = {
   FiletypeError,
+  EnumError,
 };
