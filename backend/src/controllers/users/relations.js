@@ -5,63 +5,46 @@ const { isSessionUser } = require('../../util/middleware/auth');
 
 /*
 TODO
-- add optional query param to filter relation type
-- how to group?
+- check passed relation type before
+  - get: applying search filter
+  - post: checking if a relation with the type exists
 */
 router.get('/', async (req, res) => {
   const user = req.foundUser;
 
-  // return res.status(200).send({ relation: Relation.getAttributes() });
-
-  /*
-  const results = await sequelize.query(
-    `SELECT ut.id as id, ut.username as username, r.type as type
-    FROM Users us 
-    JOIN Relations r ON r.source_user_id = us.id 
-    JOIN Users ut ON r.target_user_id = ut.id;`,
-    { type: QueryTypes.SELECT }
-  );
-
-  return res.send({ results });
-  */
-
-  try {
-    const userWithRelationTargets = await User.findByPk(user.id, {
-      attributes: ['id', 'username'],
-      include: [
-        {
-          model: Relation, 
-          as: 'sources', 
-          attributes: ['id', 'type'],
-          include: [
-            {
-              model: User, 
-              as: 'targets',
-            }
-          ]
-        }
-      ]
-    });
-
-    return res.send(userWithRelationTargets);
-
-  } catch (err) {
-    console.log('err', err)
-
-    return res.status(500).send({ err })
+  const searchFilters = {};
+  const { type } = req.query;
+  if (type) {
+    searchFilters.type = type;
   }
+
+  const userWithRelationTargets = await User.findByPk(user.id, {
+    attributes: ['id', 'username'],
+    include: [
+      {
+        model: Relation, 
+        attributes: ['id', 'type'],
+        include: [
+          {
+            model: User, 
+            as: 'targetUser',
+            attributes: ['id', 'username'],
+          }
+        ],
+        where: searchFilters,
+      }
+    ]
+  });
+
+  return res.send(userWithRelationTargets);
 });
 
-/*
-TODO
-- need to check that relation type is valid before checking if it exists
-*/
 router.post('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
-  const { id: targetId, type } = req.body;
+  const { targetUserId, type } = req.body;
 
   // target user must exist
-  const targetUser = await User.findByPk(targetId);
+  const targetUser = await User.findByPk(targetUserId);
   if (!targetUser) {
     return res.status(404).send({ message: 'user does not exist' });
   }
@@ -97,23 +80,13 @@ router.post('/', isSessionUser, async (req, res) => {
   return res.status(201).send({ relation });
 });
 
-/*
-TODO
-- pass id OR username of the target user?
-- how to pass type and id?
-  - parameter? query? body? or mix?
-*/
-router.delete('/', isSessionUser, async (req, res) => {
-  const sourceUser = req.user;
-  const { id: targetUserId, type } = req.body;
+router.delete('/:relationId', isSessionUser, async (req, res) => {
+  const { relationId } = req.params;
+  const nDetroyed = await Relation.destroy({ where: { id: relationId, } });
 
-  await Relation.destroy({ 
-    where: { 
-      sourceUserId: sourceUser.id, 
-      targetUserId,
-      type,
-    }
-  });
+  if (!nDetroyed) {
+    return res.status(404).send({ message: 'relation does not exist' });
+  }
 
   return res.status(204).end();
 });
