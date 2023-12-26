@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../services/auth';
+import relationsService from '../services/relations';
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
+  relations: JSON.parse(localStorage.getItem('user')) || [],
 };
 
 const authSlice = createSlice({
@@ -11,10 +13,12 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(login.fulfilled, (state, action) => {
-        const user = action.payload;
+        const { user, relations } = action.payload;
+
         // add user to local storage
         localStorage.setItem('user', JSON.stringify(user));
-        return { ...state, user };
+        localStorage.setItem('relations', JSON.stringify(relations));
+        return { ...state, user, relations };
       })
       .addCase(login.rejected, (state, action) => {
         return state;
@@ -23,11 +27,15 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state, action) => {
         // remove user from local storage
         localStorage.removeItem('user');
-        return { ...state, user: null };
+        localStorage.removeItem('relations');
+        return { ...state, user: null, relations: [] };
       })
       .addCase(logout.rejected, (state, action) => {
         return state;
       })
+
+      // add cases for adding/removing authenticated users relations
+      // also edit the relations local storage 
   }
 });
 
@@ -58,7 +66,13 @@ export const login = createAsyncThunk(
   //    Redux thunk function
   async (credentials, thunkApi) => {
     try {
-      return await authService.login(credentials);
+      const user = await authService.login(credentials);
+
+      // get logged in users relations
+      const { relations } = await relationsService.getTargetRelations(user.username);
+
+      return { user, relations };
+
     } catch (error) {
       // utility function that you can return (or throw) in your action creator to return a
       // rejected response with a defined payload and meta. It will pass whatever value you
@@ -70,7 +84,7 @@ export const login = createAsyncThunk(
 
 export const logout = createAsyncThunk(
   'auth/logout',
-  async (credentials, thunkApi) => {
+  async (_, thunkApi) => {
     try {
       return await authService.logout();
     } catch (error) {
@@ -78,5 +92,20 @@ export const logout = createAsyncThunk(
     }
   },
 );
+
+/*
+export const addRelation = createAsyncThunk(
+  'auth/addRelation',
+  async ({ targetUserId, type }, thunkApi) => {
+    try {
+      const { username } = thunkApi.getState().auth.user;
+      return await relationsService.addRelation(username, targetUserId, type);
+
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+*/
 
 export default authSlice.reducer;

@@ -23,8 +23,8 @@ const Login = () => {
     clearMessage();
     dispatch(login({ username, password }))
       .unwrap()
-      .then((user) => {
-        dispatch(addUser(user));
+      .then((auth) => {
+        dispatch(addUser(auth.user));
         
         const { from } = location.state || { from: { pathname: '/' } };
         navigate(from, { replace: true });
