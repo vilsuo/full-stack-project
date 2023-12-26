@@ -12,16 +12,18 @@ import UserLayout from './layouts/UserLayout';
 
 // PAGES
 import Home from './pages/Home';
-import About from './pages/Abouts';
 // auth
 import Login from './pages/Login';
 import Register from './pages/Register';
 // search
 import Results from './pages/search/Results';
+// about
+import About, { statisticsLoader } from './pages/About';
 // user
 import UserErrorBoundary from './pages/user/UserErrorBoundary';
 import Profile, { imageLoader } from './pages/user/Profile';
 import Settings from './pages/user/Settings';
+// other
 import ErrorPage from './pages/ErrorPage';
 
 const router = createBrowserRouter(
@@ -43,7 +45,7 @@ const router = createBrowserRouter(
         </Route>
       </Route>
 
-      <Route path='about' element={<About />} />
+      <Route path='about' element={<About />} loader={statisticsLoader} />
 
       <Route path='login' element={<Login />} />
       <Route path='register' element={<Register />} />

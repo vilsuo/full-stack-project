@@ -264,7 +264,7 @@ form input, form textarea {
   }
 }
 
-/* table */
+/* tables */
 table {
   width: 100%;
   padding: 10px;
@@ -274,19 +274,28 @@ table {
   background-color: white;
   border-collapse: collapse;
   table-layout: fixed;
-}
-thead {
-  border-bottom: var(--border);
-}
-.users-table tbody > tr:hover {
-  background-color: var(--btn-bg);
-}
-th {
-  text-align: start;
-}
-th,
-td {
-  color: black;
+
+  & thead {
+    border-bottom: var(--border);
+  }
+
+  & th,
+  & td {
+    text-align: center;
+    color: black;
+  }
+
+  /* SPECIAL TABLES */
+
+  &.users-table {
+    & tbody > tr:hover {
+      background-color: var(--btn-bg);
+    }
+  }
+
+  &.count-table {
+    width: 200px;
+  }
 }
 
 /* profile banner */
@@ -333,3 +342,14 @@ td {
     height: 100px;
   }
 }
+
+/* ABOUT PAGE */
+/* count table container */
+.count-tables {
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px
+}
+
