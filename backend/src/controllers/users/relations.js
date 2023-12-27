@@ -18,19 +18,31 @@ const isValidRelationType = type => {
   return relationTypes.includes(type);
 };
 
-
 router.get('/', async (req, res) => {
   const user = req.foundUser;
 
   const searchFilters = {};
-  const { type } = req.query;
+  const { type, targetUserId } = req.query;
   if (type) {
     if (!isValidRelationType(type)) {
       throw new EnumError(`invalid relation type '${type}'`);
     }
     searchFilters.type = type;
   }
+  if (targetUserId) {
+    searchFilters.targetUserId = targetUserId;
+  }
 
+  const relations = await Relation.findAll({
+    //attributes: { exclude: ['sourceUserId'] },
+    where: { 
+      sourceUserId: user.id,
+      ...searchFilters
+    }
+  });
+  return res.send(relations);
+
+  /*
   const userWithRelationTargets = await User.findByPk(user.id, {
     attributes: ['id', 'username'],
     include: [
@@ -50,6 +62,7 @@ router.get('/', async (req, res) => {
   });
 
   return res.send(userWithRelationTargets);
+  */
 });
 
 router.post('/', isSessionUser, async (req, res) => {
@@ -94,7 +107,7 @@ router.post('/', isSessionUser, async (req, res) => {
     type,
   });
 
-  return res.status(201).send({ relation });
+  return res.status(201).send(relation);
 });
 
 router.delete('/:relationId', isSessionUser, async (req, res) => {
