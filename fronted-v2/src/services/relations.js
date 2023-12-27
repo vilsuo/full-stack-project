@@ -2,9 +2,10 @@ import axios from 'axios';
 
 const BASE_URL = '/api/users';
 
-const getTargetRelations = async (username) => {
+const getTargetRelations = async (username, queryParams) => {
   const { data } = await axios.get(
-    `${BASE_URL}/${username}/relations`
+    `${BASE_URL}/${username}/relations`,
+    { params: queryParams }
   );
   return data;
 };
