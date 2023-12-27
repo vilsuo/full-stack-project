@@ -4,14 +4,6 @@ const { Relation, User } = require('../../models');
 const { EnumError } = require('../../util/error');
 const { isSessionUser } = require('../../util/middleware/auth');
 
-/*
-TODO
-- post:
-  - what target user values to return?
-    - all non sensitive?
-    - just id AND/OR username?
-*/
-
 const isValidRelationType = type => {
   const relationTypes = Relation.getAttributes().type.values;
 
@@ -34,7 +26,6 @@ router.get('/', async (req, res) => {
   }
 
   const relations = await Relation.findAll({
-    //attributes: { exclude: ['sourceUserId'] },
     where: { 
       sourceUserId: user.id,
       ...searchFilters
@@ -63,6 +54,30 @@ router.get('/', async (req, res) => {
 
   return res.send(userWithRelationTargets);
   */
+});
+
+router.get('/reverse', async (req, res) => {
+  const user = req.foundUser;
+
+  const searchFilters = {};
+  const { type, sourceUserId } = req.query;
+  if (type) {
+    if (!isValidRelationType(type)) {
+      throw new EnumError(`invalid relation type '${type}'`);
+    }
+    searchFilters.type = type;
+  }
+  if (sourceUserId) {
+    searchFilters.sourceUserId = sourceUserId;
+  }
+
+  const relations = await Relation.findAll({
+    where: { 
+      targetUserId: user.id,
+      ...searchFilters
+    }
+  });
+  return res.send(relations);
 });
 
 router.post('/', isSessionUser, async (req, res) => {
