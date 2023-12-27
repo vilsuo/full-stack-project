@@ -1,7 +1,7 @@
 const omit = require('lodash.omit');
 
 const { User, Image, Potrait } = require('../../src/models');
-const { encodePassword } = require('../../src/util/auth');
+const { encodePassword } = require('../../src/util/password');
 const { cookieKey } = require('../../src/constants');
 
 const cookieHeader = cookie => {

@@ -1,6 +1,6 @@
 const omit = require('lodash.omit');
 const { User } = require('../src/models');
-const { encodePassword } = require('../src/util/auth');
+const { encodePassword } = require('../src/util/password');
 const { sequelize, connectToDatabases } = require('../src/util/db');
 
 const { 

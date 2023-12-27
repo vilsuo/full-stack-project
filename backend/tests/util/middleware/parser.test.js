@@ -1,4 +1,4 @@
-const { paginationParser } = require('../../src/util/middleware/parser');
+const { paginationParser } = require('../../../src/util/middleware/parser');
 
 describe('pagination parser', () => {
   const defaultPageNumber = 0;

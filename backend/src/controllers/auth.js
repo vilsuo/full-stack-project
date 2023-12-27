@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { cookieKey } = require('../constants');
 const { User } = require('../models');
 
-const { encodePassword, comparePassword } = require('../util/auth');
+const { encodePassword, comparePassword } = require('../util/password');
 const { getNonSensitiveUser } = require('../util/dto');
 
 router.post('/register', async (req, res) => {
