@@ -3,16 +3,16 @@ import { Outlet } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 
 const RootLayout = () => {
-  const user = useSelector(state => state.auth.user);
+  const authenticatedUser = useSelector(state => state.auth.user);
 
   return (
     <div className='root-layout'>
       <header>
-        <NavBar user={user} />
+        <NavBar user={authenticatedUser} />
       </header>
 
       <main>
-        <Outlet />
+        <Outlet context={{ authenticatedUser }} />
       </main>
     </div>
   );

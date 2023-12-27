@@ -2,9 +2,17 @@ import axios from 'axios';
 
 const BASE_URL = '/api/users';
 
-const getTargetRelations = async (username, queryParams) => {
+const getRelationsBySource = async (username, queryParams = {}) => {
   const { data } = await axios.get(
     `${BASE_URL}/${username}/relations`,
+    { params: queryParams }
+  );
+  return data;
+};
+
+const getRelationsByTarget = async (username, queryParams = {}) => {
+  const { data } = await axios.get(
+    `${BASE_URL}/${username}/relations/reverse`,
     { params: queryParams }
   );
   return data;
@@ -28,7 +36,8 @@ const removeRelation = async (username, relationId) => {
 };
 
 export default {
-  getTargetRelations,
+  getRelationsBySource,
+  getRelationsByTarget,
   addRelation,
   removeRelation
 };

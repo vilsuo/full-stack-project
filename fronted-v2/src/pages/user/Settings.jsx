@@ -1,7 +1,7 @@
 import { useOutletContext } from 'react-router-dom';
 
 const Settings = () => {
-  const user = useOutletContext();
+  const { user } = useOutletContext();
 
   return (
     <div className='settings'>

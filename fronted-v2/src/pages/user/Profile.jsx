@@ -9,14 +9,14 @@ export const imageLoader = async ({ params }) => {
 };
 
 const Profile = () => {
-  const { user, viewer } = useOutletContext();
+  const { user, authenticatedUser } = useOutletContext();
   const images = useLoaderData();
 
   return (
     <div className='profile'>
       <h3>Profile of {user.username}</h3>
 
-      { viewer.isOwnPage && <p>Own page</p> }
+      { authenticatedUser && (authenticatedUser.id === user.id) && <p>Own page</p> }
 
       <ul>
         {images.map(image => 
