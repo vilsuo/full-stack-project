@@ -1,15 +1,12 @@
-const { User, Image } = require('../../../src/models');
+const { User, Image, Potrait } = require('../../../src/models');
 const { IllegalStateError } = require('../../../src/util/error');
 const { userFinder, imageFinder, potraitFinder } = require('../../../src/util/middleware/finder');
+const { createUser } = require('../../helpers');
 
 const  {
   // user values
   existingUserValues, otherExistingUserValues, 
   disabledExistingUserValues, nonExistingUserValues,
-
-  // image values
-  existingUserImageValues, otherExistingUserImageValues, nonExistingImageValues, 
-
 } = require('../../helpers/constants');
 
 const privacyOptions = Image.getAttributes().privacy.values;
@@ -181,7 +178,6 @@ describe('image finder', () => {
         expect(request).toHaveProperty('image');
         expect(request.image).toStrictEqual(image);
       });
-
     });
   
     describe.each(privacyOptions)('when "%s" image does not belong to the found user', (privacy) => {
@@ -214,7 +210,6 @@ describe('image finder', () => {
         expect(getStatus(response)).toBe(404);
         expect(getMessage(response)).toBe('image does not exist');
       });
-    
     });
 
     describe('non-exising image', () => {
@@ -239,6 +234,82 @@ describe('image finder', () => {
       test('error message is returned', () => {
         expect(getStatus(response)).toBe(404);
         expect(getMessage(response)).toBe('image does not exist');
+      });
+    });
+  });
+});
+
+describe('potrait finder', () => {
+
+  const callPotraitFinder = async (request) => {
+    return callMiddleware(potraitFinder, request);
+  };
+
+  test('calling without property "foundUser" will throw error', async () => {
+    const request = createRequest();
+    expect(request).not.toHaveProperty('foundUser');
+
+    const callWithoutUserFinder = async () => await callPotraitFinder(request);
+    await expect(callWithoutUserFinder).rejects.toThrow(IllegalStateError);
+  });
+
+  describe('after user finder has been successfull handled', () => {
+    describe('when foundUser does have a potrait', () => {
+      let request;
+
+      beforeEach(async () => {
+        const { username } = existingUserValues;
+
+        // create request with parameters
+        request = createRequest({ username });
+
+        // attach found user without calling next
+        request.foundUser = await User.findOne({ where: { username } });
+
+        await callPotraitFinder(request);
+      });
+
+      test('next middleware is called', () => {
+        expect(next).toHaveBeenCalled();
+      });
+
+      test('potrait is attached', async () => {
+        const foundPotrait = await Potrait.findOne({ 
+          where: { userId: request.foundUser.id } 
+        });
+
+        expect(request).toHaveProperty('potrait');
+        expect(request.potrait).toStrictEqual(foundPotrait);
+      });
+    });
+
+    describe('when foundUser does not have a potrait', () => {
+      let newUser;
+
+      let request;
+      let response;
+  
+      beforeEach(async () => {
+        // create a new user
+        newUser = await createUser(nonExistingUserValues);
+        request = createRequest({ username: newUser.username });
+
+        request.foundUser = newUser;
+
+        response = await callPotraitFinder(request);
+      });
+
+      test('next middleware is not called', () => {
+        expect(next).not.toHaveBeenCalled();
+      });
+
+      test(`potrait is not attached`, () => {
+        expect(request).not.toHaveProperty('potrait');
+      });
+
+      test('error message is returned', () => {
+        expect(getStatus(response)).toBe(404);
+        expect(getMessage(response)).toBe('user does not have a potrait');
       });
     });
   });

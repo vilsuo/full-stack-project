@@ -89,6 +89,11 @@ const imageFinder = async (req, res, next) => {
  */
 const potraitFinder = async (req, res, next) => {
   const foundUser = req.foundUser;
+
+  if (!foundUser) {
+    throw new IllegalStateError('foundUser is not set');
+  }
+  
   const potrait = await Potrait.findOne({ where: { userId: foundUser.id } });
   if (potrait) {
     req.potrait = potrait;
