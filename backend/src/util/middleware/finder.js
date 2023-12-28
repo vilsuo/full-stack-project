@@ -1,4 +1,12 @@
 const { User, Image, Potrait } = require('../../models');
+const { IllegalStateError } = require('../error');
+
+/*
+TODO
+- implement relationFinder by relationId param
+
+- create parseId helper function
+*/
 
 /**
  * Extracts the User from request parameter 'username' to request.foundUser.
@@ -13,16 +21,21 @@ const { User, Image, Potrait } = require('../../models');
  */
 const userFinder = async (req, res, next) => {
   const { username } = req.params;
-  const user = await User.findOne({ where: { username } });
+
+  if (!username) {
+    throw new IllegalStateError('missing parameter "username"');
+  }
+
+  const foundUser = await User.findOne({ where: { username } });
   
-  if (!user) {
+  if (!foundUser) {
     return res.status(404).send({ message: 'user does not exist' });
 
-  } else if (user.disabled) {
+  } else if (foundUser.disabled) {
     return res.status(400).send({ message: 'user is disabled' })
   }
 
-  req.foundUser = user;
+  req.foundUser = foundUser;
   next();
 };
 
@@ -40,15 +53,23 @@ const userFinder = async (req, res, next) => {
  * - '404' if the image owner is not the request.foundUser
  */
 const imageFinder = async (req, res, next) => {
+  const { foundUser } = req;
+
+  if (!foundUser) {
+    throw new IllegalStateError('foundUser is not set');
+  }
+
   const imageId = Number(req.params.imageId);
 
-  if (!isNaN(imageId)) {
-    const image = await Image.findByPk(imageId);
+  if (isNaN(imageId)) {
+    return res.status(400).send({ message: 'id must be a number' });
+  }
 
-    if (image && image.userId === req.foundUser.id) {
-      req.image = image;
-      return next();
-    }
+  const image = await Image.findByPk(imageId);
+
+  if (image && image.userId === foundUser.id) {
+    req.image = image;
+    return next();
   }
 
   return res.status(404).send({ message: 'image does not exist' });

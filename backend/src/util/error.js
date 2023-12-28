@@ -12,7 +12,15 @@ class EnumError extends Error {
   }
 };
 
+class IllegalStateError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'IllegalStateError';
+  }
+};
+
 module.exports = {
   FiletypeError,
   EnumError,
+  IllegalStateError,
 };
