@@ -2,7 +2,7 @@ const omit = require('lodash.omit');
 const supertest = require('supertest');
 const app = require('../../src/app');
 
-const { User, Potrait } = require('../../src/models');
+const { User, Potrait, Relation } = require('../../src/models');
 const { 
   get_SetCookie, compareFoundWithResponse, login, getUsersImageCount
 } = require('../helpers');
@@ -75,6 +75,16 @@ describe('registering', () => {
   
     const potrait = await Potrait.findOne({ where: { userId: newUser.id }});
     expect(potrait).toBeFalsy();
+  });
+
+  test('new user does not have any relations', async () => {
+    const newUser = await register(nonExistingUserValues);
+
+    const asRelationSource = await Relation.findAll({ where: { sourceUserId: newUser.id } });
+    const asRelationTarget = await Relation.findAll({ where: { targetUserId: newUser.id } });
+
+    expect(asRelationSource).toHaveLength(0);
+    expect(asRelationTarget).toHaveLength(0);
   });
 
   describe('fails with', () => {
@@ -175,19 +185,18 @@ describe('loggin in', () => {
 
     test('the id, name and username of the logged in user are returned', async () => {
       const response = await loginWithResponse(credentials);
-      const body = response.body;
+      const returnedUser = response.body;
 
       // response contains the logged in users id, name and username
       const foundUser = await User.findOne({ where: { username: credentials.username } });
 
-      expect(body).toStrictEqual({
-        id: foundUser.id,
-        name: foundUser.name,
-        username: foundUser.username,
-      });
+      compareFoundWithResponse(
+        getNonSensitiveUser(foundUser), 
+        returnedUser
+      );
       
       // hashed password is not included in the response
-      expect(body).not.toHaveProperty('passwordHash');
+      expect(returnedUser).not.toHaveProperty('passwordHash');
     });
   });
 
