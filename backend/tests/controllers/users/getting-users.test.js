@@ -38,82 +38,125 @@ const getOne = async (username, statusCode = 200) => {
 
 describe('get users', () => {
   describe('all', () => {
-    test('users having the query string in their name/username are returned', async () => {
-      const user1 = await createUser({
-        name:     'commonhere',     // contains 'nher'
-        username: 'jaska',
-        password: 'asdpojahfipaf'
-      });
+    let nonDisabledUsers;
+    let nNonDisabledUsers;
 
-      const user2 = await createUser({
-        name:     'afpohaf',
-        username: 'linHera',      // contains 'nHer'
-        password: 'asdpojahfipaf'
-      });
-
-      await createUser({
-        name:     'dshegaega',
-        username: 'NHERs',        // contains 'NHER', but is disabled
-        password: 'oasoasugo',
-        disabled: true,
-      });
-
-      const matchingUsers = [user1, user2];
-
-      const searchParam = 'NHER';
-      const returnedUsers = await getAll({ search: searchParam });
-
-      expect(returnedUsers).toHaveLength(matchingUsers.length);
-
-      compareFoundArrayWithResponseArray(
-        matchingUsers.map(user => getNonSensitiveUser(user)),
-        returnedUsers
-      );
+    beforeEach(async () => {
+      nonDisabledUsers = await User.findAll({ where: { disabled: false } });
+      nNonDisabledUsers = nonDisabledUsers.length;
     });
 
-    test('query with existing users username returns the user', async () => {
-      const existingUsername = existingUserValues.username;
-      const foundUser = await User.findOne({ where: { username: existingUsername }});
+    test('count-property is equal to the non-disabled users count', async () => {
+      const responseBody = await getAll();
+      expect(responseBody).toHaveProperty('count');
 
-      const returnedUsers = await getAll({ search: existingUsername });
-
-      expect(returnedUsers).toContainEqual(getNonSensitiveUser(foundUser));
+      expect(responseBody.count).toBe(nNonDisabledUsers);
     });
 
-    test('query with disabled users username does not return the user', async () => {
-      const disabledUsername = disabledExistingUserValues.username;
-      const foundUser = await User.findOne({ where: { username: disabledUsername }});
-      
-      const returnedUsers = await getAll({ search: disabledUsername });
-
-      expect(returnedUsers).not.toContainEqual(getNonSensitiveUser(foundUser));
-    });
-
-    test('when no users match the query, an empty array is returned', async () => {
-      const badQuery = 'ilafnaygflfalsgf';
-      const returnedUsers = await getAll({ search: badQuery });
-
-      expect(returnedUsers).toHaveLength(0);
-    });
-
-    test('without query, all non disabled users are returned', async () => {
-      const returnedUsers = await getAll();
-      const foundUsers = await User.findAll({ where: { disabled: false } });
-
-      // all non disabled users are returned
-      returnedUsers.forEach(user => expect(user.disabled).toBe(false));
-
-      compareFoundArrayWithResponseArray(
-        foundUsers.map(user => getNonSensitiveUser(user)),
-        returnedUsers
-      );
-    });
-  
     test('password hashes are not returned', async () => {
-      const returnedUsers = await getAll();
+      const responseBody = await getAll();
 
-      returnedUsers.forEach(user => {
+      responseBody.users.forEach(user => {
         expect(user).not.toHaveProperty('passwordHash');
+      });
+    });
+
+    describe('pagination', () => {
+      test('with large page size, all non disabled users are returned', async () => {
+        const responseBody = await getAll({ size: nNonDisabledUsers });
+  
+        expect(responseBody).toHaveProperty('users');
+  
+        // all non disabled users are returned
+        responseBody.users.forEach(user => expect(user.disabled).toBe(false));
+  
+        compareFoundArrayWithResponseArray(
+          nonDisabledUsers.map(user => getNonSensitiveUser(user)),
+          responseBody.users
+        );
+      });
+
+      test('all pages combined contain all non-disabled users', async () => {
+        const size = Math.ceil(nNonDisabledUsers / 2);
+
+        const responseBodyFirstHalf = await getAll({ size, page: 0 });
+        const responseBodySecondHalf = await getAll({ size, page: 1 });
+
+        const firstUsers = responseBodyFirstHalf.users;
+        const secondUsers = responseBodySecondHalf.users;
+
+        expect(firstUsers.length).toBeGreaterThan(0);
+        expect(firstUsers.length).toBeLessThan(nNonDisabledUsers);
+
+        expect(secondUsers.length).toBeGreaterThan(0);
+        expect(secondUsers.length).toBeLessThan(nNonDisabledUsers);
+        
+        expect(firstUsers.length + secondUsers.length).toBe(nNonDisabledUsers);
+
+        compareFoundArrayWithResponseArray(
+          nonDisabledUsers.map(user => getNonSensitiveUser(user)),
+          [ ...firstUsers, ...secondUsers ]
+        );
+      });
+    });
+
+    describe('querying', () => {
+      test('when no users match the query, an empty array is returned', async () => {
+        const badQuery = 'ilafnaygflfalsgf';
+        const responseBody = await getAll({ q: badQuery });
+
+        expect(responseBody.users).toHaveLength(0);
+      });
+
+      test('disabled users username does not return the user', async () => {
+        const disabledUsername = disabledExistingUserValues.username;
+        
+        const responseBody = await getAll({ q: disabledUsername });
+  
+        expect(responseBody.users).toHaveLength(0);
+      });
+
+      test('existing users username returns the user', async () => {
+        const existingUsername = existingUserValues.username;
+        const foundUser = await User.findOne({ where: { username: existingUsername }});
+  
+        const returnedUsers = await getAll({ q: existingUsername });
+  
+        expect(returnedUsers.users).toContainEqual(getNonSensitiveUser(foundUser));
+      });
+      
+      test('users having the query string in their name/username are returned', async () => {
+        const searchParam = 'NHER';
+
+        const user1 = await createUser({
+          name:     'commonhere',     // contains 'nher'
+          username: 'jaska',
+          password: 'asdpojahfipaf'
+        });
+  
+        const user2 = await createUser({
+          name:     'afpohaf',
+          username: 'linHera',      // contains 'nHer'
+          password: 'asdpojahfipaf'
+        });
+  
+        await createUser({
+          name:     'dshegaega',
+          username: 'uNHERs',        // contains 'NHER', but is disabled
+          password: 'oasoasugo',
+          disabled: true,
+        });
+  
+        const matchingUsers = [user1, user2];
+  
+        const responseBody = await getAll({ 
+          q: searchParam, size: matchingUsers.length
+        });
+  
+        compareFoundArrayWithResponseArray(
+          matchingUsers.map(user => getNonSensitiveUser(user)),
+          responseBody.users
+        );
       });
     });
   });
