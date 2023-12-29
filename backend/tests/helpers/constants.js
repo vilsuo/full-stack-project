@@ -25,6 +25,12 @@ const nonExistingUserValues = {
   password: 'qwerty',
 };
 
+const getCredentials = userValues => {
+  const { username, password } = userValues;
+
+  return { username, password };
+};
+
 const existingUserImageValues = {
   publicImageValues: {
     title: 'Jest',
@@ -104,6 +110,7 @@ module.exports = {
   otherExistingUserValues,
   disabledExistingUserValues,
   nonExistingUserValues,
+  getCredentials,
 
   // images
   existingUserImageValues,

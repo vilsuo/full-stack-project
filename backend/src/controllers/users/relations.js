@@ -4,6 +4,11 @@ const { Relation, User } = require('../../models');
 const { EnumError } = require('../../util/error');
 const { isSessionUser } = require('../../util/middleware/auth');
 
+/*
+TODO
+- parse sourceUserId/targetUserId
+*/
+
 const isValidRelationType = type => {
   const relationTypes = Relation.getAttributes().type.values;
 
@@ -85,7 +90,7 @@ router.post('/', isSessionUser, async (req, res) => {
   const { targetUserId, type } = req.body;
 
   if (!type || !isValidRelationType(type)) {
-    throw new EnumError(`invalid relation type '${type}'`);
+    return res.status(400).send({ message: 'invalid relation type' });
   }
 
   // target user must exist
