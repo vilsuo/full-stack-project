@@ -25,7 +25,11 @@ const errorHandler = (error, req, res, next) => {
       });
     case 'FiletypeError':
       return res.status(400).send({ message: error.message });
+
     case 'EnumError':
+      return res.status(400).send({ message: error.message });
+      
+    case 'ParameterError':
       return res.status(400).send({ message: error.message });
   }
 

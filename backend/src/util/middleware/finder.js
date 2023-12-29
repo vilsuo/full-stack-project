@@ -1,11 +1,10 @@
-const { User, Image, Potrait } = require('../../models');
+const { User, Image, Potrait, Relation } = require('../../models');
 const { IllegalStateError } = require('../error');
+const { parseParamId } = require('./parser');
 
 /*
 TODO
 - implement relationFinder by relationId param
-
-- create parseId helper function
 */
 
 /**
@@ -59,11 +58,7 @@ const imageFinder = async (req, res, next) => {
     throw new IllegalStateError('foundUser is not set');
   }
 
-  const imageId = Number(req.params.imageId);
-
-  if (isNaN(imageId)) {
-    return res.status(400).send({ message: 'id must be a number' });
-  }
+  const imageId = parseParamId(req.params.imageId);
 
   const image = await Image.findByPk(imageId);
 
@@ -102,6 +97,31 @@ const potraitFinder = async (req, res, next) => {
 
   return res.status(404).send({ message: 'user does not have a potrait' });
 };
+
+/*
+const relationFinder = async (req, res, next) => {
+  const foundUser = req.foundUser;
+
+  if (!foundUser) {
+    throw new IllegalStateError('foundUser is not set');
+  }
+
+  const relationId = parseParamId(req.params.relationId);
+
+  if (isNaN(relationId)) {
+    return res.status(400).send({ message: 'id must be a number' });
+  }
+
+  const relation = await Relation.findByPk(relationId);
+
+  if (relation && relation.userId === foundUser.id) {
+    req.relation = relation;
+    return next();
+  }
+
+  return res.status(404).send({ message: 'relation does not exist' });
+};
+*/
 
 module.exports = {
   userFinder,

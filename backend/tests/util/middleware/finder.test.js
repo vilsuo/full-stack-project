@@ -32,11 +32,23 @@ const callMiddleware = async (middleware, request) => {
 const getStatus = response => response.code;
 const getMessage = response => response.body.message;
 
+/**
+ * 
+ * @param {*} params object of string key-value pairs
+ * @param {*} query  object of string key-value pairs
+ * @returns 
+ */
 const createRequest = (params = {}, query = {}) => {
   const request = { params, query };
   return request;
 };
 
+/**
+ * 
+ * @param {*} request 
+ * @param {*} newParams object of string key-value pairs to be added to
+ *                      the request parameters
+ */
 const addParamsToRequest = (request, newParams = {}) => {
   const { params: oldParams } = request;
 
@@ -165,7 +177,7 @@ describe('image finder', () => {
         image = await Image.findOne({ where: { userId, privacy } });
 
         // create request with parameters
-        addParamsToRequest(request, { imageId: image.id });
+        addParamsToRequest(request, { imageId: image.id.toString() });
 
         response = await callImageFinder(request);
       });
@@ -193,7 +205,7 @@ describe('image finder', () => {
         const image = await Image.findOne({ where: { userId: otherUser.id, privacy } });
 
         // create request with parameters
-        addParamsToRequest(request, { imageId: image.id });
+        addParamsToRequest(request, { imageId: image.id.toString() });
 
         response = await callImageFinder(request);
       });
@@ -218,7 +230,7 @@ describe('image finder', () => {
       beforeEach(async () => {
         // create request with parameters
         const nonExistingImageId = 99999;
-        addParamsToRequest(request, { imageId: nonExistingImageId });
+        addParamsToRequest(request, { imageId: nonExistingImageId.toString() });
 
         response = await callImageFinder(request);
       });

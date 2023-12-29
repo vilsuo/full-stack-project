@@ -19,8 +19,16 @@ class IllegalStateError extends Error {
   }
 };
 
+class ParameterError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ParameterError';
+  }
+};
+
 module.exports = {
   FiletypeError,
   EnumError,
   IllegalStateError,
+  ParameterError,
 };

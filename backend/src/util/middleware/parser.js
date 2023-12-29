@@ -1,3 +1,31 @@
+const { ParameterError, IllegalStateError } = require('../error');
+
+/**
+ * Valid values are strings from '1' to '2147483647'.
+ * 
+ * @param {*} value route parameter to be parsed to integer
+ * 
+ * @returns the parsed parameter as an integer
+ */
+const parseParamId = (value) => {
+  if (typeof value !== 'string') {
+    throw new IllegalStateError('parameter is not a string');
+  }
+
+  // contains ONLY digits. contains ATLEAST ONE digit
+  const onlyDigits = /^\d+$/.test(value);
+
+  const minId = 1;
+  const maxId = 2147483647;
+
+  const id = Number(value)
+  if (onlyDigits && (minId <= id && id <= maxId)) {
+    return Number(value);
+  }
+
+  throw new ParameterError('id is invalid');
+};
+
 /**
  * 
  * @param {*} value 
@@ -43,5 +71,6 @@ const paginationParser = (req, res, next) => {
 };
 
 module.exports = {
+  parseParamId,
   paginationParser,
 };
