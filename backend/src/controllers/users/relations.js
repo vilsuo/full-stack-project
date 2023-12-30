@@ -3,10 +3,13 @@ const router = require('express').Router({ mergeParams: true });
 const { Relation, User } = require('../../models');
 const { EnumError } = require('../../util/error');
 const { isSessionUser } = require('../../util/middleware/auth');
+const { isValidId } = require('../../util/middleware/parser');
 
 /*
 TODO
-- parse sourceUserId/targetUserId
+- parse
+  - query params sourceUserId/targetUserId
+  - path param relationId
 */
 
 const isValidRelationType = type => {
@@ -89,8 +92,16 @@ router.post('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
   const { targetUserId, type } = req.body;
 
-  if (!type || !isValidRelationType(type)) {
+  // parse type
+  if (!type) return res.status(400).send({ message: 'missing relation type' });
+  if (!isValidRelationType(type)) {
     return res.status(400).send({ message: 'invalid relation type' });
+  }
+
+  // parse target user id
+  if (!targetUserId) return res.status(400).send({ message: 'missing target user id' });
+  if (!isValidId(targetUserId)) {
+    return res.status(400).send({ message: 'invalid target user id' });
   }
 
   // target user must exist

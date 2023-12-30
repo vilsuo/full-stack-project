@@ -6,7 +6,7 @@ const {
   existingUserValues, otherExistingUserValues, getCredentials 
 } = require('../../../helpers/constants');
 
-const { login, compareFoundWithResponse, createPotrait } = require('../../../helpers');
+const { login, compareFoundWithResponse } = require('../../../helpers');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -117,25 +117,62 @@ describe('posting relations', () => {
         });
       });
 
-      /*
       describe('user can not create relation with...', () => {
-        test.each(relationTypes)('itself of type %s', async (type) => {
+        const validType = 'follow';
 
+        test('missing relation type', async () => {
+          const responseBody = await postRelation(
+            username, { targetUserId }, authHeader, 400
+          );
+
+          expect(responseBody.message).toBe('missing relation type');
         });
 
         test('invalid relation type', async () => {
+          const invalidType = 'public';
 
+          const responseBody = await postRelation(
+            username, { targetUserId, type: invalidType }, authHeader, 400
+          );
+
+          expect(responseBody.message).toBe('invalid relation type');
+        });
+
+        test('missing target user id', async () => {
+          const responseBody = await postRelation(
+            username, { type: validType }, authHeader, 400
+          );
+
+          expect(responseBody.message).toBe('missing target user id');
         });
   
         test('invalid target user id', async () => {
-  
+          const invalidTargetUserId = 1.1;
+
+          const responseBody = await postRelation(
+            username, { targetUserId: invalidTargetUserId, type: validType }, authHeader, 400
+          );
+
+          expect(responseBody.message).toBe('invalid target user id');
         });
   
         test('target user that does not exist', async () => {
-  
+          const nonExistingUserId = 999;
+          const responseBody = await postRelation(
+            username, { targetUserId: nonExistingUserId, type: validType }, authHeader, 404
+          );
+
+          expect(responseBody.message).toBe('target user does not exist');
+        });
+
+        test.each(relationTypes)('itself of type %s', async (type) => {
+          const responseBody = await postRelation(
+            username, { targetUserId: sourceUserId, type }, authHeader, 400
+          );
+
+          expect(responseBody.message).toBe('user can not have a relation with itself');
         });
       });
-      */
     });
 
     test.each(relationTypes)('can not post relation to other user', async (type) => {
