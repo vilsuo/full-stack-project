@@ -9,7 +9,7 @@ module.exports = {
         primaryKey: true,
       },
       type: {
-        type: DataTypes.ENUM('public', 'private'),
+        type: DataTypes.ENUM('follow', 'block'),
         allowNull: false,
       },
       source_user_id: {
