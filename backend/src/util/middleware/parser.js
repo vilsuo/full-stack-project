@@ -1,33 +1,45 @@
-const { ParameterError, IllegalStateError } = require('../error');
+const { ParameterError } = require('../error');
 
 const minId = 1;
 const maxId = 2147483647;
 
 /**
- * Valid values are strings from '1' to '2147483647'.
+ * Valid values are strings/numbers from 1 to 2147483647.
  * 
- * @param {*} value route parameter to be parsed to integer
- * 
- * @returns the parsed parameter as an integer
+ * @param {*} value 
+ * @returns 
  */
-const parseParamId = (value) => {
-  if (typeof value !== 'string') {
-    throw new IllegalStateError('id parameter is not a string');
+const parseId = (value) => {
+  if (value === undefined) {
+    throw new ParameterError('id is missing');
   }
 
-  // contains ONLY digits. contains ATLEAST ONE digit
-  const onlyDigits = /^\d+$/.test(value);
+  switch (typeof value) {
+    case 'number': {
+      if (Number.isInteger(value) && (minId <= value && value <= maxId)) {
+        return value;
+      }
+      throw new ParameterError('id is invalid');
+    }
+    case 'string':
+      return parseId(Number(value));
 
-  const id = Number(value)
-  if (onlyDigits && (minId <= id && id <= maxId)) {
-    return id;
-  }
-
-  throw new ParameterError('id is invalid');
+    default:
+      throw new ParameterError('id is invalid');
+  };
 };
 
-const isValidId = (value) => {
-  return Number.isInteger(value) && (minId <= value && value <= maxId);
+const parseRelationType = type => {
+  const relationTypes = Relation.getAttributes().type.values;
+
+  if (type === undefined) {
+    throw new EnumError('relation type is missing');
+  }
+
+  if (!relationTypes.includes(type)) {
+    throw new EnumError('invalid relation type');
+  }
+  return type;
 };
 
 /**
@@ -75,7 +87,8 @@ const paginationParser = (req, res, next) => {
 };
 
 module.exports = {
-  parseParamId,
-  isValidId,
+  parseId,
+  parseRelationType,
+  
   paginationParser,
 };

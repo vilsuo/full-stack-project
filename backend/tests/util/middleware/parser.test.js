@@ -1,90 +1,115 @@
-const { ParameterError, IllegalStateError } = require('../../../src/util/error');
-const { parseParamId, paginationParser } = require('../../../src/util/middleware/parser');
+const { ParameterError } = require('../../../src/util/error');
+const { parseId, paginationParser } = require('../../../src/util/middleware/parser');
 
 describe('id parsing', () => {
+  // valid numbers
   const minId = 1;
   const maxId = 2147483647;
 
   const interiors = [minId + 1, 10, 2023, 58000, maxId - 1];
 
-  describe('string parameters', () => {
-    describe('invalid digits test', () => {
-      test('can not contain ".', () => {
-        const values = ['.1', '10.0', '10.', '1000.00'];
+  const decimalZeroes = [1.0, 10.00, 100.000];
 
-        values.forEach(value =>
-          expect(() => parseParamId(value).toThrow(ParameterError))
-        );
+  // invalid numbers
+  const trueDecimals = [0.7, 1.1, 10.01];
+  const negatives = [-999, -10, -1.1];
+
+  const expectToThrow = (value) => expect(() => parseId(value)).toThrow(ParameterError);
+
+  describe('string parameters', () => {
+    describe('invalid strings', () => {
+      test('true decimals are not allowed', () => {
+        trueDecimals.forEach(value => expectToThrow(value.toString()));
+      });
+
+      test('negatives are not allowed', () => {
+        negatives.forEach(value => expectToThrow(value.toString()));
       });
 
       test('can not contain letters', () => {
         const values = ['hello', '12a', 'a12', '1a2'];
 
-        values.forEach(value =>
-          expect(() => parseParamId(value).toThrow(ParameterError))
-        );
+        values.forEach(value => expectToThrow(value));
       });
 
-      test('can not contain whitespace', () => {
-        const values = ['', ' ', ' 10', '10 '];
+      test('can not contain non-leading or non-trailing whitespace', () => {
+        const values = ['', ' ', '1 0'];
 
-        values.forEach(value =>
-          expect(() => parseParamId(value).toThrow(ParameterError))
-        );
+        values.forEach(value => expectToThrow(value));
       });
 
-      test('can not contain signs', () => {
-        const values = ['+10', '-10'];
-
-        values.forEach(value =>
-          expect(() => parseParamId(value).toThrow(ParameterError))
-        );
+      test('just out of range', () => {
+        expectToThrow((minId - 1).toString());
+        expectToThrow((maxId + 1).toString());
       });
     });
 
-    describe('range test', () => {
-      // one too small/large
-      test(`"${minId - 1}" is not valid id`, () => {
-        expect(() => parseParamId((minId - 1).toString())).toThrow(ParameterError);
+    describe('valid strings', () => {
+      test('numbers with decimal zero', () => {
+        decimalZeroes.forEach(value => expect(parseId(value.toString())).toBe(value));
       });
 
-      test(`"${maxId + 1}" is not valid id`, () => {
-        expect(() => parseParamId((maxId + 1).toString())).toThrow(ParameterError);
+      test('can contain positive sign', () => {
+        expect(parseId('+10')).toBe(10);
       });
 
-      // boundary
-      test(`"${minId}" is valid id`, () => {
-        expect(parseParamId(minId.toString())).toBe(minId);
+      test('can contain leading and trailing whitespace', () => {
+        const values = ['10 ', ' 10', ' 10 '];
+
+        values.forEach(value => expect(parseId(value)).toBe(10));
       });
 
-      test(`"${maxId}" is valid id`, () => {
-        expect(parseParamId(maxId.toString())).toBe(maxId);
+      test('min/max', () => {
+        expect(parseId(minId.toString())).toBe(minId);
+        expect(parseId(maxId.toString())).toBe(maxId);
       });
 
-      // in range
-      test('interior values', () => {
-        interiors.forEach(value =>
-          expect(parseParamId(value.toString())).toBe(value)
-        );
+      test('interior', () => {
+        interiors.forEach(value => expect(parseId(value.toString())).toBe(value));
       });
     });
   });
 
-  describe('non-string parameters', () => {
-    const numbers = [-999, -10, -1.1, 0.7, 1.0, 1.1, 10.01, NaN];
+  describe('number parameters', () => {
+    describe('invalid numbers', () => {
+      test('true decimals are not allowed', () => {
+        trueDecimals.forEach(value => expectToThrow(value));
+      });
+
+      test('negatives are not allowed', () => {
+        negatives.forEach(value => expectToThrow(value));
+      });
+
+      test('NaN is not allowed', () => {
+        expectToThrow(NaN);
+      });
+
+      test('just out of range', () => {
+        expectToThrow(minId - 1);
+        expectToThrow(maxId + 1);
+      });
+    });
+
+    describe('valid numbers', () => {
+      test('numbers with decimal zero', () => {
+        decimalZeroes.forEach(value => expect(parseId(value)).toBe(value));
+      })
+
+      test('min/max', () => {
+        expect(parseId(minId)).toBe(minId);
+        expect(parseId(maxId)).toBe(maxId);
+      });
+
+      test('interior', () => {
+        interiors.forEach(value => expect(parseId(value)).toBe(value));
+      });
+    });
+  });
+
+  test('other parameters', () => {
     const others = [null, undefined, false, true, [], [6], {}, { 1: 2 }];
 
-    test('number parameters', () => {
-      [ ...interiors, ...numbers ].forEach(value =>
-        expect(() => parseParamId(value).toThrow(IllegalStateError))
-      );
-    });
-
-    test('other parameters', () => {
-      others.forEach(value =>
-        expect(() => parseParamId(value).toThrow(IllegalStateError))
-      );
-    });
+    others.forEach(value => expectToThrow(value));
   });
 });
 

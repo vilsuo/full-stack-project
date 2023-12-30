@@ -1,36 +1,26 @@
 const router = require('express').Router({ mergeParams: true });
 
 const { Relation, User } = require('../../models');
-const { EnumError } = require('../../util/error');
 const { isSessionUser } = require('../../util/middleware/auth');
-const { isValidId } = require('../../util/middleware/parser');
+const { parseId, parseRelationType } = require('../../util/middleware/parser');
 
 /*
 TODO
-- parse
-  - query params sourceUserId/targetUserId
-  - path param relationId
+- parsers for GET-methods
+- combine EnumError and ParameterError to more general Error type.
 */
 
-const isValidRelationType = type => {
-  const relationTypes = Relation.getAttributes().type.values;
-
-  return relationTypes.includes(type);
-};
-
+/*
 router.get('/', async (req, res) => {
   const user = req.foundUser;
 
   const searchFilters = {};
   const { type, targetUserId } = req.query;
   if (type) {
-    if (!isValidRelationType(type)) {
-      throw new EnumError(`invalid relation type '${type}'`);
-    }
-    searchFilters.type = type;
+    searchFilters.type = parseRelationType(type);
   }
   if (targetUserId) {
-    searchFilters.targetUserId = targetUserId;
+    searchFilters.targetUserId = parseParamId(targetUserId);
   }
 
   const relations = await Relation.findAll({
@@ -41,27 +31,25 @@ router.get('/', async (req, res) => {
   });
   return res.send(relations);
 
-  /*
-  const userWithRelationTargets = await User.findByPk(user.id, {
-    attributes: ['id', 'username'],
-    include: [
-      {
-        model: Relation, 
-        attributes: ['id', 'type'],
-        include: [
-          {
-            model: User, 
-            as: 'targetUser',
-            attributes: ['id', 'username'],
-          }
-        ],
-        where: searchFilters,
-      }
-    ]
-  });
-
-  return res.send(userWithRelationTargets);
-  */
+  //const userWithRelationTargets = await User.findByPk(user.id, {
+  //  attributes: ['id', 'username'],
+  //  include: [
+  //    {
+  //      model: Relation, 
+  //      attributes: ['id', 'type'],
+  //      include: [
+  //        {
+  //          model: User, 
+  //          as: 'targetUser',
+  //          attributes: ['id', 'username'],
+  //        }
+  //      ],
+  //      where: searchFilters,
+  //    }
+  //  ]
+  //});
+  //
+  //return res.send(userWithRelationTargets);
 });
 
 router.get('/reverse', async (req, res) => {
@@ -71,12 +59,13 @@ router.get('/reverse', async (req, res) => {
   const { type, sourceUserId } = req.query;
   if (type) {
     if (!isValidRelationType(type)) {
-      throw new EnumError(`invalid relation type '${type}'`);
+      return res.status(400).send({ message: 'invalid relation type' });
     }
     searchFilters.type = type;
   }
+
   if (sourceUserId) {
-    searchFilters.sourceUserId = sourceUserId;
+    searchFilters.sourceUserId = parseParamId(sourceUserId);
   }
 
   const relations = await Relation.findAll({
@@ -87,22 +76,14 @@ router.get('/reverse', async (req, res) => {
   });
   return res.send(relations);
 });
+*/
 
 router.post('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
-  const { targetUserId, type } = req.body;
 
-  // parse type
-  if (!type) return res.status(400).send({ message: 'missing relation type' });
-  if (!isValidRelationType(type)) {
-    return res.status(400).send({ message: 'invalid relation type' });
-  }
-
-  // parse target user id
-  if (!targetUserId) return res.status(400).send({ message: 'missing target user id' });
-  if (!isValidId(targetUserId)) {
-    return res.status(400).send({ message: 'invalid target user id' });
-  }
+  // parse request body
+  const type = parseRelationType(req.body.type);
+  const targetUserId = parseId(req.body.targetUserId);
 
   // target user must exist
   const targetUser = await User.findByPk(targetUserId);
@@ -145,11 +126,10 @@ router.delete('/:relationId', isSessionUser, async (req, res) => {
   const { relationId } = req.params;
   const sourceUser = req.user;
 
+  const id = parseId(relationId);
+
   const nDestroyed = await Relation.destroy({ 
-    where: { 
-      id: relationId, 
-      sourceUserId: sourceUser.id,
-    } 
+    where: { id, sourceUserId: sourceUser.id } 
   });
 
   if (!nDestroyed) {
