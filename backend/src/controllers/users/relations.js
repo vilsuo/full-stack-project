@@ -83,7 +83,7 @@ router.post('/', isSessionUser, async (req, res) => {
 
   // parse request body
   const type = parseRelationType(req.body.type);
-  const targetUserId = parseId(req.body.targetUserId);
+  const targetUserId = parseId(req.body.targetUserId, 'targetUserId');
 
   // target user must exist
   const targetUser = await User.findByPk(targetUserId);
@@ -126,7 +126,7 @@ router.delete('/:relationId', isSessionUser, async (req, res) => {
   const { relationId } = req.params;
   const sourceUser = req.user;
 
-  const id = parseId(relationId);
+  const id = parseId(relationId, 'relationId');
 
   const nDestroyed = await Relation.destroy({ 
     where: { id, sourceUserId: sourceUser.id } 

@@ -125,7 +125,7 @@ describe('posting relations', () => {
             username, { targetUserId }, authHeader, 400
           );
 
-          expect(responseBody.message).toBe('missing relation type');
+          expect(responseBody.message).toBe('relation type is missing');
         });
 
         test('invalid relation type', async () => {
@@ -143,7 +143,7 @@ describe('posting relations', () => {
             username, { type: validType }, authHeader, 400
           );
 
-          expect(responseBody.message).toBe('missing target user id');
+          expect(responseBody.message).toBe('parameter targetUserId is missing');
         });
   
         test('invalid target user id', async () => {
@@ -153,7 +153,7 @@ describe('posting relations', () => {
             username, { targetUserId: invalidTargetUserId, type: validType }, authHeader, 400
           );
 
-          expect(responseBody.message).toBe('invalid target user id');
+          expect(responseBody.message).toBe('parameter targetUserId is invalid');
         });
   
         test('target user that does not exist', async () => {

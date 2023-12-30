@@ -1,4 +1,5 @@
-const { ParameterError } = require('../error');
+const { Relation } = require('../../models');
+const { ParameterError, EnumError } = require('../error');
 
 const minId = 1;
 const maxId = 2147483647;
@@ -9,9 +10,9 @@ const maxId = 2147483647;
  * @param {*} value 
  * @returns 
  */
-const parseId = (value) => {
+const parseId = (value, name = 'id') => {
   if (value === undefined) {
-    throw new ParameterError('id is missing');
+    throw new ParameterError(`parameter ${name} is missing`);
   }
 
   switch (typeof value) {
@@ -19,13 +20,13 @@ const parseId = (value) => {
       if (Number.isInteger(value) && (minId <= value && value <= maxId)) {
         return value;
       }
-      throw new ParameterError('id is invalid');
+      throw new ParameterError(`parameter ${name} is invalid`);
     }
     case 'string':
       return parseId(Number(value));
 
     default:
-      throw new ParameterError('id is invalid');
+      throw new ParameterError(`parameter ${name} is invalid`);
   };
 };
 
@@ -89,6 +90,6 @@ const paginationParser = (req, res, next) => {
 module.exports = {
   parseId,
   parseRelationType,
-  
+
   paginationParser,
 };
