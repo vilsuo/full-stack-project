@@ -1,7 +1,8 @@
-const { ParameterError } = require('../../../src/util/error');
-const { parseId, paginationParser } = require('../../../src/util/middleware/parser');
+const { Relation } = require('../../../src/models');
+const { ParameterError, EnumError } = require('../../../src/util/error');
+const { parseId, paginationParser, parseRelationType } = require('../../../src/util/middleware/parser');
 
-describe('id parsing', () => {
+describe('id parser', () => {
   // valid numbers
   const minId = 1;
   const maxId = 2147483647;
@@ -110,6 +111,32 @@ describe('id parsing', () => {
     const others = [null, undefined, false, true, [], [6], {}, { 1: 2 }];
 
     others.forEach(value => expectToThrow(value));
+  });
+});
+
+describe('relation type parser', () => {
+  const relationTypes = Relation.getAttributes().type.values;
+
+  const expectToThrow = (value) => expect(() => parseRelationType(value)).toThrow(EnumError);
+
+  test.each(relationTypes)('parsing valid relation type %s returns the type', (type) => {
+    expect(parseRelationType(type)).toBe(type);
+  });
+
+  test('missing relation throws error', () => {
+    expectToThrow();
+  });
+
+  test('invalid strings throws error', () => {
+    const invalidTypes = ['', 'public', 'private', 'blok', 'follower'];
+
+    invalidTypes.forEach(value => expectToThrow(value));
+  });
+
+  test('other invalid values throws error', () => {
+    const other = [false, true, undefined, [], ['follow'], relationTypes, {}];
+
+    other.forEach(value => expectToThrow(value));
   });
 });
 
