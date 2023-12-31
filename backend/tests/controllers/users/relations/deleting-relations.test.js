@@ -35,18 +35,20 @@ describe('deleting relations', () => {
 
   const otherUsername = otherExistingUserValues.username;
 
+  let userId;
+  let otherUserId;
   let relations = {};
 
   // create relations from user to other user
   beforeEach(async () => {
-    const user = await User.findOne({ where: { username } });
-    const otherUser = await User.findOne({ where: { username: otherUsername } });
+    userId = (await User.findOne({ where: { username } })).id;
+    otherUserId = (await User.findOne({ where: { username: otherUsername } })).id;
 
     relations['follow'] = await Relation.create({
-      sourceUserId: user.id, targetUserId: otherUser.id, type: 'follow'
+      sourceUserId: userId, targetUserId: otherUserId, type: 'follow'
     });
     relations['block'] = await Relation.create({
-      sourceUserId: user.id, targetUserId: otherUser.id, type: 'block'
+      sourceUserId: userId, targetUserId: otherUserId, type: 'block'
     });
   });
 
@@ -69,35 +71,64 @@ describe('deleting relations', () => {
         await deleteRelation(username, relations[type].id, authHeader);
       });
 
-      /*
-      describe('after succesully deleting a relation', () => {
-        test.each(relationTypes)
-        ('relation of type %s can not be found after deleting', async () => {
+      describe.each(relationTypes)('after succesully deleting a relation of type %s', (type) => {
 
+        let relationToDeleteId;
+
+        beforeEach(() => {
+          relationToDeleteId = relations[type].id;
         });
 
-        test.each(relationTypes)
-        ('relation of type %s is not removed the other way', async () => {
+        test('relation can not be found after deleting', async () => {
+          await deleteRelation(username, relationToDeleteId, authHeader);
 
+          const foundRelation = await Relation.findByPk(relationToDeleteId);
+          expect(foundRelation).toBeFalsy();
         });
 
-        test.each(relationTypes)
-        ('users other relations of type %s with the user are not removed', async () => {
+        test('relation with the same type is not removed the other way', async () => {
+          // create relation with the same type in the other direction
+          const relation = await Relation.create({ 
+            sourceUserId: otherUserId, targetUserId: userId, type 
+          });
 
+          await deleteRelation(username, relationToDeleteId, authHeader);
+
+          // the relation is not deleted
+          const foundRelation = await Relation.findByPk(relation.id);
+          expect(foundRelation).not.toBeFalsy();
         });
+
+        /*
+        TODO
+        how to filter objects...
+        
+        https://stackoverflow.com/questions/5072136/javascript-filter-for-objects
+        
+        test('users other relations with the same user are not removed', async () => {
+          const otherRelations = relations.filter()
+        });
+        */
 
         test('neither the source or the target user are removed', async () => {
+          const foundUser = await User.findByPk(userId);
+          const foundOtherUser = await User.findByPk(otherUserId);
 
+          expect(foundUser).not.toBeFalsy();
+          expect(foundOtherUser).not.toBeFalsy();
         });
       });
-      */
     });
 
-    /*
-    test('can not delete relations where the user is the target', () => {
+    test.each(relationTypes)
+    ('can not delete relation of type %s where the user is the target', async (type) => {
+      const relation = await Relation.create({
+        sourceUserId: otherUserId, targetUserId: userId, type
+      });
 
+      const responseBody = await deleteRelation(username, relation.id, authHeader, 404);
+      expect(responseBody.message).toBe('relation does not exist');
     });
-    */
 
     test('can not delete relation if it does not exist', async () => {
       const nonExistingRelationId = 2024;
