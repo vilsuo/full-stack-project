@@ -37,7 +37,7 @@ describe('posting relations', () => {
     targetUserId = targetUser.id;
   });
 
-  test.each(relationTypes)('can not post without authentication', async (type) => {
+  test.each(relationTypes)('can not post relation of type %s without authentication', async (type) => {
     const responseBody = await postRelation(
       username, { targetUserId, type }, {}, 401,
     );
@@ -143,7 +143,7 @@ describe('posting relations', () => {
             username, { type: validType }, authHeader, 400
           );
 
-          expect(responseBody.message).toBe('parameter targetUserId is missing');
+          expect(responseBody.message).toBe('id is missing');
         });
   
         test('invalid target user id', async () => {
@@ -153,7 +153,7 @@ describe('posting relations', () => {
             username, { targetUserId: invalidTargetUserId, type: validType }, authHeader, 400
           );
 
-          expect(responseBody.message).toBe('parameter targetUserId is invalid');
+          expect(responseBody.message).toBe('id is invalid');
         });
   
         test('target user that does not exist', async () => {
@@ -175,7 +175,7 @@ describe('posting relations', () => {
       });
     });
 
-    test.each(relationTypes)('can not post relation to other user', async (type) => {
+    test.each(relationTypes)('can not post relation of type %s to other user', async (type) => {
       const responseBody = await postRelation(
         otherUsername, { targetUserId, type }, authHeader, 401,
       );

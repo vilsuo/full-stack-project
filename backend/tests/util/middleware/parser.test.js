@@ -1,5 +1,5 @@
 const { Relation } = require('../../../src/models');
-const { ParameterError, EnumError } = require('../../../src/util/error');
+const { ParseError } = require('../../../src/util/error');
 const { parseId, paginationParser, parseRelationType } = require('../../../src/util/middleware/parser');
 
 describe('id parser', () => {
@@ -15,7 +15,7 @@ describe('id parser', () => {
   const trueDecimals = [0.7, 1.1, 10.01];
   const negatives = [-999, -10, -1.1];
 
-  const expectToThrow = (value) => expect(() => parseId(value)).toThrow(ParameterError);
+  const expectToThrow = (value) => expect(() => parseId(value)).toThrow(ParseError);
 
   describe('string parameters', () => {
     describe('invalid strings', () => {
@@ -117,7 +117,7 @@ describe('id parser', () => {
 describe('relation type parser', () => {
   const relationTypes = Relation.getAttributes().type.values;
 
-  const expectToThrow = (value) => expect(() => parseRelationType(value)).toThrow(EnumError);
+  const expectToThrow = (value) => expect(() => parseRelationType(value)).toThrow(ParseError);
 
   test.each(relationTypes)('parsing valid relation type %s returns the type', (type) => {
     expect(parseRelationType(type)).toBe(type);

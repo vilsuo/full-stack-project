@@ -1,11 +1,6 @@
-const { User, Image, Potrait, Relation } = require('../../models');
+const { User, Image, Potrait } = require('../../models');
 const { IllegalStateError } = require('../error');
-const { parseParamId } = require('./parser');
-
-/*
-TODO
-- implement relationFinder by relationId param
-*/
+const { parseId } = require('./parser');
 
 /**
  * Extracts the User from request parameter 'username' to request.foundUser.
@@ -21,8 +16,10 @@ TODO
 const userFinder = async (req, res, next) => {
   const { username } = req.params;
 
-  if (!username) {
-    throw new IllegalStateError('missing parameter "username"');
+  if (!username || typeof username !== 'string') {
+    throw new IllegalStateError(
+      'request parameter username must be non-empty string'
+    );
   }
 
   const foundUser = await User.findOne({ where: { username } });
@@ -53,13 +50,19 @@ const userFinder = async (req, res, next) => {
  */
 const imageFinder = async (req, res, next) => {
   const { foundUser } = req;
+  const { imageId: rawImageId } = req.params;
 
   if (!foundUser) {
-    throw new IllegalStateError('foundUser is not set');
+    throw new IllegalStateError('owner of the image to be found is not specified');
   }
 
-  const imageId = parseParamId(req.params.imageId);
+  if (!rawImageId || typeof rawImageId !== 'string') {
+    throw new IllegalStateError(
+      'request parameter image id must be non-empty string'
+    );
+  }
 
+  const imageId = parseId(rawImageId);
   const image = await Image.findByPk(imageId);
 
   if (image && image.userId === foundUser.id) {
@@ -86,7 +89,7 @@ const potraitFinder = async (req, res, next) => {
   const foundUser = req.foundUser;
 
   if (!foundUser) {
-    throw new IllegalStateError('foundUser is not set');
+    throw new IllegalStateError('owner of the potrait to be found is not specified');
   }
   
   const potrait = await Potrait.findOne({ where: { userId: foundUser.id } });
@@ -97,31 +100,6 @@ const potraitFinder = async (req, res, next) => {
 
   return res.status(404).send({ message: 'user does not have a potrait' });
 };
-
-/*
-const relationFinder = async (req, res, next) => {
-  const foundUser = req.foundUser;
-
-  if (!foundUser) {
-    throw new IllegalStateError('foundUser is not set');
-  }
-
-  const relationId = parseParamId(req.params.relationId);
-
-  if (isNaN(relationId)) {
-    return res.status(400).send({ message: 'id must be a number' });
-  }
-
-  const relation = await Relation.findByPk(relationId);
-
-  if (relation && relation.userId === foundUser.id) {
-    req.relation = relation;
-    return next();
-  }
-
-  return res.status(404).send({ message: 'relation does not exist' });
-};
-*/
 
 module.exports = {
   userFinder,

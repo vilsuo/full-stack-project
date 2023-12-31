@@ -5,13 +5,6 @@ class FiletypeError extends Error {
   }
 };
 
-class EnumError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'EnumError';
-  }
-};
-
 class IllegalStateError extends Error {
   constructor(message) {
     super(message);
@@ -19,16 +12,15 @@ class IllegalStateError extends Error {
   }
 };
 
-class ParameterError extends Error {
+class ParseError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'ParameterError';
+    this.name = 'ParseError';
   }
-};
+}
 
 module.exports = {
   FiletypeError,
-  EnumError,
+  ParseError,
   IllegalStateError,
-  ParameterError,
 };

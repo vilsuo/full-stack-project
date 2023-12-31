@@ -1,44 +1,41 @@
 const { Relation } = require('../../models');
-const { ParameterError, EnumError } = require('../error');
-
-const minId = 1;
-const maxId = 2147483647;
+const { ParseError } = require('../error');
 
 /**
  * Valid values are strings/numbers from 1 to 2147483647.
  * 
  * @param {*} value 
- * @returns 
+ * @param {*} name 
+ * @returns the parsed number if the value is valid id
  */
-const parseId = (value, name = 'id') => {
+const parseId = (value) => {
   if (value === undefined) {
-    throw new ParameterError(`parameter ${name} is missing`);
+    throw new ParseError('id is missing');
+  }
+  
+  const minId = 1;
+  const maxId = 2147483647;
+
+  if (typeof value === 'number' || typeof value === 'string') {
+    const number = Number(value) ;
+    
+    if (Number.isInteger(number) && (minId <= number && number <= maxId)) {
+      return number;
+    }
   }
 
-  switch (typeof value) {
-    case 'number': {
-      if (Number.isInteger(value) && (minId <= value && value <= maxId)) {
-        return value;
-      }
-      throw new ParameterError(`parameter ${name} is invalid`);
-    }
-    case 'string':
-      return parseId(Number(value));
-
-    default:
-      throw new ParameterError(`parameter ${name} is invalid`);
-  };
+  throw new ParseError('id is invalid');
 };
 
 const parseRelationType = type => {
   const relationTypes = Relation.getAttributes().type.values;
 
   if (type === undefined) {
-    throw new EnumError('relation type is missing');
+    throw new ParseError('relation type is missing');
   }
 
   if (!relationTypes.includes(type)) {
-    throw new EnumError('invalid relation type');
+    throw new ParseError('invalid relation type');
   }
   return type;
 };

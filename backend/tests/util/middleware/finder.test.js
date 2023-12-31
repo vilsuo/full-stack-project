@@ -144,7 +144,7 @@ describe('image finder', () => {
     return callMiddleware(imageFinder, request);
   };
 
-  test('calling without property "foundUser" will throw error', async () => {
+  test('calling without finding user first will throw an error', async () => {
     const request = createRequest();
     expect(request).not.toHaveProperty('foundUser');
 
@@ -169,7 +169,6 @@ describe('image finder', () => {
     describe.each(privacyOptions)('when "%s" image belongs to the found user', (privacy) => {
 
       let image;
-      let response;
 
       beforeEach(async () => {
         // find users image
@@ -179,7 +178,7 @@ describe('image finder', () => {
         // create request with parameters
         addParamsToRequest(request, { imageId: image.id.toString() });
 
-        response = await callImageFinder(request);
+        await callImageFinder(request);
       });
 
       test('next middleware is called', () => {
@@ -248,6 +247,11 @@ describe('image finder', () => {
         expect(getMessage(response)).toBe('image does not exist');
       });
     });
+
+    test('calling without image id will throw an error', async () => {
+      const callWithoutImageId = async () => await callImageFinder(request);
+      await expect(callWithoutImageId).rejects.toThrow(IllegalStateError);
+    });
   });
 });
 
@@ -257,7 +261,7 @@ describe('potrait finder', () => {
     return callMiddleware(potraitFinder, request);
   };
 
-  test('calling without property "foundUser" will throw error', async () => {
+  test('calling without finding user first will throw an error', async () => {
     const request = createRequest();
     expect(request).not.toHaveProperty('foundUser');
 
@@ -266,7 +270,7 @@ describe('potrait finder', () => {
   });
 
   describe('after user finder has been successfull handled', () => {
-    describe('when foundUser does have a potrait', () => {
+    describe('when the user does have a potrait', () => {
       let request;
 
       beforeEach(async () => {
@@ -295,7 +299,7 @@ describe('potrait finder', () => {
       });
     });
 
-    describe('when foundUser does not have a potrait', () => {
+    describe('when the user does not have a potrait', () => {
       let newUser;
 
       let request;

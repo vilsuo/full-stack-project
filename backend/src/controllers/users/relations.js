@@ -7,7 +7,6 @@ const { parseId, parseRelationType } = require('../../util/middleware/parser');
 /*
 TODO
 - parsers for GET-methods
-- combine EnumError and ParameterError to more general Error type.
 */
 
 /*
@@ -83,7 +82,7 @@ router.post('/', isSessionUser, async (req, res) => {
 
   // parse request body
   const type = parseRelationType(req.body.type);
-  const targetUserId = parseId(req.body.targetUserId, 'targetUserId');
+  const targetUserId = parseId(req.body.targetUserId);
 
   // target user must exist
   const targetUser = await User.findByPk(targetUserId);
@@ -126,7 +125,7 @@ router.delete('/:relationId', isSessionUser, async (req, res) => {
   const { relationId } = req.params;
   const sourceUser = req.user;
 
-  const id = parseId(relationId, 'relationId');
+  const id = parseId(relationId);
 
   const nDestroyed = await Relation.destroy({ 
     where: { id, sourceUserId: sourceUser.id } 
