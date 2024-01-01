@@ -6,7 +6,7 @@ const {
   existingUserValues, otherExistingUserValues, getCredentials 
 } = require('../../../helpers/constants');
 
-const { login, compareFoundArrayWithResponseArray } = require('../../../helpers');
+const { login, compareFoundArrayWithResponseArray, createRelationsOfAllTypes } = require('../../../helpers');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -38,12 +38,8 @@ describe('deleting relations', () => {
     userId = (await User.findOne({ where: { username } })).id;
     otherUserId = (await User.findOne({ where: { username: otherUsername } })).id;
 
-    relations['follow'] = await Relation.create({
-      sourceUserId: userId, targetUserId: otherUserId, type: 'follow'
-    });
-    relations['block'] = await Relation.create({
-      sourceUserId: userId, targetUserId: otherUserId, type: 'block'
-    });
+    (await createRelationsOfAllTypes(userId, otherUserId))
+      .forEach(relation => relations[relation.type] = relation);
   });
 
   test.each(relationTypes)
@@ -56,16 +52,20 @@ describe('deleting relations', () => {
   });
 
   describe('with authentication', () => {
+    let authHeader;
+    
     beforeEach(async () => {
       authHeader = await login(api, credentials);
     });
 
     describe('deleting relations where the user is the source', () => {
-      test.each(relationTypes)('can delete relation of type %s', async (type) => {
+      test.each(relationTypes)
+      ('can delete relation of type %s', async (type) => {
         await deleteRelation(username, relations[type].id, authHeader);
       });
 
-      describe.each(relationTypes)('after succesully deleting a relation of type %s', (type) => {
+      describe.each(relationTypes)
+      ('after succesully deleting a relation of type %s', (type) => {
 
         let relationToDeleteId;
 
