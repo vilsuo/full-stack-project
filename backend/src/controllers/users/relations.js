@@ -9,17 +9,16 @@ TODO
 - parsers for GET-methods
 */
 
-/*
 router.get('/', async (req, res) => {
   const user = req.foundUser;
+  const { type, targetUserId } = req.query;
 
   const searchFilters = {};
-  const { type, targetUserId } = req.query;
   if (type) {
     searchFilters.type = parseRelationType(type);
   }
   if (targetUserId) {
-    searchFilters.targetUserId = parseParamId(targetUserId);
+    searchFilters.targetUserId = parseId(targetUserId);
   }
 
   const relations = await Relation.findAll({
@@ -29,42 +28,18 @@ router.get('/', async (req, res) => {
     }
   });
   return res.send(relations);
-
-  //const userWithRelationTargets = await User.findByPk(user.id, {
-  //  attributes: ['id', 'username'],
-  //  include: [
-  //    {
-  //      model: Relation, 
-  //      attributes: ['id', 'type'],
-  //      include: [
-  //        {
-  //          model: User, 
-  //          as: 'targetUser',
-  //          attributes: ['id', 'username'],
-  //        }
-  //      ],
-  //      where: searchFilters,
-  //    }
-  //  ]
-  //});
-  //
-  //return res.send(userWithRelationTargets);
 });
 
 router.get('/reverse', async (req, res) => {
   const user = req.foundUser;
+  const { type, sourceUserId } = req.query;
 
   const searchFilters = {};
-  const { type, sourceUserId } = req.query;
   if (type) {
-    if (!isValidRelationType(type)) {
-      return res.status(400).send({ message: 'invalid relation type' });
-    }
-    searchFilters.type = type;
+    searchFilters.type = parseRelationType(type);
   }
-
   if (sourceUserId) {
-    searchFilters.sourceUserId = parseParamId(sourceUserId);
+    searchFilters.sourceUserId = parseId(sourceUserId);
   }
 
   const relations = await Relation.findAll({
@@ -75,7 +50,6 @@ router.get('/reverse', async (req, res) => {
   });
   return res.send(relations);
 });
-*/
 
 router.post('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
