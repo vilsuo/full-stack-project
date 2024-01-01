@@ -2,9 +2,11 @@ const supertest = require('supertest');
 const omit = require('lodash.omit');
 
 const app = require('../../../src/app');
-const { Image, User, Potrait } = require('../../../src/models');
-const { existingUserValues, otherExistingUserValues, nonExistingUserValues } = require('../../helpers/constants');
-const { login } = require('../../helpers');
+const { Image, User, Potrait, Relation } = require('../../../src/models');
+const { 
+  existingUserValues, otherExistingUserValues, nonExistingUserValues 
+} = require('../../helpers/constants');
+const { login, createRelationsOfAllTypes } = require('../../helpers');
 const api = supertest(app);
 const baseUrl = '/api/users';
 
@@ -43,35 +45,52 @@ describe('deleting users', () => {
         await deleteUser(username, authHeader, 204);
       });
 
-      // do not find by userId after deleting, incorrect cascade could set it to null
       describe('after deleting', () => {
-        let user;
-        let usersImages;
-        let usersPotrait;
+
+        let userId;
 
         beforeEach(async () => {
-          user = await User.findOne({ where: { username } });
-          usersImages = await Image.findAll({ where: { userId: user.id } });
-          usersPotrait = await Potrait.findOne({ where: { userId: user.id } });
+          userId = (await User.findOne({ where: { username } })).id;
+
+          const otherUserId = (await User.findOne({
+            where: { username: otherExistingUserValues.username }
+          })).id;
+
+          // create relations of all types where the user is the source
+          await createRelationsOfAllTypes(userId, otherUserId);
+
+          // create relations of all types where the user is the target
+          await createRelationsOfAllTypes(otherUserId, userId);
 
           await deleteUser(username, authHeader, 204);
         });
 
         test('user can not be found', async () => {
-          const foundUser = await User.findOne({ where: { username } });
-          expect(foundUser).toBeFalsy();
+          const foundUserPyPk = await User.findByPk(userId);
+          expect(foundUserPyPk).toBeFalsy();
+
+          const foundUserByUsername = await User.findOne({ where: { username } });
+          expect(foundUserByUsername).toBeFalsy();
         });
 
         test('users images can not be found', async () => {
-          usersImages.forEach(async image => {
-            const foundImage = await Image.findByPk(image.id);
-            expect(foundImage).toBeFalsy();
-          });
+          const foundImages = await Image.findAll({ where: { userId } });
+          expect(foundImages).toHaveLength(0);
         });
 
         test('users potrait can not be found', async () => {
-          const foundPotrait = await Potrait.findByPk(usersPotrait.id);
-          expect(foundPotrait).toBeFalsy();
+          const foundPotrait = await Potrait.findAll({ where: { userId } })
+          expect(foundPotrait).toHaveLength(0);
+        });
+
+        test('relation where the user is the source can not be found', async () => {
+          const foundRelations = await Relation.findAll({ where: { sourceUserId: userId } });
+          expect(foundRelations).toHaveLength(0);
+        });
+  
+        test('relation where the user is the target can not be found', async () => {
+          const foundRelations = await Relation.findAll({ where: { targetUserId: userId } });
+          expect(foundRelations).toHaveLength(0);
         });
       });
     });

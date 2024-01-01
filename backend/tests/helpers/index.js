@@ -1,6 +1,6 @@
 const omit = require('lodash.omit');
 
-const { User, Image, Potrait } = require('../../src/models');
+const { User, Image, Potrait, Relation } = require('../../src/models');
 const { encodePassword } = require('../../src/util/password');
 const { cookieKey } = require('../../src/constants');
 
@@ -123,6 +123,14 @@ const findPotrait = async (username) => {
   return await Potrait.findOne({ where: { userId } });
 };
 
+const createRelationsOfAllTypes = async (sourceUserId, targetUserId) => {
+  const relationTypes = Relation.getAttributes().type.values;
+
+  return await Promise.all(relationTypes.map(async type => 
+    await Relation.create({ sourceUserId, targetUserId, type })
+  ));
+};
+
 const compareFoundArrayWithResponseArray = (foundNonSensitiveValuesArray, responseArray) => {
   expect(responseArray).toHaveLength(foundNonSensitiveValuesArray.length);
 
@@ -150,6 +158,7 @@ module.exports = {
   findPublicAndPrivateImage,
   createPotrait,
   findPotrait,
+  createRelationsOfAllTypes,
   getUsersImageCount,
   compareFoundArrayWithResponseArray,
   compareFoundWithResponse,
