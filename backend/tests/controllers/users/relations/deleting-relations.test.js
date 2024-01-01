@@ -6,17 +6,11 @@ const {
   existingUserValues, otherExistingUserValues, getCredentials 
 } = require('../../../helpers/constants');
 
-const { login } = require('../../../helpers');
+const { login, compareFoundArrayWithResponseArray } = require('../../../helpers');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
 
-/*
-TODO
-- write test to deleting source/target users also (when deleting user: all
-  relations with the user as source OR target will be removed): the other
-  user is not deleted
-*/
 const relationTypes = Relation.getAttributes().type.values;
 
 const deleteRelation = async (username, relationId, headers, statusCode = 204) => {
@@ -99,16 +93,20 @@ describe('deleting relations', () => {
           expect(foundRelation).not.toBeFalsy();
         });
 
-        /*
-        TODO
-        how to filter objects...
-        
-        https://stackoverflow.com/questions/5072136/javascript-filter-for-objects
-        
         test('users other relations with the same user are not removed', async () => {
-          const otherRelations = relations.filter()
+          await deleteRelation(username, relationToDeleteId, authHeader);
+
+          const otherRelationTypes = Object.keys(relations)
+            .filter(relationType => relationType !== type);
+
+          const relationsLeft = await Relation.findAll({
+            where: { sourceUserId: userId, targetUserId: otherUserId }
+          });
+
+          compareFoundArrayWithResponseArray(
+            relationsLeft.map(relation => relation.type), 
+            otherRelationTypes);
         });
-        */
 
         test('neither the source or the target user are removed', async () => {
           const foundUser = await User.findByPk(userId);
