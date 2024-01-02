@@ -3,8 +3,8 @@ const omit = require('lodash.omit');
 
 const app = require('../../../../src/app');
 const { Image, User } = require('../../../../src/models');
-const imageStorage = require('../../../../src/util/image-storage');
-const { existingUserValues, otherExistingUserValues } = require('../../../helpers/constants');
+const fileStorage = require('../../../../src/util/file-storage');
+const { existingUserValues, otherExistingUserValues, getCredentials } = require('../../../helpers/constants');
 const { login, getUsersImageCount, findPublicAndPrivateImage, } = require('../../../helpers');
 
 const api = supertest(app);
@@ -20,9 +20,10 @@ const deleteImage = async (username, imageId, headers = {}, statusCode = 401) =>
 };
 
 describe('deleting images', () => {
-  const removeFileSpy = jest.spyOn(imageStorage, 'removeFile');
+  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
+    .mockImplementation((filepath) => undefined);
 
-  const credentials = omit(existingUserValues, ['name']);
+  const credentials = getCredentials(existingUserValues);
   const username = existingUserValues.username;
   let publicImage;
   let privateImage;
@@ -52,12 +53,6 @@ describe('deleting images', () => {
     });
 
     describe('deleting own images', () => {
-      beforeEach(() => {
-        removeFileSpy.mockImplementation((filepath) => {
-          console.log(`spy called with ${filepath}`)
-        });
-      });
-
       test('can delete public image', async () => {
         await deleteImage(username, publicImage.id, authHeader, 204);
       });

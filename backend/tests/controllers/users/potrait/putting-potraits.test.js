@@ -1,17 +1,16 @@
 const supertest = require('supertest');
-const omit = require('lodash.omit');
 
 const app = require('../../../../src/app');
 const { User, Potrait } = require('../../../../src/models');
 const {
   existingUserValues, otherExistingUserValues, nonExistingUserValues,
-  nonExistingPotraitValues, invalidPotraitTypes, 
+  nonExistingPotraitValues, invalidPotraitTypes, getCredentials, 
 } = require('../../../helpers/constants');
 
 const { login, compareFoundWithResponse, findPotrait, createUser } = require('../../../helpers');
 
 const { getNonSensitivePotrait } = require('../../../../src/util/dto');
-const imageStorage = require('../../../../src/util/image-storage');
+const fileStorage = require('../../../../src/util/file-storage');
 const { ValidationError } = require('sequelize');
 
 const api = supertest(app);
@@ -42,12 +41,10 @@ const putPotrait = async (username, extraHeaders, filepath, statusCode = 201) =>
 describe('putting potraits', () => {
   const { filepath, mimetype, size } = nonExistingPotraitValues;
 
-  const removeFileSpy = jest.spyOn(imageStorage, 'removeFile');
+  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile');
 
   beforeEach(() => {
-    removeFileSpy.mockImplementation((filepath) => {
-      console.log(`'removeFileSpy' called with '${filepath}'`)
-    });
+    removeFileSpy.mockImplementation((filepath) => undefined);
   });
 
   test('can not put without authentication', async () => {
@@ -71,7 +68,7 @@ describe('putting potraits', () => {
     describe('putting to self', () => {
       // expect status '201'
       describe('putting first when user does not have a potrait', () => {
-        const credentials = omit(nonExistingUserValues, ['name']);
+        const credentials = getCredentials(nonExistingUserValues);
         const postingUsersUsername = credentials.username;
     
         let authHeader = {};
@@ -131,7 +128,7 @@ describe('putting potraits', () => {
 
       // expect status '200'
       describe('putting when user already has a potrait', () => {
-        const credentials = omit(existingUserValues, ['name']);
+        const credentials = getCredentials(existingUserValues);
         const puttingUsersUsername = credentials.username;
 
         let authHeader = {};
@@ -158,8 +155,10 @@ describe('putting potraits', () => {
         });
 
         describe('on successfull put', () => {
+
           let oldPotraitBefore;
           let returnedPotrait;
+
           beforeEach(async () => {
             oldPotraitBefore = await findPotrait(puttingUsersUsername);
             expect(oldPotraitBefore).not.toBeFalsy();
@@ -263,7 +262,7 @@ describe('putting potraits', () => {
     });
 
     test('can not put a potrait to other user', async () => {
-      const credentials = omit(existingUserValues, ['name']);
+      const credentials = getCredentials(existingUserValues);
       const authHeader = await login(api, credentials);
 
       const otherUsername = otherExistingUserValues.username;

@@ -4,11 +4,11 @@ const { sequelize } = require('../../util/db');
 const { isSessionUser } = require('../../util/middleware/auth');
 const { potraitFinder } = require('../../util/middleware/finder');
 const { getNonSensitivePotrait } = require('../../util/dto');
-const imageStorage = require('../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
+const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { Potrait } = require('../../models');
 const logger = require('../../util/logger');
 
-const imageUpload = imageStorage.upload.single('image');
+const fileUpload = fileStorage.upload.single('image');
 
 const createPotrait = async (filepath, file, userId, transaction = {}) => {
   const { mimetype, size } = file;
@@ -34,12 +34,12 @@ router.get('/', potraitFinder, async (req, res) => {
  * - 200 if old potrait was replace by a new potrait
  */
 router.put('/', isSessionUser, async (req, res, next) => {
-  imageUpload(req, res, async (error) => {
+  fileUpload(req, res, async (error) => {
     if (error) return next(error);
 
     const file = req.file;
 
-    logger.info('Potrait file:    ', file);
+    logger.info('Potrait file:', file);
 
     if (!file) {
       return res.status(400).send({ message: 'file is missing' });
@@ -59,7 +59,7 @@ router.put('/', isSessionUser, async (req, res, next) => {
 
       } catch (error) {
         // error happened but, posted file was already saved to the filesystem
-        imageStorage.removeFile(filepath);
+        fileStorage.removeFile(filepath);
         return next(error);
       }
       // successfull create: return '201'
@@ -82,11 +82,11 @@ router.put('/', isSessionUser, async (req, res, next) => {
         await transaction.rollback();
 
         // error happened but, posted file was already saved to the filesystem
-        imageStorage.removeFile(filepath);
+        fileStorage.removeFile(filepath);
         return next(error);
       }
       // transaction successfull: remove old file from the filesystem
-      imageStorage.removeFile(oldPotrait.filepath);
+      fileStorage.removeFile(oldPotrait.filepath);
 
       // successfull update: return '200'
       return res.status(200).send(getNonSensitivePotrait(newPotrait));
@@ -99,14 +99,14 @@ router.delete('/', potraitFinder, isSessionUser, async (req, res) => {
   
   await potrait.destroy();
 
-  imageStorage.removeFile(potrait.filepath);
+  fileStorage.removeFile(potrait.filepath);
 
   return res.status(204).end();
 });
 
 router.get('/content', potraitFinder, async (req, res) => {
   const potrait = req.potrait;
-  const fullfilepath = imageStorage.getImageFilePath(potrait.filepath);
+  const fullfilepath = fileStorage.getImageFilePath(potrait.filepath);
 
   return res
     .type(potrait.mimetype)

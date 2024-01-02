@@ -2,7 +2,7 @@ const router = require('express').Router({ mergeParams: true });
 
 const { isAllowedToViewImage, isSessionUser } = require('../../../util/middleware/auth');
 const { getNonSensitiveImage } = require('../../../util/dto');
-const imageStorage = require('../../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
+const fileStorage = require('../../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 
 /*
 TODO
@@ -31,14 +31,14 @@ router.delete('/', isSessionUser, async (req, res) => {
   
   await image.destroy();
 
-  imageStorage.removeFile(image.filepath);
+  fileStorage.removeFile(image.filepath);
 
   return res.status(204).end();
 });
 
 router.get('/content', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
-  const fullfilepath = imageStorage.getImageFilePath(image.filepath);
+  const fullfilepath = fileStorage.getImageFilePath(image.filepath);
 
   return res
     .type(image.mimetype)

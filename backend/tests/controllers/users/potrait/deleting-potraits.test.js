@@ -1,10 +1,9 @@
 const supertest = require('supertest');
-const omit = require('lodash.omit');
 
 const app = require('../../../../src/app');
 const { Potrait, User } = require('../../../../src/models');
-const imageStorage = require('../../../../src/util/image-storage');
-const { existingUserValues, otherExistingUserValues } = require('../../../helpers/constants');
+const fileStorage = require('../../../../src/util/file-storage');
+const { existingUserValues, otherExistingUserValues, getCredentials } = require('../../../helpers/constants');
 const { login, findPotrait } = require('../../../helpers');
 
 const api = supertest(app);
@@ -18,14 +17,16 @@ const deletePotrait = async (username, headers, statusCode) => {
 };
 
 describe('deleting potraits', () => {
-  const removeFileSpy = jest.spyOn(imageStorage, 'removeFile');
+  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile');
 
-  const credentials = omit(existingUserValues, ['name']);
+  const credentials = getCredentials(existingUserValues);
   const username = existingUserValues.username;
   const otherUsername = otherExistingUserValues.username;
 
   let potrait;
   beforeEach(async () => {
+    removeFileSpy.mockImplementation((filepath) => undefined);
+
     potrait = await findPotrait(username);
   });
 
@@ -39,10 +40,6 @@ describe('deleting potraits', () => {
     let authHeader = {};
 
     beforeEach(async () => {
-      removeFileSpy.mockImplementation((filepath) => {
-        console.log(`spy called with ${filepath}`)
-      });
-
       authHeader = await login(api, credentials);
     });
 

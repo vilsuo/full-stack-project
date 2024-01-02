@@ -4,13 +4,12 @@ const path = require('path');
 const app = require('../../../../src/app');
 const {
   existingUserValues, disabledExistingUserValues, nonExistingUserValues,
-  existingUserPotraitValues, 
 } = require('../../../helpers/constants');
 
 const { compareFoundWithResponse, createUser, findPotrait } = require('../../../helpers');
 
 const { getNonSensitivePotrait } = require('../../../../src/util/dto');
-const imageStorage = require('../../../../src/util/image-storage');
+const fileStorage = require('../../../../src/util/file-storage');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -33,7 +32,7 @@ const getPotraitContent = async (username, statusCode = 200, headers = {}) => {
 };
 
 describe('find users potrait', () => {
-  const getImageFilePathSpy = jest.spyOn(imageStorage, 'getImageFilePath');
+  const getImageFilePathSpy = jest.spyOn(fileStorage, 'getImageFilePath');
 
   test('can not get non-existing users potrait', async () => {
     const username = nonExistingUserValues.username;

@@ -10,6 +10,7 @@ const {
   existingUserValues,
   disabledExistingUserValues,
   nonExistingUserValues,
+  getCredentials,
 } = require('../helpers/constants');
 const { getNonSensitiveUser } = require('../../src/util/dto');
 
@@ -25,7 +26,7 @@ const register = async (details, statusCode = 201) => {
   return response.body;
 };
 
-const credentials = omit(existingUserValues, ['name']);
+const credentials = getCredentials(existingUserValues);
 
 describe('registering', () => {
   test('can register', async () => {
@@ -214,7 +215,7 @@ describe('loggin in', () => {
     });
   
     test('disabled user can not login', async () => {
-      const disabledCredentials = omit(disabledExistingUserValues, ['name']);
+      const disabledCredentials = getCredentials(disabledExistingUserValues);
   
       const response = await loginWithResponse(disabledCredentials, 401);
       expect(response.body.message).toBe('user has been disabled');
@@ -224,7 +225,7 @@ describe('loggin in', () => {
     });
   
     test('can not log in with user that does not exist', async () => {
-      const nonExistingCredentials = omit(nonExistingUserValues, ['name']);
+      const nonExistingCredentials = getCredentials(nonExistingUserValues);
   
       const response = await loginWithResponse(nonExistingCredentials, 401);
       expect(response.body.message).toBe('invalid username or password');

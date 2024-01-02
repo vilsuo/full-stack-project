@@ -5,10 +5,10 @@ const { Image, User } = require('../../../models');
 const { isSessionUser } = require('../../../util/middleware/auth');
 const { getNonSensitiveImage } = require('../../../util/dto');
 const logger = require('../../../util/logger');
-const imageStorage = require('../../../util/image-storage'); // importing this way makes it possible to mock 'removeFile'
+const fileStorage = require('../../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { imageFinder } = require('../../../util/middleware/finder');
 
-const imageUpload = imageStorage.upload.single('image');
+const fileUpload = fileStorage.upload.single('image');
 
 const createImage = async (filepath, file, fields, userId) => {
   const { mimetype, size, originalname } = file;
@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', isSessionUser, async (req, res, next) => {
-  imageUpload(req, res, async (error) => {
+  fileUpload(req, res, async (error) => {
     if (error) return next(error);
 
     const file = req.file;
@@ -71,7 +71,7 @@ router.post('/', isSessionUser, async (req, res, next) => {
 
     } catch (error) {
       // Image validation failed, image was already saved to the filesystem
-      imageStorage.removeFile(filepath);
+      fileStorage.removeFile(filepath);
       return next(error);
     }
   });

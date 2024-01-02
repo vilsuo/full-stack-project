@@ -1,14 +1,16 @@
 const supertest = require('supertest');
-const omit = require('lodash.omit');
 const path = require('path');
 const app = require('../../../../src/app');
 
 const { User, Image } = require('../../../../src/models');
-const imageStorage = require('../../../../src/util/image-storage');
+const fileStorage = require('../../../../src/util/file-storage');
 const {
+  // users
   existingUserValues, otherExistingUserValues,
   disabledExistingUserValues, nonExistingUserValues,
-  existingUserImageValues, otherExistingUserImageValues, nonExistingImageValues
+  // images
+  nonExistingImageValues,
+  getCredentials
 } = require('../../../helpers/constants');
 const {
   login, createImage,
@@ -49,7 +51,7 @@ const getImageContent = async (username, imageId, statusCode = 200, headers = {}
 };
 
 describe('find users images', () => {
-  const getImageFilePathSpy = jest.spyOn(imageStorage, 'getImageFilePath');
+  const getImageFilePathSpy = jest.spyOn(fileStorage, 'getImageFilePath');
 
   test('can not view non-existing users images', async () => {
     const username = nonExistingUserValues.username;
@@ -84,7 +86,7 @@ describe('find users images', () => {
   });
 
   describe('when images have been created', () => {
-    const credentials = omit(existingUserValues, ['name']);
+    const credentials = getCredentials(existingUserValues);
     const username = existingUserValues.username;
     let publicImage;
     let privateImage;

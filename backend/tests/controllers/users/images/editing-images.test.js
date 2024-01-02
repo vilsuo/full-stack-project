@@ -1,9 +1,8 @@
 const supertest = require('supertest');
-const omit = require('lodash.omit');
 
 const app = require('../../../../src/app');
 const { Image } = require('../../../../src/models');
-const { existingUserValues, otherExistingUserValues, } = require('../../../helpers/constants');
+const { existingUserValues, otherExistingUserValues, getCredentials, } = require('../../../helpers/constants');
 const { login, compareFoundWithResponse, findPublicAndPrivateImage } = require('../../../helpers');
 const { getNonSensitiveImage } = require('../../../../src/util/dto');
 
@@ -30,7 +29,7 @@ const newImageValues = {
 const { title, caption, privacy } = newImageValues;
 
 describe('editing images', () => {
-  const credentials = omit(existingUserValues, ['name']);
+  const credentials = getCredentials(existingUserValues);
   const username = existingUserValues.username;
   let publicImage;
   let privateImage;

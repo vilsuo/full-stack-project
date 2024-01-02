@@ -5,7 +5,7 @@ const app = require('../../../../src/app');
 const { User, Image } = require('../../../../src/models');
 const {
   existingUserValues, otherExistingUserValues,
-  nonExistingImageValues, invalidImageTypes,
+  nonExistingImageValues, invalidImageTypes, getCredentials,
 } = require('../../../helpers/constants');
 
 const {
@@ -13,7 +13,7 @@ const {
 } = require('../../../helpers');
 
 const { getNonSensitiveImage } = require('../../../../src/util/dto');
-const imageStorage = require('../../../../src/util/image-storage');
+const fileStorage = require('../../../../src/util/file-storage');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -52,9 +52,8 @@ describe('posting images', () => {
   const { title, caption, privacy } = formValues;
   const originalname = nonExistingImageValues.originalname;
 
-  const removeFileSpy = jest
-    .spyOn(imageStorage, 'removeFile')
-    .mockImplementation((filepath) => console.log(`spy called with ${filepath}`));
+  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
+    .mockImplementation((filepath) => undefined);
 
   test('can not post without authentication', async () => {
     const username = existingUserValues.username;
@@ -74,7 +73,7 @@ describe('posting images', () => {
   });
 
   describe('with authentication', () => {
-    const credentials = omit(existingUserValues, ['name']);
+    const credentials = getCredentials(existingUserValues);
     const postingUsersUsername = credentials.username;
 
     let authHeader = {};
