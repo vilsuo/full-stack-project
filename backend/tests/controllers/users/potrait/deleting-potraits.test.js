@@ -17,7 +17,8 @@ const deletePotrait = async (username, headers, statusCode) => {
 };
 
 describe('deleting potraits', () => {
-  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile');
+  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
+    .mockImplementation((filepath) => undefined);
 
   const credentials = getCredentials(existingUserValues);
   const username = existingUserValues.username;
@@ -25,8 +26,6 @@ describe('deleting potraits', () => {
 
   let potrait;
   beforeEach(async () => {
-    removeFileSpy.mockImplementation((filepath) => undefined);
-
     potrait = await findPotrait(username);
   });
 

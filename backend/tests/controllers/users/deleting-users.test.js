@@ -1,10 +1,11 @@
 const supertest = require('supertest');
-const omit = require('lodash.omit');
 
 const app = require('../../../src/app');
+const fileStorage = require('../../../src/util/file-storage');
 const { Image, User, Potrait, Relation } = require('../../../src/models');
 const { 
-  existingUserValues, otherExistingUserValues, nonExistingUserValues 
+  existingUserValues, otherExistingUserValues, nonExistingUserValues,
+  getCredentials
 } = require('../../helpers/constants');
 const { login, createRelationsOfAllTypes } = require('../../helpers');
 const api = supertest(app);
@@ -18,8 +19,11 @@ const deleteUser = async (username, headers = {}, statusCode = 401) => {
 };
 
 describe('deleting users', () => {
-  const credentials = omit(existingUserValues, ['name']);
-  const username = existingUserValues.username;
+  const removeUserFilesSpy = jest.spyOn(fileStorage, 'removeUserFiles')
+    .mockImplementation(userId => undefined);
+
+  const credentials = getCredentials(existingUserValues);
+  const username = credentials.username;
 
   describe('without authentication', () => {
     test('can not delete user', async () => {
@@ -73,21 +77,25 @@ describe('deleting users', () => {
           expect(foundUserByUsername).toBeFalsy();
         });
 
-        test('users images can not be found', async () => {
+        test('user images can not be found', async () => {
           const foundImages = await Image.findAll({ where: { userId } });
           expect(foundImages).toHaveLength(0);
         });
 
-        test('users potrait can not be found', async () => {
+        test('user potrait can not be found', async () => {
           const foundPotrait = await Potrait.findAll({ where: { userId } })
           expect(foundPotrait).toHaveLength(0);
+        });
+
+        test('there is an attempt to remove all user files from the filesystem', async () => {
+          expect(removeUserFilesSpy).toHaveBeenCalledWith(userId);
         });
 
         test('relation where the user is the source can not be found', async () => {
           const foundRelations = await Relation.findAll({ where: { sourceUserId: userId } });
           expect(foundRelations).toHaveLength(0);
         });
-  
+    
         test('relation where the user is the target can not be found', async () => {
           const foundRelations = await Relation.findAll({ where: { targetUserId: userId } });
           expect(foundRelations).toHaveLength(0);
@@ -98,6 +106,8 @@ describe('deleting users', () => {
     test('user can not delete other user', async () => {
       const response = await deleteUser(otherExistingUserValues.username, authHeader, 401);
       expect(response.body.message).toBe('session user is not the owner');
+
+      expect(removeUserFilesSpy).not.toHaveBeenCalled();
     });
   })
 });

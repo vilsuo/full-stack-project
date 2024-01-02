@@ -9,6 +9,7 @@ const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
 const { isSessionUser } = require('../../util/middleware/auth');
 const { paginationParser } = require('../../util/middleware/parser');
+const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 
 /**
  * Implements searching based on user name and username. 
@@ -54,11 +55,16 @@ router.get('/', paginationParser, async (req, res) => {
 
 router.get('/:username', userFinder, async (req, res) => {
   const user = req.foundUser;
+
   return res.send(getNonSensitiveUser(user));
 });
 
+
 router.delete('/:username', userFinder, isSessionUser, async (req, res) => {
   const user = req.foundUser;
+
+  await fileStorage.removeUserFiles(user.id);
+
   await user.destroy();
 
   return res.status(204).send();

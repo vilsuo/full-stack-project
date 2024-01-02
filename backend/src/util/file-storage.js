@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const logger = require('./logger');
 const { FiletypeError } = require('./error');
+const { Image, Potrait } = require('../models');
 
 const options = {};
 if (process.env.NODE_ENV === 'test') {
@@ -46,6 +47,21 @@ const removeFile = filepath => {
   });
 };
 
+const removeUserFiles = async (userId) => {
+  const imageFilepaths = await Image.findAll({ 
+    attributes: ['filepath'],
+    where: { userId }
+  });
+
+  const potraitPath = await Potrait.findAll({
+    attributes: ['filepath'],
+    where: { userId }
+  });
+
+  imageFilepaths.forEach(image => removeFile(image.filepath));
+  potraitPath.forEach(potrait => removeFile(potrait.filepath));
+};
+
 const getImageFilePath = filepath => {
   const dirname = path.resolve();
   const fullfilepath = path.join(dirname, filepath);
@@ -56,5 +72,6 @@ const getImageFilePath = filepath => {
 module.exports = {
   upload,
   removeFile,
+  removeUserFiles,
   getImageFilePath,
 };

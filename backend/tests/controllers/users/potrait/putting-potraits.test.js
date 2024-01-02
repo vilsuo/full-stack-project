@@ -41,11 +41,8 @@ const putPotrait = async (username, extraHeaders, filepath, statusCode = 201) =>
 describe('putting potraits', () => {
   const { filepath, mimetype, size } = nonExistingPotraitValues;
 
-  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile');
-
-  beforeEach(() => {
-    removeFileSpy.mockImplementation((filepath) => undefined);
-  });
+  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
+    .mockImplementation((filepath) => undefined);
 
   test('can not put without authentication', async () => {
     const username = existingUserValues.username;
