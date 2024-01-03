@@ -2,7 +2,10 @@ import {
   createBrowserRouter,
   Route, 
   createRoutesFromElements,
-  RouterProvider, 
+  RouterProvider,
+  Navigate,
+  useOutletContext,
+  Outlet, 
 } from 'react-router-dom';
 
 // LAYOUTS
@@ -26,6 +29,16 @@ import Settings from './pages/user/Settings';
 // other
 import ErrorPage from './pages/ErrorPage';
 
+const ProtectedRoute = () => {
+  const { user, authenticatedUser } = useOutletContext();
+
+  if (!authenticatedUser || (authenticatedUser.id !== user.id)) {
+    return <Navigate to='/' replace />;
+  }
+
+  return <Outlet context={{ user, authenticatedUser }} />;
+};
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<RootLayout />}>
@@ -42,7 +55,9 @@ const router = createBrowserRouter(
           errorElement={<UserErrorBoundary />}
         >
           <Route path='profile' element={<Profile />} loader={imageLoader} />
-          <Route path='settings' element={<Settings />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path='settings' element={<Settings />} />
+          </Route>
         </Route>
       </Route>
 

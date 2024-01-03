@@ -36,10 +36,6 @@ button {
   padding: 8px;
   cursor: pointer;
 
-  &:not(:disabled):hover {
-    background-color: var(--btn-bg-hover);
-  }
-
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -145,11 +141,6 @@ header nav {
   & p {
     margin: 0;
   }
-
-  & .close-btn:hover {
-    background-color: transparent;
-    opacity: 1;
-  }
 }
 
 /* close button */
@@ -177,6 +168,11 @@ header nav {
     -webkit-transform: rotate(45deg);
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
+  }
+
+  &:hover {
+    background-color: transparent;
+    opacity: 1;
   }
 }
 

@@ -4,14 +4,12 @@ import util from '../util';
 import potraitService from '../services/potrait';
 import { addRelation, removeRelation } from '../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 /*
 TODO
 - increment/decrement the follow relations when toggling relation of type 'follow'
-
-- settings
-  - on click navigate to user settings
-  - make route accessible to the user only!
+- create reducer for auth potrait
 */
 
 const BannerPotrait = ({ user }) => {
@@ -127,6 +125,8 @@ const BannerRelationActions = ({ user, relations, authenticatedUser }) => {
 };
 
 const Banner = ({ user, relations, authenticatedUser }) => {
+  const navigate = useNavigate();
+
   const showActions = authenticatedUser && (authenticatedUser.id !== user.id);
   const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
 
@@ -147,7 +147,7 @@ const Banner = ({ user, relations, authenticatedUser }) => {
 
         { isOwnPage && (
           <div className='banner-actions'>
-            <button>
+            <button onClick={() => navigate('settings')}>
               Settings
             </button>
           </div>
