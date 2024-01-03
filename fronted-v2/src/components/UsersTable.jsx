@@ -1,15 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 
 import util from '../util';
-import { addUser } from '../reducers/users';
 
 const UsersTable = ({ users }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const handleClick = (user) => {
-    dispatch(addUser(user));
     navigate(`/users/${user.username}/profile`);
   };
 

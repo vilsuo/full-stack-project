@@ -6,7 +6,6 @@ import App from './App';
 
 // reducers
 import authReducer from './reducers/auth';
-import usersReducer from './reducers/users';
 
 /*
 TODO
@@ -19,15 +18,12 @@ TODO
   - navigate to login on attempt
     - how to loggin in to wrong user?
 
-- implement following in the backend
-  - add route to get followings & followers
-- implement blocking in the backend
+- add route to get followings & followers
 */
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
-    users: usersReducer,
   },
 });
 

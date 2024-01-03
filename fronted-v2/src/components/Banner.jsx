@@ -1,27 +1,23 @@
 import { useEffect, useState } from 'react';
 
 import util from '../util';
-import usersService from '../services/users';
-import relationsService from '../services/relations';
+import potraitService from '../services/potrait';
+import { addRelation, removeRelation } from '../reducers/auth';
+import { useDispatch, useSelector } from 'react-redux';
 
 const BannerPotrait = ({ user }) => {
   const [potrait, setPotrait] = useState({ loading: true });
-
   const { username } = user;
 
   useEffect(() => {
     const fetchPotrait = async () => {
       try {
-        const data = await usersService.getPotraitContent(username);
-        const potraitUrl = URL.createObjectURL(data);
+        const data = await potraitService.getPotraitContent(username);
+        setPotrait({
+          loading: false,
+          url: URL.createObjectURL(data),
+        });
 
-        setTimeout(() => {
-          setPotrait({
-            loading: false,
-            url: potraitUrl,
-          });
-        }, [2000]);
-    
       } catch (error) {
         setTimeout(() => {
           setPotrait({ loading: false });
@@ -50,17 +46,9 @@ const BannerPotrait = ({ user }) => {
   );
 };
 
-const BannerInfo = ({ user, userRelationsInfo }) => {
+const BannerInfo = ({ user, relations }) => {
   const { name, username, createdAt } = user;
-
-  const countByRelationType = (relations, type) => {
-    return relations.reduce(
-      (acc, relation) => (relation.type === type ? 1 : 0) + acc, 0
-    );
-  };
-
-  const following = countByRelationType(userRelationsInfo.asSource, 'follow');
-  const followers = countByRelationType(userRelationsInfo.asTarget, 'follow');
+  const { following, followers } = relations;
 
   return (
     <div className='banner-info'>
@@ -75,90 +63,74 @@ const BannerInfo = ({ user, userRelationsInfo }) => {
   );
 };
 
-const BannerActions = ({ 
-      user, userRelationsInfo, setUserRelationsInfo, authenticatedUser
-    }) => {
+const BannerActions = ({ user, relations, authenticatedUser }) => {
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
-  const relations = userRelationsInfo.asTarget
-    .filter(relation => relation.sourceUserId === authenticatedUser.id)
+  let authRelations = useSelector(state => state.auth.relations)
+    .filter(relation => relation.targetUserId === user.id)
     .map(relation => ({ [relation.type]: relation.id }));
-
-  const [authRelationsWithUser, setAuthRelationsWithUser] = useState(
-    Object.assign({}, ...relations)
-  );
-
-  console.log('authRelationsWithUser', authRelationsWithUser);
+  authRelations = Object.assign({}, ...authRelations);
 
   const handleRelationChange = async (type) => {
-    const { username: authUsername } = authenticatedUser;
+    if (loading) return;
 
-    if (!authRelationsWithUser[type]) {
-      // adding relation
-      const addedRelation = await relationsService.addRelation(
-        authUsername, user.id, type
-      );
+    setLoading(true);
 
-      setAuthRelationsWithUser({ ...authRelationsWithUser, [type]: addedRelation.id });
-
-      setUserRelationsInfo({ 
-        ...userRelationsInfo, 
-        asTarget: [ ...userRelationsInfo.asTarget, addedRelation ]
-      });
-
-      console.log('added', addedRelation);
+    if (authRelations[type]) {
+      // removing relation
+      dispatch(removeRelation(authRelations[type]))
+        .unwrap()
+        .then(relationId => {
+          console.log('removed', relationId);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.log('error in removeRelation', error);
+          setLoading(false);
+        });
 
     } else {
-      // removing relation
-      const relationId = authRelationsWithUser[type];
-      await relationsService.removeRelation(authUsername, relationId);
-
-      setAuthRelationsWithUser({ ...authRelationsWithUser, [type]: undefined });
-
-      setUserRelationsInfo({
-        ...userRelationsInfo, 
-        asTarget: userRelationsInfo.asTarget.filter(relation => relation.id !== relationId)
-      });
-
-      console.log('removed', relationId);
+      // adding relation
+      dispatch(addRelation({ targetUserId: user.id, type }))
+        .unwrap()
+        .then(addedRelation=> {
+          console.log('added', addedRelation)
+          setLoading(false);
+        })
+        .catch(error => {
+          setLoading(false);
+          console.log('error in addRelation', error);
+        });
     }
   };
 
   return (
     <div className='banner-actions'>
       <button className='follow-btn' onClick={() => handleRelationChange('follow')}>
-        {authRelationsWithUser['follow'] ? 'Unfollow' : 'Follow'}
+        {authRelations['follow'] ? 'Unfollow' : 'Follow'}
       </button>
       <button className='block-btn' onClick={() => handleRelationChange('block')}>
-        {authRelationsWithUser['block'] ? 'Unblock' : 'Block'}
+        {authRelations['block'] ? 'Unblock' : 'Block'}
       </button>
     </div>
   );
 };
 
-const Banner = ({ 
-      user, userRelationsInfo, setUserRelationsInfo, authenticatedUser
-    }) => {
-
+const Banner = ({ user, relations, authenticatedUser }) => {
   const showActions = authenticatedUser && (authenticatedUser.id !== user.id);
-
-  if (userRelationsInfo.loading) {
-    return <p>loading relations info</p>;
-  }
-
-  console.log('relations info', userRelationsInfo);
 
   return (
     <div className='banner container'>
       <BannerPotrait user={user} />
 
       <div className='banner-details'>
-        <BannerInfo user={user} userRelationsInfo={userRelationsInfo} />
+        <BannerInfo user={user} relations={relations} />
 
         { showActions && (
           <BannerActions 
             user={user}
-            userRelationsInfo={userRelationsInfo}
-            setUserRelationsInfo={setUserRelationsInfo}
+            relations={relations}
             authenticatedUser={authenticatedUser}
           /> 
         )}

@@ -2,13 +2,20 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../services/auth';
 import relationsService from '../services/relations';
 
+/*
+TODO
+- create selectors
+
+- on remove & on add modify relations saved in local storage
+*/
+
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
-  relations: JSON.parse(localStorage.getItem('user')) || [],
+  relations: JSON.parse(localStorage.getItem('relations')) || [],
 };
 
 const authSlice = createSlice({
-  name: 'auth', // defines the prefix which is used in the action's type values
+  name: 'auth',
   initialState,
   extraReducers: (builder) => {
     builder
@@ -34,19 +41,32 @@ const authSlice = createSlice({
         return state;
       })
 
-      // add cases for adding/removing authenticated users relations
-      // also edit the relations local storage 
-  }
+      .addCase(addRelation.fulfilled, (state, action) => {
+        const relation = action.payload;
+        const relations = [ ...state.relations, relation ];
+
+        localStorage.setItem('relations', JSON.stringify(relations));
+        
+        return { ...state, relations };
+      })
+      .addCase(addRelation.rejected, (state, action) => {
+        return state;
+      })
+      .addCase(removeRelation.fulfilled, (state, action) => {
+        const relationId = action.payload;
+        const relations = state.relations.filter(relation => relation.id !== relationId);
+        
+        localStorage.setItem('relations', JSON.stringify(relations));
+
+        return { ...state, relations };
+      })
+      .addCase(removeRelation.rejected, (state, action) => {
+        return state;
+      })
+  },
 });
 
-export const { sigIn, signOut } = authSlice.actions;
-
 export const login = createAsyncThunk(
-  // A string that will be used to generate additional Redux action type constants, 
-  // representing the lifecycle of an async request:
-  // pending: 'user/login/pending'
-  // fulfilled: 'user/login/fulfilled'
-  // rejected: 'user/login/rejected'
   'auth/login',
 
   // PAYLOAD CREATOR
@@ -58,18 +78,10 @@ export const login = createAsyncThunk(
   // - a plain value such as a descriptive error message 
   // - a resolved promise with a RejectWithValue argument as returned by the
   //   thunkAPI.rejectWithValue function.
-  //
-  // Will be called with two arguments
-  // 1) a single value, containing the first parameter that was passed to the thunk action
-  //    creator when it was dispatched
-  // 2) thunkAPI: an object containing all of the parameters that are normally passed to a
-  //    Redux thunk function
   async (credentials, thunkApi) => {
     try {
       const user = await authService.login(credentials);
-
-      // get logged in users relations
-      const { relations } = await relationsService.getTargetRelations(user.username);
+      const relations = await relationsService.getRelationsBySource(user.username);
 
       return { user, relations };
 
@@ -93,7 +105,6 @@ export const logout = createAsyncThunk(
   },
 );
 
-/*
 export const addRelation = createAsyncThunk(
   'auth/addRelation',
   async ({ targetUserId, type }, thunkApi) => {
@@ -106,6 +117,20 @@ export const addRelation = createAsyncThunk(
     }
   }
 );
-*/
+
+export const removeRelation = createAsyncThunk(
+  'auth/removeRelation',
+  async (relationId, thunkApi) => {
+    try {
+      const { username } = thunkApi.getState().auth.user;
+      await relationsService.removeRelation(username, relationId);
+
+      return relationId;
+
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.response.data.message);
+    }
+  }
+);
 
 export default authSlice.reducer;

@@ -8,7 +8,7 @@ import {
 // LAYOUTS
 import RootLayout from './layouts/RootLayout';
 import SearchLayout from './layouts/SearchLayout';
-import UserLayout from './layouts/UserLayout';
+import UserLayout, { userLoader } from './layouts/UserLayout';
 
 // PAGES
 import Home from './pages/Home';
@@ -37,6 +37,7 @@ const router = createBrowserRouter(
 
       <Route path='users'>
         <Route path=':username'
+          loader={userLoader}
           element={<UserLayout />}
           errorElement={<UserErrorBoundary />}
         >

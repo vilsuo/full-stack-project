@@ -1,70 +1,44 @@
-import { Outlet, useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { Outlet, useLoaderData, useOutletContext } from 'react-router-dom';
 
-import { loadUser } from '../reducers/users';
 import Banner from '../components/Banner';
 import relationsService from '../services/relations';
 
+import usersService from '../services/users';
+
+export const userLoader = async ({ params }) => {
+  const { username } = params;
+  const user =  await usersService.getUser(username);
+
+  const query = { type: 'follow' };
+
+  const sources = await relationsService
+    .getRelationsBySource(username, query);
+
+  const targets = await relationsService
+    .getRelationsByTarget(username, query);
+
+  return { 
+    user, 
+    relations: { 
+      following: sources.length,
+      followers: targets.length
+    }
+  };
+};
+
 const UserLayout = () => {
   const { authenticatedUser } = useOutletContext();
-  const { username } = useParams();
-
-  const [userInfo, setUserInfo] = useState({ loading: true });
-  const [userRelationsInfo, setUserRelationsInfo] = useState({ loading: true });
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setUserInfo({ ...userInfo, loading: true });
-        setUserRelationsInfo({ ...userRelationsInfo, loading: true });
-
-        // load user
-        const loadedUser = await dispatch(loadUser(username)).unwrap();
-        setUserInfo({ loading: false, user: loadedUser });
-
-        // load users relations
-        const loadedUserRelationsAsSource = await relationsService
-          .getRelationsBySource(loadedUser.username);
-
-        const loadedUserRelationsAsTarget = await relationsService
-          .getRelationsByTarget(loadedUser.username);
-        
-        setUserRelationsInfo({
-          loading: false,
-          asSource: loadedUserRelationsAsSource,
-          asTarget: loadedUserRelationsAsTarget,
-        });
-
-      } catch (rejectedValueError) {
-
-        return navigate('/error', { 
-          replace: true, 
-          state: { error: rejectedValueError } 
-        });
-      }
-    };
-
-    fetchUser();
-  }, [username]);
-
-  if (userInfo.loading) {
-    return <p>loading user</p>
-  }
-
+  const { user, relations } = useLoaderData();
+  
   return (
     <div className='user-layout'>
       <Banner 
-        user={userInfo.user}
-        userRelationsInfo={userRelationsInfo}
-        setUserRelationsInfo={setUserRelationsInfo}
+        user={user}
+        relations={relations}
         authenticatedUser={authenticatedUser}
       />
 
-      <Outlet context={{ user: userInfo.user, authenticatedUser }} />
+      <Outlet context={{ user, authenticatedUser }} />
     </div>
   );
 };

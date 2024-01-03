@@ -1,11 +1,11 @@
 import { useLoaderData, useOutletContext } from 'react-router-dom';
 
-import usersService from '../../services/users';
+import imagesService from '../../services/images';
 
 export const imageLoader = async ({ params }) => {
   const { username } = params;
 
-  return await usersService.getImages(username);
+  return await imagesService.getImages(username);
 };
 
 const Profile = () => {
