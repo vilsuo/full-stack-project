@@ -313,10 +313,11 @@ table {
       display: flex;
       flex-flow: column nowrap;
       flex: 1;
-      justify-content: end;
+      justify-content: start;
     
       & span {
         display: block;
+        margin-bottom: 2px;
       }
     }
   

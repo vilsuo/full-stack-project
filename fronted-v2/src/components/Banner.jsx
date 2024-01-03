@@ -5,6 +5,15 @@ import potraitService from '../services/potrait';
 import { addRelation, removeRelation } from '../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
+/*
+TODO
+- increment/decrement the follow relations when toggling relation of type 'follow'
+
+- settings
+  - on click navigate to user settings
+  - make route accessible to the user only!
+*/
+
 const BannerPotrait = ({ user }) => {
   const [potrait, setPotrait] = useState({ loading: true });
   const { username } = user;
@@ -63,7 +72,7 @@ const BannerInfo = ({ user, relations }) => {
   );
 };
 
-const BannerActions = ({ user, relations, authenticatedUser }) => {
+const BannerRelationActions = ({ user, relations, authenticatedUser }) => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
@@ -119,6 +128,7 @@ const BannerActions = ({ user, relations, authenticatedUser }) => {
 
 const Banner = ({ user, relations, authenticatedUser }) => {
   const showActions = authenticatedUser && (authenticatedUser.id !== user.id);
+  const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
 
   return (
     <div className='banner container'>
@@ -128,11 +138,19 @@ const Banner = ({ user, relations, authenticatedUser }) => {
         <BannerInfo user={user} relations={relations} />
 
         { showActions && (
-          <BannerActions 
+          <BannerRelationActions 
             user={user}
             relations={relations}
             authenticatedUser={authenticatedUser}
           /> 
+        )}
+
+        { isOwnPage && (
+          <div className='banner-actions'>
+            <button>
+              Settings
+            </button>
+          </div>
         )}
       </div>
     </div>
