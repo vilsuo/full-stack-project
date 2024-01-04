@@ -6,6 +6,9 @@ import { addRelation, removeRelation } from '../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
+
 /*
 TODO
 - increment/decrement the follow relations when toggling relation of type 'follow'
@@ -13,23 +16,24 @@ TODO
 
 const BannerPotrait = ({ user }) => {
   const [potrait, setPotrait] = useState({ loading: true });
-
   const authPotrait = useSelector(state => state.auth.potrait);
 
   const { username } = user;
+
   useEffect(() => {
     const fetchPotrait = async () => {
       try {
+        setPotrait({ ...potrait, loading: true });
+        
         const data = await potraitService.getPotraitContent(username);
+      
         setPotrait({
           loading: false,
           url: URL.createObjectURL(data),
         });
 
       } catch (error) {
-        setTimeout(() => {
-          setPotrait({ loading: false });
-        }, [2000]);
+        setPotrait({ ...potrait, loading: false });
 
         if (error.response.status !== 404) {
           throw error;
@@ -43,7 +47,7 @@ const BannerPotrait = ({ user }) => {
   }, [username, authPotrait]);
 
   if (potrait.loading) {
-    return <p>loading potrait</p>
+    return <Skeleton circle={true} className='avatar profile' />
   }
 
   // if user does not have a potrait, show default
