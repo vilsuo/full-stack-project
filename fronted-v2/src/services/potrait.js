@@ -2,12 +2,9 @@ import axios from 'axios';
 
 const BASE_URL = '/api/users';
 
-const getPotraitContent = async (username) => {
+const getPotrait = async (username) => {
   const { data } = await axios.get(
-    `${BASE_URL}/${username}/potrait/content`,
-    { 
-      responseType: 'blob',
-    },
+    `${BASE_URL}/${username}/potrait`,
   );
   return data;
 };
@@ -21,7 +18,30 @@ const putPotrait = async (username, formData) => {
   return data;
 };
 
+const removePotrait = async (username) => {
+  const { data } = await axios.delete(
+    `${BASE_URL}/${username}/potrait`,
+    { withCredentials: true }
+  );
+  return data;
+};
+
+// CONTENT
+const getPotraitContent = async (username) => {
+  const { data } = await axios.get(
+    `${BASE_URL}/${username}/potrait/content`,
+    { 
+      responseType: 'blob',
+    },
+  );
+  return data;
+};
+
 export default {
-  getPotraitContent,
+  getPotrait,
   putPotrait,
+  removePotrait,
+
+  // content
+  getPotraitContent,
 };

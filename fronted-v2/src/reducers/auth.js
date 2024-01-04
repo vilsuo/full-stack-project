@@ -5,7 +5,7 @@ import relationsService from '../services/relations';
 
 /*
 TODO
-- create selectors
+- create selectors?
 
 - on remove & on add modify relations saved in local storage
 */
@@ -21,23 +21,27 @@ const authSlice = createSlice({
   initialState,
   extraReducers: (builder) => {
     builder
+      // LOGIN
       .addCase(login.fulfilled, (state, action) => {
-        const { user, relations } = action.payload;
+        const { user, potrait, relations } = action.payload;
 
-        // add user to local storage
         localStorage.setItem('user', JSON.stringify(user));
+        if (potrait) localStorage.setItem('potrait', JSON.stringify(potrait));
         localStorage.setItem('relations', JSON.stringify(relations));
-        return { ...state, user, relations };
+
+        return { ...state, user, potrait, relations };
       })
       .addCase(login.rejected, (state, action) => {
         return state;
       })
 
+      // LOGOUT
       .addCase(logout.fulfilled, (state, action) => {
-        // remove user from local storage
-        localStorage.removeItem('user');
-        localStorage.removeItem('relations');
-        return { ...state, user: null, relations: [] };
+        // remove all values from local storage
+        localStorage.clear();
+
+        // reset all values
+        return { ...state, user: null, potrait: null, relations: [] };
       })
       .addCase(logout.rejected, (state, action) => {
         return state;
@@ -52,6 +56,14 @@ const authSlice = createSlice({
         return { ...state, potrait };
       })
       .addCase(changePotrait.rejected, (state, action) => {
+        return state;
+      })
+      .addCase(removePotrait.fulfilled, (state, action) => {
+        localStorage.removeItem('potrait');
+
+        return { ...state, potrait: null };
+      })
+      .addCase(removePotrait.rejected, (state, action) => {
         return state;
       })
 
@@ -83,27 +95,30 @@ const authSlice = createSlice({
 
 export const login = createAsyncThunk(
   'auth/login',
-
-  // PAYLOAD CREATOR
-  // A callback function that should return a promise containing the result of some
-  // asynchronous logic
-  //
-  // If there is an error, it should either return a rejected promise containing one of
-  // - an Error instance
-  // - a plain value such as a descriptive error message 
-  // - a resolved promise with a RejectWithValue argument as returned by the
-  //   thunkAPI.rejectWithValue function.
   async (credentials, thunkApi) => {
     try {
       const user = await authService.login(credentials);
-      const relations = await relationsService.getRelationsBySource(user.username);
+      const { username } = user;
 
-      return { user, relations };
+      let potrait;
+      try {
+        // see if user has a potrait
+        potrait = await potraitService.getPotrait(username);
+
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // user does not have a potrait
+          potrait = null;
+        } else {
+          throw error;
+        }
+      }
+
+      const relations = await relationsService.getRelationsBySource(username);
+
+      return { user, potrait, relations };
 
     } catch (error) {
-      // utility function that you can return (or throw) in your action creator to return a
-      // rejected response with a defined payload and meta. It will pass whatever value you
-      // give it and return it in the payload of the rejected action
       return thunkApi.rejectWithValue(error.response.data.message);
     }
   },
@@ -127,6 +142,19 @@ export const changePotrait = createAsyncThunk(
     try {
       const { username } = thunkApi.getState().auth.user;
       return await potraitService.putPotrait(username, formData);
+
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+export const removePotrait = createAsyncThunk(
+  'auth/deletePotrait',
+  async (_, thunkApi) => {
+    try {
+      const { username } = thunkApi.getState().auth.user;
+      return await potraitService.removePotrait(username);
 
     } catch (error) {
       return thunkApi.rejectWithValue(error.response.data.message);
