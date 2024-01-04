@@ -1,7 +1,8 @@
 import { useOutletContext } from 'react-router-dom';
 
-import potraitService from '../../services/potrait';
 import { useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { changePotrait } from '../../reducers/auth';
 
 const FileInput = ({ upload }) => {
   const [file, setFile] = useState();
@@ -42,11 +43,18 @@ const FileInput = ({ upload }) => {
 };
 
 const PotraitSettings = ({ user }) => {
+  const dispatch = useDispatch();
 
   const handleUpload  = async (formData) => {
-    const created = await potraitService.putPotrait(user.username, formData);
 
-    console.log('created', created);
+    dispatch(changePotrait(formData))
+      .unwrap()
+      .then(potrait => {
+        console.log('created potrait', potrait);
+      })
+      .catch(error => {
+        console.log('error changing potrait', error)
+      });
   };
 
   return (

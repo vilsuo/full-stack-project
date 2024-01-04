@@ -9,13 +9,14 @@ import { useNavigate } from 'react-router-dom';
 /*
 TODO
 - increment/decrement the follow relations when toggling relation of type 'follow'
-- create reducer for auth potrait
 */
 
 const BannerPotrait = ({ user }) => {
   const [potrait, setPotrait] = useState({ loading: true });
-  const { username } = user;
 
+  const authPotrait = useSelector(state => state.auth.potrait);
+
+  const { username } = user;
   useEffect(() => {
     const fetchPotrait = async () => {
       try {
@@ -37,7 +38,9 @@ const BannerPotrait = ({ user }) => {
     };
 
     fetchPotrait();
-  }, [username]);
+
+    return () => { if (potrait.url) URL.revokeObjectURL(potrait.url); }
+  }, [username, authPotrait]);
 
   if (potrait.loading) {
     return <p>loading potrait</p>

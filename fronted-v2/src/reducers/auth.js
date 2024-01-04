@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../services/auth';
+import potraitService from '../services/potrait';
 import relationsService from '../services/relations';
 
 /*
@@ -11,6 +12,7 @@ TODO
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
+  potrait: JSON.parse(localStorage.getItem('potrait')) || null,
   relations: JSON.parse(localStorage.getItem('relations')) || [],
 };
 
@@ -41,6 +43,19 @@ const authSlice = createSlice({
         return state;
       })
 
+      // POTRAIT
+      .addCase(changePotrait.fulfilled, (state, action) => {
+        const potrait = action.payload;
+
+        localStorage.setItem('potrait', JSON.stringify(potrait));
+        
+        return { ...state, potrait };
+      })
+      .addCase(changePotrait.rejected, (state, action) => {
+        return state;
+      })
+
+      // RELATIONS
       .addCase(addRelation.fulfilled, (state, action) => {
         const relation = action.payload;
         const relations = [ ...state.relations, relation ];
@@ -99,10 +114,24 @@ export const logout = createAsyncThunk(
   async (_, thunkApi) => {
     try {
       return await authService.logout();
+
     } catch (error) {
       return thunkApi.rejectWithValue(error.response.data.message);
     }
   },
+);
+
+export const changePotrait = createAsyncThunk(
+  'auth/changePotrait',
+  async (formData, thunkApi) => {
+    try {
+      const { username } = thunkApi.getState().auth.user;
+      return await potraitService.putPotrait(username, formData);
+
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.response.data.message);
+    }
+  }
 );
 
 export const addRelation = createAsyncThunk(
