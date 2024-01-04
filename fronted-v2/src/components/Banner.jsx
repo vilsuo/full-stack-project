@@ -24,7 +24,7 @@ const BannerPotrait = ({ user }) => {
     const fetchPotrait = async () => {
       try {
         setPotrait({ ...potrait, loading: true });
-        
+
         const data = await potraitService.getPotraitContent(username);
       
         setPotrait({
@@ -33,7 +33,7 @@ const BannerPotrait = ({ user }) => {
         });
 
       } catch (error) {
-        setPotrait({ ...potrait, loading: false });
+        setPotrait({ loading: false });
 
         if (error.response.status !== 404) {
           throw error;

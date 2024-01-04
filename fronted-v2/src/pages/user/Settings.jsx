@@ -1,18 +1,22 @@
 import { useOutletContext } from 'react-router-dom';
 
 import { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { changePotrait } from '../../reducers/auth';
+import { useDispatch, useSelector } from 'react-redux';
+import { changePotrait, removePotrait } from '../../reducers/auth';
+import ErrorAlert from '../../components/ErrorAlert';
 
 const FileInput = ({ upload }) => {
   const [file, setFile] = useState();
   const inputRef = useRef();
 
   const handleUpload = async () => {
-    const formData = new FormData();
-    formData.append('image', file, file.name);
+    if (file) {
+      const formData = new FormData();
+      formData.append('image', file, file.name);
 
-    await upload(formData);
+      await upload(formData);
+      handleReset();
+    }
   };
 
   const handleFileChange = (event) => {
@@ -28,7 +32,7 @@ const FileInput = ({ upload }) => {
 
   return (
     <div>
-      <div className=''>
+      <div>
         <input 
           type='file'
           ref={inputRef}
@@ -43,24 +47,38 @@ const FileInput = ({ upload }) => {
 };
 
 const PotraitSettings = ({ user }) => {
+  const potrait = useSelector(state => state.auth.potrait);
   const dispatch = useDispatch();
 
-  const handleUpload  = async (formData) => {
+  const [message, setMessage] = useState('');
 
-    dispatch(changePotrait(formData))
-      .unwrap()
-      .then(potrait => {
-        console.log('created potrait', potrait);
-      })
-      .catch(error => {
-        console.log('error changing potrait', error)
-      });
+  const handleUpload  = async (formData) => {
+    try {
+      await dispatch(changePotrait(formData)).unwrap();
+    } catch (error) {
+      const errorMessage = error.message || error;
+      setMessage(`Potrait upload failed: ${errorMessage}.`);
+    }
+  };
+
+  const handleRemove  = async (formData) => {
+    try {
+      await dispatch(removePotrait()).unwrap();
+    } catch (error) {
+      const errorMessage = error.message || error;
+      setMessage(`Removing potrait failed: ${errorMessage}.`);
+    }
   };
 
   return (
     <div>
+      <ErrorAlert message={message} clearMessage={() => setMessage('')} />
+
       <p>Change potrait</p>
       <FileInput upload={handleUpload} />
+
+      <p>Remove potrait</p>
+      <button disabled={!potrait} onClick={handleRemove}>Remove</button>
     </div>
   );
 };

@@ -144,7 +144,7 @@ export const changePotrait = createAsyncThunk(
       return await potraitService.putPotrait(username, formData);
 
     } catch (error) {
-      return thunkApi.rejectWithValue(error.response.data.message);
+      return thunkApi.rejectWithValue(getErrorMessage(error));
     }
   }
 );
@@ -157,7 +157,7 @@ export const removePotrait = createAsyncThunk(
       return await potraitService.removePotrait(username);
 
     } catch (error) {
-      return thunkApi.rejectWithValue(error.response.data.message);
+      return thunkApi.rejectWithValue(getErrorMessage(error));
     }
   }
 );
@@ -189,5 +189,25 @@ export const removeRelation = createAsyncThunk(
     }
   }
 );
+
+const getErrorMessage = (error) => {
+  const { response, request } = error;
+
+  if (response) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    return response.data.message;
+
+  } else if (request) {
+    // The request was made but no response was received
+    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+    // http.ClientRequest in node.js
+    return 'server time out';
+
+  } else {
+    // Something happened in setting up the request that triggered an Error
+    return 'something went wrong while setting up the request'
+  }
+};
 
 export default authSlice.reducer;
