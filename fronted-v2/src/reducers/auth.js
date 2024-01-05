@@ -170,7 +170,7 @@ export const addRelation = createAsyncThunk(
       return await relationsService.addRelation(username, targetUserId, type);
 
     } catch (error) {
-      return thunkApi.rejectWithValue(error.response.data.message);
+      return thunkApi.rejectWithValue(getErrorMessage(error));
     }
   }
 );
@@ -185,23 +185,22 @@ export const removeRelation = createAsyncThunk(
       return relationId;
 
     } catch (error) {
-      return thunkApi.rejectWithValue(error.response.data.message);
+      return thunkApi.rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
 const getErrorMessage = (error) => {
   const { response, request } = error;
-
+  
   if (response) {
     // The request was made and the server responded with a status code
     // that falls out of the range of 2xx
-    return response.data.message;
+
+    return response.data.message || 'something went wrong';
 
   } else if (request) {
     // The request was made but no response was received
-    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-    // http.ClientRequest in node.js
     return 'server time out';
 
   } else {

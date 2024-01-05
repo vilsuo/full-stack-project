@@ -56,8 +56,7 @@ const PotraitSettings = ({ user }) => {
     try {
       await dispatch(changePotrait(formData)).unwrap();
     } catch (error) {
-      const errorMessage = error.message || error;
-      setMessage(`Potrait upload failed: ${errorMessage}.`);
+      setMessage(`Potrait upload failed: ${error}.`);
     }
   };
 
@@ -65,8 +64,7 @@ const PotraitSettings = ({ user }) => {
     try {
       await dispatch(removePotrait()).unwrap();
     } catch (error) {
-      const errorMessage = error.message || error;
-      setMessage(`Removing potrait failed: ${errorMessage}.`);
+      setMessage(`Removing potrait failed: ${error}.`);
     }
   };
 
