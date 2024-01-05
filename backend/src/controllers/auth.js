@@ -4,6 +4,7 @@ const { User } = require('../models');
 
 const { encodePassword, comparePassword } = require('../util/password');
 const { getNonSensitiveUser } = require('../util/dto');
+const { sessionExtractor } = require('../util/middleware/auth');
 
 router.post('/register', async (req, res) => {
   const { name, username, password } = req.body;
@@ -48,6 +49,11 @@ router.post('/login', async (req, res) => {
   return res.status(401).send({
     message: 'invalid username or password'
   });
+});
+
+router.get('/auto-login', sessionExtractor, async (req, res) => {
+  const user = req.user;
+  return res.send(getNonSensitiveUser(user));
 });
 
 router.post('/logout', async (req, res) => {

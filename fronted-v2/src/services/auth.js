@@ -9,12 +9,21 @@ const register = async credentials => {
   );
 
   return response.data;
-}
+};
 
 const login = async credentials => {
   const response = await axios.post(
     `${baseUrl}/login`,
     credentials,
+    { withCredentials: true },
+  );
+
+  return response.data;
+};
+
+const autoLogin = async () => {
+  const response = await axios.get(
+    `${baseUrl}/auto-login`,
     { withCredentials: true },
   );
 
@@ -34,5 +43,6 @@ const logout = async () => {
 export default {
   register,
   login,
+  autoLogin,
   logout,
 };

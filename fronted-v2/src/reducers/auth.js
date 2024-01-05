@@ -7,13 +7,13 @@ import relationsService from '../services/relations';
 TODO
 - create selectors?
 
-- on remove & on add modify relations saved in local storage
+- split into three reducers?
 */
 
 const initialState = {
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  potrait: JSON.parse(localStorage.getItem('potrait')) || null,
-  relations: JSON.parse(localStorage.getItem('relations')) || [],
+  user: null,
+  potrait: null,
+  relations: [],
 };
 
 const authSlice = createSlice({
@@ -21,13 +21,19 @@ const authSlice = createSlice({
   initialState,
   extraReducers: (builder) => {
     builder
+      // AUTO-LOGIN
+      .addCase(autoLogin.fulfilled, (state, action) => {
+        const { user, potrait, relations } = action.payload;
+
+        return { ...state, user, potrait, relations };
+      })
+      .addCase(autoLogin.rejected, (state, action) => {
+        return state;
+      })
+
       // LOGIN
       .addCase(login.fulfilled, (state, action) => {
         const { user, potrait, relations } = action.payload;
-
-        localStorage.setItem('user', JSON.stringify(user));
-        if (potrait) localStorage.setItem('potrait', JSON.stringify(potrait));
-        localStorage.setItem('relations', JSON.stringify(relations));
 
         return { ...state, user, potrait, relations };
       })
@@ -37,11 +43,8 @@ const authSlice = createSlice({
 
       // LOGOUT
       .addCase(logout.fulfilled, (state, action) => {
-        // remove all values from local storage
-        localStorage.clear();
-
         // reset all values
-        return { ...state, user: null, potrait: null, relations: [] };
+        return initialState;
       })
       .addCase(logout.rejected, (state, action) => {
         return state;
@@ -51,16 +54,12 @@ const authSlice = createSlice({
       .addCase(changePotrait.fulfilled, (state, action) => {
         const potrait = action.payload;
 
-        localStorage.setItem('potrait', JSON.stringify(potrait));
-        
         return { ...state, potrait };
       })
       .addCase(changePotrait.rejected, (state, action) => {
         return state;
       })
       .addCase(removePotrait.fulfilled, (state, action) => {
-        localStorage.removeItem('potrait');
-
         return { ...state, potrait: null };
       })
       .addCase(removePotrait.rejected, (state, action) => {
@@ -72,8 +71,6 @@ const authSlice = createSlice({
         const relation = action.payload;
         const relations = [ ...state.relations, relation ];
 
-        localStorage.setItem('relations', JSON.stringify(relations));
-        
         return { ...state, relations };
       })
       .addCase(addRelation.rejected, (state, action) => {
@@ -83,8 +80,6 @@ const authSlice = createSlice({
         const relationId = action.payload;
         const relations = state.relations.filter(relation => relation.id !== relationId);
         
-        localStorage.setItem('relations', JSON.stringify(relations));
-
         return { ...state, relations };
       })
       .addCase(removeRelation.rejected, (state, action) => {
@@ -93,30 +88,51 @@ const authSlice = createSlice({
   },
 });
 
+const getUserDetails = async (user) => {
+  const { username } = user;
+  let potrait;
+
+  try {
+    // see if user has a potrait
+    potrait = await potraitService.getPotrait(username);
+
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      // user does not have a potrait
+      potrait = null;
+    } else {
+      throw error;
+    }
+  }
+
+  const relations = await relationsService.getRelationsBySource(username);
+
+  return { potrait, relations };
+};
+
+export const autoLogin = createAsyncThunk(
+  'auth/autoLogin',
+  async (_, thunkApi) => {
+    try {
+      const user = await authService.autoLogin();
+      const details = await getUserDetails(user);
+
+      return { user, ...details };
+
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.response.data.message);
+    }
+  },
+);
+
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, thunkApi) => {
     try {
       const user = await authService.login(credentials);
-      const { username } = user;
+      const details = await getUserDetails(user);
 
-      let potrait;
-      try {
-        // see if user has a potrait
-        potrait = await potraitService.getPotrait(username);
-
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          // user does not have a potrait
-          potrait = null;
-        } else {
-          throw error;
-        }
-      }
-
-      const relations = await relationsService.getRelationsBySource(username);
-
-      return { user, potrait, relations };
+      return { user, ...details };
 
     } catch (error) {
       return thunkApi.rejectWithValue(error.response.data.message);
