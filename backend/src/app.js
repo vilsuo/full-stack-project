@@ -25,24 +25,43 @@ app.use('/static', express.static('public'));
 app.use(express.json());
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
-  methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD'],
+  // Configures the Access-Control-Allow-Origin CORS header:
+  //
+  // The Access-Control-Allow-Origin response header indicates whether the
+  // response can be shared with requesting code from the given origin.
+  origin: 'http://localhost:5173',
+
+  // Configures the Access-Control-Allow-Credentials CORS header. Set to true
+  // to pass the header.
   credentials: true,
+
+  // default is 204, but some legacy browsers choke on it
+  optionsSuccessStatus: 200,
 }));
 
 app.use(requestLogger);
 
+/*
+TODO
+- set short life time
+*/
 app.use(session({
   store: new RedisStore({ client: redisClient }),
   resave: false,
   saveUninitialized: false,
   secret: SECRET,
-  cookie: {
-    // if true only transmit cookie over https
-    secure: process.env.NODE_ENV === "production",
 
-    // if true prevent client side JS from reading cookie
+  cookie: {
+    // cookie is not sent on cross-site requests, but is sent when a user is
+    // navigating to the origin site from an external site
+    sameSite: 'lax',
+
+    // cookie is inaccessible to the JavaScript Document.cookie API
     httpOnly: true,
+
+    // When truthy, the Set-Cookie Secure attribute is set (only transmit 
+    // cookie over https)
+    secure: process.env.NODE_ENV === 'production',
   },
 }));
 
