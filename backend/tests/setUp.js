@@ -1,6 +1,4 @@
-const omit = require('lodash.omit');
 const { User } = require('../src/models');
-const { encodePassword } = require('../src/util/password');
 const { sequelize, connectToDatabases } = require('../src/util/db');
 
 const { 
@@ -12,32 +10,20 @@ const { createPublicAndPrivateImage, createPotrait } = require('./helpers');
 
 const userValues = [ existingUserValues, otherExistingUserValues, disabledExistingUserValues ];
 
-let encodedPasswords = {};
-
 beforeAll(async () => {
   await connectToDatabases();
   console.log('Connected to Databases.');
-
-  // encode user passwords
-  const encodedPasswordArray = await Promise.all(
-    userValues.map(async user => 
-      ({ [user.username]: await encodePassword(user.password) })
-    )
-  );
-
-  encodedPasswords = Object.assign({}, ...encodedPasswordArray);
 });
 
 beforeEach(async () => {
   // create the tables, dropping them first if they already existed
   await sequelize.sync({ force: true });
 
-  // create users and save user ids
   const userIds = await Promise.all(userValues.map(async user => {
-    const creationValues = omit(user, ['password']);
-    const passwordHash = encodedPasswords[user.username];
-
-    const createdUser = await User.create({ ...creationValues, passwordHash });
+    const { password, ...rest } = user;
+    const createdUser = await User.create({ 
+      ...rest, passwordHash: password
+    });
     return createdUser.id;
   }));
 

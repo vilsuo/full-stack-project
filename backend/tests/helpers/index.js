@@ -1,7 +1,4 @@
-const omit = require('lodash.omit');
-
 const { User, Image, Potrait, Relation } = require('../../src/models');
-const { encodePassword } = require('../../src/util/password');
 const { cookieKey } = require('../../src/constants');
 
 const cookieHeader = cookie => {
@@ -43,7 +40,7 @@ const createUser = async ({ name, username, password, disabled = false }) => {
   return await User.create({
     name,
     username,
-    passwordHash: await encodePassword(password),
+    passwordHash: password,
     disabled,
   });
 };

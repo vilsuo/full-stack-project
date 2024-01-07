@@ -2,20 +2,24 @@ const router = require('express').Router();
 const { cookieKey } = require('../constants');
 const { User } = require('../models');
 
-const { encodePassword, comparePassword } = require('../util/password');
+const { comparePassword } = require('../util/password');
 const { getNonSensitiveUser } = require('../util/dto');
 const { sessionExtractor } = require('../util/middleware/auth');
 
+/*
+TODO
+- parse login username & password
+  - check ONLY? they are strings
+*/
+
 router.post('/register', async (req, res) => {
   const { name, username, password } = req.body;
-  if (!password) {
-    return res.status(400).send({ message: 'password is missing' });
-  }
 
-  const encodedPassword = await encodePassword(password);
   const user = await User.create({
     name, username,
-    passwordHash: encodedPassword
+
+    // beforeCreate hook encodes password
+    passwordHash: password
   });
 
   return res.status(201).send(getNonSensitiveUser(user));
@@ -43,6 +47,28 @@ router.post('/login', async (req, res) => {
       };
 
       return res.send(getNonSensitiveUser(user));
+
+      /*
+      // regenerate the session, which is good practice to help
+      // guard against forms of session fixation
+      return req.session.regenerate(function (err) {
+        if (err) return next(err);
+
+        // store user information in session, typically a user id
+        req.session.user = {
+          id: user.id,
+          username: user.username,
+        };
+
+        // save the session before redirection to ensure page
+        // load does not happen before session is saved
+        return req.session.save(function (err) {
+          if (err) return next(err);
+          console.log('login session id', req.session.id);
+          return res.send(getNonSensitiveUser(user));
+        });
+      });
+      */
     }
   }
 
@@ -56,13 +82,9 @@ router.get('/auto-login', sessionExtractor, async (req, res) => {
   return res.send(getNonSensitiveUser(user));
 });
 
-router.post('/logout', async (req, res) => {
+router.post('/logout', async (req, res, next) => {
   req.session.destroy((error) => {
-    if (error) {
-      return res.status(400).send({
-        message: error.message
-      })
-    }
+    if (error) return next(error);
 
     return res
       .clearCookie(cookieKey)

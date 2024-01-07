@@ -2,14 +2,14 @@ const pick = require('lodash.pick');
 
 const existingUserValues = {
   name: 'vili',
-  username: 'ellivil',
+  username: 'ellivill',
   password: 'salainen'
 };
 
 const otherExistingUserValues = {
   name: 'matias',
   username: 'matsu12',
-  password: 'secret1'
+  password: 'secret123'
 };
 
 const disabledExistingUserValues = {
@@ -22,7 +22,7 @@ const disabledExistingUserValues = {
 const nonExistingUserValues = {
   name: 'miko',
   username: 'murmeli',
-  password: 'qwerty',
+  password: 'qwertyuiop',
 };
 
 const getCredentials = userValues => {

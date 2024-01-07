@@ -16,6 +16,16 @@ const { getNonSensitiveUser } = require('../../src/util/dto');
 
 const api = supertest(app);
 
+/*
+TODO
+- test in User
+  - user does not have property 'password'
+  - password is actually encoded
+
+- registering
+  - min/max length name/username/password
+*/
+
 const register = async (details, statusCode = 201) => {
   const response = await api
     .post('/api/auth/register')
@@ -120,19 +130,18 @@ describe('registering', () => {
       expect(errorMessages2).toContain('username can not be empty');
     });
 
-    // validated manually in route
     test('missing/empty password', async () => {
-      // missing username
+      // missing password
       const responseBody1 = await register(omit(nonExistingUserValues, ['password']), 400);
 
       const errorMessages1 = responseBody1.message;
-      expect(errorMessages1).toContain('password is missing');
+      expect(errorMessages1).toContain('password can not be null');
 
-      // empty username
+      // empty password
       const responseBody2 = await register({ ...nonExistingUserValues, password: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
-      expect(errorMessages2).toContain('password is missing');
+      expect(errorMessages2).toContain('password can not be empty');
     });
 
     test('taken username', async () => {
