@@ -1,6 +1,6 @@
 const { User, Image, Potrait } = require('../../models');
-const { IllegalStateError } = require('../error');
-const { parseId } = require('./parser');
+const { IllegalStateError, ParseError } = require('../error');
+const parser = require('./parser');
 
 /**
  * Extracts the User from request parameter 'username' to request.foundUser.
@@ -10,15 +10,15 @@ const { parseId } = require('./parser');
  * @param {*} next  
  * 
  * @returns response with status 
- *  - '404' if said user does not exist
- *  - '400' if said user is disabled
+ *  - '404' if user does not exist
+ *  - '400' if user is disabled
  */
 const userFinder = async (req, res, next) => {
   const { username } = req.params;
 
-  if (!username || typeof username !== 'string') {
-    throw new IllegalStateError(
-      'request parameter username must be non-empty string'
+  if (typeof username !== 'string') {
+    throw new ParseError(
+      'request parameter username must be a string'
     );
   }
 
@@ -56,13 +56,7 @@ const imageFinder = async (req, res, next) => {
     throw new IllegalStateError('owner of the image to be found is not specified');
   }
 
-  if (!rawImageId || typeof rawImageId !== 'string') {
-    throw new IllegalStateError(
-      'request parameter image id must be non-empty string'
-    );
-  }
-
-  const imageId = parseId(rawImageId);
+  const imageId = parser.parseId(rawImageId);
   const image = await Image.findByPk(imageId);
 
   if (image && image.userId === foundUser.id) {
