@@ -209,10 +209,12 @@ describe('posting images', () => {
 
         test('text files are not allowed', async () => {
           const responseBody = await postImage(
-            postingUsersUsername, authHeader, txtFile, 400
+            postingUsersUsername, authHeader, txtFile, 415
           );
   
-          expect(responseBody.message).toMatch(/^File upload only supports the following filetypes/);
+          expect(responseBody.message).toMatch(
+            /^file upload only supports the following filetypes/
+          );
         });
       });
     });

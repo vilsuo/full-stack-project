@@ -230,18 +230,18 @@ describe('putting potraits', () => {
 
             test('text files are not allowed', async () => {
               const responseBody = await putPotrait(
-                puttingUsersUsername, authHeader, txtFilepath, 400
+                puttingUsersUsername, authHeader, txtFilepath, 415
               );
       
               expect(responseBody.message).toMatch(
-                /^File upload only supports the following filetypes/
+                /^file upload only supports the following filetypes/
               );
             });
 
             test('old potrait can be found after putting invalid file', async () => {
               const potraitBefore = await findPotrait(puttingUsersUsername);
   
-              await putPotrait(puttingUsersUsername, authHeader, filepathToInvalidFile, 400);
+              await putPotrait(puttingUsersUsername, authHeader, filepathToInvalidFile, 415);
   
               const potraitAfter = await findPotrait(puttingUsersUsername);
   
@@ -249,7 +249,7 @@ describe('putting potraits', () => {
             });
 
             test('there is no attempt to remove a file from the filesystem', async () => {
-              await putPotrait(puttingUsersUsername, authHeader, filepathToInvalidFile, 400);
+              await putPotrait(puttingUsersUsername, authHeader, filepathToInvalidFile, 415);
 
               expect(removeFileSpy).not.toHaveBeenCalled();
             });
