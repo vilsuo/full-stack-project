@@ -6,12 +6,6 @@ const { comparePassword } = require('../util/password');
 const { getNonSensitiveUser } = require('../util/dto');
 const { sessionExtractor } = require('../util/middleware/auth');
 
-/*
-TODO
-- parse login username & password
-  - check ONLY? they are strings
-*/
-
 router.post('/register', async (req, res) => {
   const { name, username, password } = req.body;
 
@@ -27,9 +21,15 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
+  if (username === undefined || password === undefined) {
     return res.status(400).send({
       message: 'username or password missing'
+    });
+  }
+
+  if (typeof username !== 'string' || typeof password !== 'string') {
+    return res.status(400).send({
+      message: 'username and password must be strings'
     });
   }
 
@@ -47,28 +47,6 @@ router.post('/login', async (req, res) => {
       };
 
       return res.send(getNonSensitiveUser(user));
-
-      /*
-      // regenerate the session, which is good practice to help
-      // guard against forms of session fixation
-      return req.session.regenerate(function (err) {
-        if (err) return next(err);
-
-        // store user information in session, typically a user id
-        req.session.user = {
-          id: user.id,
-          username: user.username,
-        };
-
-        // save the session before redirection to ensure page
-        // load does not happen before session is saved
-        return req.session.save(function (err) {
-          if (err) return next(err);
-          console.log('login session id', req.session.id);
-          return res.send(getNonSensitiveUser(user));
-        });
-      });
-      */
     }
   }
 

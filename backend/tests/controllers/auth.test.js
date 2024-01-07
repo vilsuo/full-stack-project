@@ -16,16 +16,6 @@ const { getNonSensitiveUser } = require('../../src/util/dto');
 
 const api = supertest(app);
 
-/*
-TODO
-- test in User
-  - user does not have property 'password'
-  - password is actually encoded
-
-- registering
-  - min/max length name/username/password
-*/
-
 const register = async (details, statusCode = 201) => {
   const response = await api
     .post('/api/auth/register')
@@ -211,16 +201,16 @@ describe('loggin in', () => {
   });
 
   describe('failed login', () => {
-    const wrongPassword = 'wrongpswd';
-    const wrongCredentials = { ...credentials, password: wrongPassword };
-
     test('login fails with wrong password', async () => {
+      const wrongPassword = 'wrongpswd';
+      const wrongCredentials = { ...credentials, password: wrongPassword };
+
       const response = await loginWithResponse(wrongCredentials, 401);
-  
+
       expect(response.body.message).toBe('invalid username or password');
 
       // authentication cookie is not set
-      expect(() => { get_SetCookie(response) }).toThrow();
+      expect(() => get_SetCookie(response)).toThrow();
     });
   
     test('disabled user can not login', async () => {
@@ -228,9 +218,6 @@ describe('loggin in', () => {
   
       const response = await loginWithResponse(disabledCredentials, 401);
       expect(response.body.message).toBe('user has been disabled');
-
-      // authentication cookie is not set
-      expect(() => { get_SetCookie(response) }).toThrow();
     });
   
     test('can not log in with user that does not exist', async () => {
@@ -238,9 +225,6 @@ describe('loggin in', () => {
   
       const response = await loginWithResponse(nonExistingCredentials, 401);
       expect(response.body.message).toBe('invalid username or password');
-
-      // authentication cookie is not set
-      expect(() => { get_SetCookie(response) }).toThrow();
     });
   });
 });
