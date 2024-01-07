@@ -1,4 +1,6 @@
+const { cookieKey } = require('../../constants');
 const { User } = require('../../models');
+const { IllegalStateError } = require('../error');
 const { userFinder, imageFinder } = require('./finder');
 
 /**
@@ -15,12 +17,22 @@ const { userFinder, imageFinder } = require('./finder');
 const sessionExtractor = async (req, res, next) => {
   const session = req.session;
   if (!session.user) {
-    return res.status(401).send({ message: 'authentication required' });
+    // there is no session or session is invalid/expired
+    return res
+      .clearCookie(cookieKey)
+      .status(401).send({ message: 'authentication required' });
   }
 
   const user = await User.findByPk(session.user.id);
   if (!user) {
-    return res.status(404).send({ message: 'session user does not exist' });
+    // session exists, but the user does not
+    return req.session.destroy((error) => {
+      if (error) return next(error);
+  
+      return res
+        .clearCookie(cookieKey)
+        .status(404).send({ message: 'session user does not exist' });
+    });
   }
 
   req.user = user;
@@ -49,7 +61,7 @@ const isAllowedToViewImage = async (req, res, next) => {
 
     case 'private':
       // only authenticated user can view the image, if the authenticated
-      // user is the oner of the image
+      // user is the owner of the image
       return await sessionExtractor(req, res, () => {
         const user = req.user;
         if (user.id !== image.userId) {
@@ -60,7 +72,7 @@ const isAllowedToViewImage = async (req, res, next) => {
       });
     
     default: 
-      throw new Error(`unhandled privacy '${image.privacy}`);
+      throw new IllegalStateError(`unhandled privacy '${image.privacy}`);
   }
 };
 
