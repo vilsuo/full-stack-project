@@ -1,4 +1,8 @@
 const logger = require('../logger');
+const { FILE_SIZE_LIMIT } = require('../../constants');
+const multer = require('multer');
+const { Sequelize } = require('sequelize');
+const { FiletypeError, ParseError, IllegalStateError } = require('../error');
 
 /*
 TODO
@@ -18,30 +22,49 @@ const unknownEndpoint = (req, res) => {
 };
 
 const errorHandler = (error, req, res, next) => {
-  switch (error.name) {
-    case 'SequelizeValidationError': {
+  switch (true) {
+    // MULTER ERRORS https://github.com/expressjs/multer/blob/master/lib/multer-error.js
+    case error instanceof multer.MulterError: {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).send({
+          message: `maximum file size is ${FILE_SIZE_LIMIT} bytes`
+        });
+      } else {
+        // return the multer default
+        return res.status(400).send({ message: error.code });
+      }
+    }
+
+    // SEQUELIZE ERRORS https://github.com/sequelize/sequelize/blob/3e5b8772ef75169685fc96024366bca9958fee63/lib/errors.js
+    case error instanceof Sequelize.ValidationError: {
       return res.status(400).send({
         message: error.errors.map(error => error.message)
       });
     }
-    case 'SequelizeUniqueConstraintError': {
+    case error instanceof Sequelize.UniqueConstraintError: {
       return res.status(400).send({
         message: error.errors.map(error => error.message)
       });
     }
-    case 'FiletypeError': {
+
+    // CUSTOM ERRORS
+    case error instanceof FiletypeError: {
       // 415 Unsupported Media Type
       return res.status(415).send({ message: error.message });
     }
-    case 'ParseError': {
+    case error instanceof ParseError: {
       return res.status(400).send({ message: error.message });
     }
-    case 'IllegalStateError': {
+    case error instanceof IllegalStateError: {
       return res.status(500).send({ message: error.message });
     }
-  }
 
-  next(error);
+    // DEFAULT
+    default: {
+      logger.error('Unhandled error', error);
+      return res.status(500).send({ message: 'unknown error happened' });
+    }
+  }
 };
 
 module.exports = {

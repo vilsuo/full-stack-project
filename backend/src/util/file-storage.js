@@ -4,6 +4,7 @@ const fs = require('fs');
 const logger = require('./logger');
 const { FiletypeError } = require('./error');
 const { Image, Potrait } = require('../models');
+const { FILE_SIZE_LIMIT } = require('../constants');
 
 const options = {};
 if (process.env.NODE_ENV === 'test') {
@@ -14,6 +15,10 @@ if (process.env.NODE_ENV === 'test') {
   // save image locally
   options.dest = 'images/';
 }
+
+const limits = {
+  fileSize: FILE_SIZE_LIMIT,
+};
 
 const filetypes = /jpeg|jpg|png/;
 
@@ -32,6 +37,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
   ...options,
+  limits,
   fileFilter,
 });
 
