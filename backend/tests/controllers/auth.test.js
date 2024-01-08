@@ -103,7 +103,7 @@ describe('registering', () => {
       const responseBody2 = await register({ ...nonExistingUserValues, name: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
-      expect(errorMessages2).toContain('name can not be empty');
+      expect(errorMessages2).toContain('name must be 2-30 characters long');
     });
 
     test('missing/empty username', async () => {
@@ -117,7 +117,7 @@ describe('registering', () => {
       const responseBody2 = await register({ ...nonExistingUserValues, username: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
-      expect(errorMessages2).toContain('username can not be empty');
+      expect(errorMessages2).toContain('username must be 2-30 characters long');
     });
 
     test('missing/empty password', async () => {
@@ -131,7 +131,7 @@ describe('registering', () => {
       const responseBody2 = await register({ ...nonExistingUserValues, password: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
-      expect(errorMessages2).toContain('password can not be empty');
+      expect(errorMessages2).toContain('password must be 8-30 characters long');
     });
 
     test('taken username', async () => {

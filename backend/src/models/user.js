@@ -15,7 +15,6 @@ User.init({
     allowNull: false,
     validate: {
       notNull: { msg: 'name can not be null' },
-      notEmpty: { msg: 'name can not be empty' }, // remove?
       len: {
         args: [2, 30],
         msg: 'name must be 2-30 characters long'
@@ -31,7 +30,6 @@ User.init({
     },
     validate: {
       notNull: { msg: 'username can not be null' },
-      notEmpty: { msg: 'username can not be empty' }, // remove?
       len: {
         args: [2, 30],
         msg: 'username must be 2-30 characters long'
@@ -43,7 +41,6 @@ User.init({
     allowNull: false,
     validate: {
       notNull: { msg: 'password can not be null' },
-      notEmpty: { msg: 'password can not be empty' }, // remove?
       len: {
         args: [8, 30],
         msg: 'password must be 8-30 characters long'
