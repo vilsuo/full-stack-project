@@ -12,33 +12,35 @@ const { paginationParser } = require('../../util/middleware/parser');
 const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { cookieKey } = require('../../constants');
 
+const getUserSearchFilter = (columnName, query) => {
+  return sequelize.where(
+    sequelize.fn('lower', sequelize.col(columnName)),
+    { [Op.substring] : query.toLowerCase() }
+  );
+};
+
 /**
  * Implements searching based on user name and username. 
  * Does not return disabled users. Response is paginated, 
  * see {@link paginationParser}.
  */
 router.get('/', paginationParser, async (req, res) => {
-  const searchFilters = {};
+  const searchFilters = { disabled: false };
 
-  const { q: search } = req.query;
+  const { q: query } = req.query;
 
-  if (search) {
+  if (typeof query === 'string') {
     searchFilters[Op.or] = [
-      sequelize.where(
-        sequelize.fn('lower', sequelize.col('name')),
-        { [Op.substring] : search.toLowerCase() }
-      ),
-      sequelize.where(
-        sequelize.fn('lower', sequelize.col('username')),
-        { [Op.substring] : search.toLowerCase() }
-      ),
+      getUserSearchFilter('name', query),
+      getUserSearchFilter('username', query)
     ];
   }
 
   const { pageNumber, pageSize } = req;
 
   const { count, rows } = await User.findAndCountAll({
-    where: { ...searchFilters, disabled: false },
+    where: searchFilters,
+    
     // descending: from largest to smallest
     order: [['createdAt', 'DESC']],
     // pagination

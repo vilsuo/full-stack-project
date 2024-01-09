@@ -1,5 +1,17 @@
+const { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } = require('../../constants');
 const { Relation } = require('../../models');
 const { ParseError } = require('../error');
+
+/*
+TODO
+- parseId:
+  - Number() converts rmpty or whitespace-only strings to 0: make throw ParseError
+
+- paginationParser:
+  - if query parameter is not supplied, return default
+  - if query parameter is supplied and is in invalid format, throw error
+  - else return query parameter
+*/
 
 /**
  * Valid values are strings/numbers from 1 to 2147483647.
@@ -71,16 +83,9 @@ const parsePositiveOrDefault = (value, defaultValue) => {
 const paginationParser = (req, res, next) => {
   const { page, size } = req.query;
 
-  // default has to be zero
-  const defaultPageNumber = 0;
-  
-  const defaultPageSize = 10;
+  req.pageNumber = parsePositiveOrDefault(page, DEFAULT_PAGE_NUMBER);
+  req.pageSize = parsePositiveOrDefault(size, DEFAULT_PAGE_SIZE);
 
-  // if page is zero, the default is returned, which is zero
-  req.pageNumber = parsePositiveOrDefault(page, defaultPageNumber);
-
-  // page size can no be 0
-  req.pageSize = parsePositiveOrDefault(size, defaultPageSize);
   next();
 };
 
