@@ -9,10 +9,10 @@ router.get('/', async (req, res) => {
   const { type, targetUserId } = req.query;
 
   const searchFilters = {};
-  if (type) {
+  if (type !== undefined) {
     searchFilters.type = parseRelationType(type);
   }
-  if (targetUserId) {
+  if (targetUserId !== undefined) {
     searchFilters.targetUserId = parseId(targetUserId);
   }
 
@@ -30,10 +30,10 @@ router.get('/reverse', async (req, res) => {
   const { type, sourceUserId } = req.query;
 
   const searchFilters = {};
-  if (type) {
+  if (type !== undefined) {
     searchFilters.type = parseRelationType(type);
   }
-  if (sourceUserId) {
+  if (sourceUserId !== undefined) {
     searchFilters.sourceUserId = parseId(sourceUserId);
   }
 
