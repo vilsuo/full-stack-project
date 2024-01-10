@@ -194,7 +194,7 @@ describe('posting images', () => {
             postingUsersUsername, authHeader, invalidFormValues, 400
           );
   
-          expect(responseBody.message).toContain('image must be public or private');
+          expect(responseBody.message).toContain('invalid image privacy');
         });
 
         test('attempt is made to remove the failed upload image from filesystem', async () => {
