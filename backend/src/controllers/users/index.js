@@ -8,7 +8,7 @@ const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
 const { isSessionUser } = require('../../util/middleware/auth');
-const { paginationParser } = require('../../util/middleware/query');
+const { pagination } = require('../../util/middleware/query');
 const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { cookieKey } = require('../../constants');
 
@@ -22,9 +22,9 @@ const getUserSearchFilter = (columnName, query) => {
 /**
  * Implements searching based on user name and username. 
  * Does not return disabled users. Response is paginated, 
- * see {@link paginationParser}.
+ * see {@link pagination}.
  */
-router.get('/', paginationParser, async (req, res) => {
+router.get('/', pagination, async (req, res) => {
   const searchFilters = { disabled: false };
 
   const { q: query } = req.query;

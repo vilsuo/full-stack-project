@@ -1,5 +1,5 @@
 const { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } = require("../../../src/constants");
-const { paginationParser } = require("../../../src/util/middleware/query");
+const { pagination } = require("../../../src/util/middleware/query");
 const { callMiddleware, createRequest } = require("../../helpers/middleware");
 const parser = require('../../../src/util/parser');
 const { ParseError } = require("../../../src/util/error");
@@ -11,13 +11,13 @@ const parseSizeNumberSpy = jest.spyOn(parser, 'parsePositiveInteger');
 
 const createQueryRequest = (query = {}) => createRequest({}, query);
 
-describe('pagination parser', () => {
+describe('pagination', () => {
 
   const pageParam = 'pageNumber';
   const sizeParam = 'pageSize';
 
   const callPagnationParser = async (request) => {
-    return await callMiddleware(paginationParser, request, next);
+    return await callMiddleware(pagination, request, next);
   };
 
   const expectToThrow = async (request) => 
@@ -47,20 +47,20 @@ describe('pagination parser', () => {
 
   describe('parameter page', () => {
     const validPageNumbers = ['0', '1', '2', '10', '100'];
-    const invalidPageNumbers = ['-1', '0.1', 'a', '', ' '];
+    const invalidPageNumbers = ['-1', '0.1', '5.5', 'a', '', ' '];
 
     test(`valid parameter is set to the request.${pageParam}`, async () => {
       await Promise.all(validPageNumbers.map(async value => {
         const request = createQueryRequest({ page: value });
         await callPagnationParser(request);
 
-         // page number is set
-         expect(request[pageParam]).toBe(Number(value));
+        // page number is set
+        expect(request[pageParam]).toBe(Number(value));
 
-         // page size stays default
-         expect(request[sizeParam]).toBe(DEFAULT_PAGE_SIZE);
+        // page size stays default
+        expect(request[sizeParam]).toBe(DEFAULT_PAGE_SIZE);
  
-         expect(next).toHaveBeenCalled();
+        expect(next).toHaveBeenCalled();
       }));
     });
 
@@ -74,49 +74,32 @@ describe('pagination parser', () => {
     });
   });
 
-  /*
   describe('parameter size', () => {
-    const validPageSizes = [1, 2, 10, 100];
-    const invalidPageSizes = [-1, 0.1, 0, '-1', 'a', '', null, undefined];
+    const validPageSizes = ['1', '2', '10', '100'];
+    const invalidPageSizes = ['-1', '0', '0.1', '5.5', 'a', '', ' '];
 
-    test('positive number sets pageSize', () => {
-      validPageSizes.forEach((pageSize) => {
-        const request = { query: { size: pageSize } };
+    test(`valid parameter is set to the request.${pageParam}`, async () => {
+      await Promise.all(validPageSizes.map(async value => {
+        const request = createQueryRequest({ size: value });
+        await callPagnationParser(request);
 
-        callPagnationParser(request);
-  
-        // page number is default
-        expect(request.pageNumber).toBe(defaultPageNumber);
-    
-        expect(request.pageSize).toBe(pageSize);
-      });
+        // page number stays default
+        expect(request[pageParam]).toBe(DEFAULT_PAGE_NUMBER);
+
+        // page size is set
+        expect(request[sizeParam]).toBe(Number(value));
+ 
+        expect(next).toHaveBeenCalled();
+      }));
     });
 
-    test('positive string sets pageSize', () => {
-      validPageSizes.forEach((pageSize) => {
-        const request = { query: { size: pageSize.toString() } };
+    test('invalid parameter throws', async () => {
+      await Promise.all(invalidPageSizes.map(async value => {
+        const request = createQueryRequest({ size: value });
 
-        callPagnationParser(request);
-  
-        // page number is default
-        expect(request.pageNumber).toBe(defaultPageNumber);
-    
-        expect(request.pageSize).toBe(pageSize);
-      });
-    });
-
-    test('if size is not a positve number, then pageSize is set to default', () => {
-      invalidPageSizes.forEach((pageSize) => {
-        const request = { query: { size: pageSize } };
-
-        callPagnationParser(request);
-  
-        expect(request.pageNumber).toBe(defaultPageNumber);
-
-        // fallback to default
-        expect(request.pageSize).toBe(defaultPageSize);
-      });
+        expectToThrow(request);
+        expect(next).not.toHaveBeenCalled();
+      }));
     });
   });
-  */
 });

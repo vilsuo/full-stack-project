@@ -13,7 +13,7 @@ const { parseNonNegativeInteger, parsePositiveInteger } = require('../parser');
  * @param {*} res 
  * @param {*} next 
  */
-const paginationParser = (req, res, next) => {
+const pagination = (req, res, next) => {
   const { page, size } = req.query;
 
   req.pageNumber = (page !== undefined)
@@ -28,5 +28,5 @@ const paginationParser = (req, res, next) => {
 };
 
 module.exports = {
-  paginationParser,
+  pagination,
 };
