@@ -4,9 +4,6 @@ const { ParseError } = require('../error');
 
 /*
 TODO
-- parseId:
-  - Number() converts rmpty or whitespace-only strings to 0: make throw ParseError
-
 - paginationParser:
   - if query parameter is not supplied, return default
   - if query parameter is supplied and is in invalid format, throw error
@@ -14,26 +11,24 @@ TODO
 */
 
 /**
- * Valid values are strings/numbers from 1 to 2147483647.
+ * If value is a number or a string return the value as a number if it is a valid id,
+ * otherwise throw a ParseError.
  * 
  * @param {*} value 
- * @param {*} name 
- * @returns the parsed number if the value is valid id
+ * @returns the parsed value as a number
  */
 const parseId = (value) => {
-  if (value === undefined) {
-    throw new ParseError('id is missing');
-  }
+  if (value === undefined) throw new ParseError('id is missing');
   
-  const minId = 1;
-  const maxId = 2147483647;
+  // parsing request body
+  if (typeof value === 'number') {
+    if (Number.isInteger(value) && value >= 0) return value;
+  }
 
-  if (typeof value === 'number' || typeof value === 'string') {
-    const number = Number(value) ;
-    
-    if (Number.isInteger(number) && (minId <= number && number <= maxId)) {
-      return number;
-    }
+  // parsing request & query parameters
+  if (typeof value === 'string') {
+    const regex = /^\d*\.?0*$/; // matches for empty string!
+    if (value.length > 0 && regex.test(value)) return Number(value);
   }
 
   throw new ParseError('id is invalid');
@@ -68,6 +63,19 @@ const parsePositiveOrDefault = (value, defaultValue) => {
   return defaultValue;
 };
 
+/*
+const parsePositive = (value) => {
+  if ((typeof value === 'string' && value)) {
+
+  }
+  if (typeof value === 'number' || (typeof value === 'string' && value)) {
+    const number = Number(value);
+
+  }
+  throw new ParseError()
+};
+*/
+
 /**
  * Parse the 'page' and 'size' query parameters from the request and
  * attach them to req.pageNumber and req.pageSize.
@@ -81,6 +89,19 @@ const parsePositiveOrDefault = (value, defaultValue) => {
  * @param {*} next 
  */
 const paginationParser = (req, res, next) => {
+  /*
+  const queryParams = req.query;
+
+  req.pageNumber = Object.hasOwn(queryParams, 'page')
+    ? 
+    : DEFAULT_PAGE_NUMBER;
+  
+  req.pageSize = Object.hasOwn(queryParams, 'size')
+    ?
+    : DEFAULT_PAGE_SIZE;
+
+  next();
+  */
   const { page, size } = req.query;
 
   req.pageNumber = parsePositiveOrDefault(page, DEFAULT_PAGE_NUMBER);

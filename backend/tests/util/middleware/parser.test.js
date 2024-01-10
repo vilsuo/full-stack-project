@@ -3,112 +3,101 @@ const { ParseError } = require('../../../src/util/error');
 const { parseId, paginationParser, parseRelationType } = require('../../../src/util/middleware/parser');
 
 describe('id parser', () => {
-  // valid numbers
-  const minId = 1;
-  const maxId = 2147483647;
-
-  const interiors = [minId + 1, 10, 2023, 58000, maxId - 1];
-
-  const decimalZeroes = [1.0, 10.00, 100.000];
-
-  // invalid numbers
-  const trueDecimals = [0.7, 1.1, 10.01];
-  const negatives = [-999, -10, -1.1];
-
   const expectToThrow = (value) => expect(() => parseId(value)).toThrow(ParseError);
 
-  describe('string parameters', () => {
-    describe('invalid strings', () => {
-      test('true decimals are not allowed', () => {
-        trueDecimals.forEach(value => expectToThrow(value.toString()));
-      });
+  const positiveIntegers = [1, 702, 9000, 301240];
+  const negativeIntegers = positiveIntegers.map(x => -x);
 
-      test('negatives are not allowed', () => {
-        negatives.forEach(value => expectToThrow(value.toString()));
-      });
+  const positiveIntegerfloats = [1.0, 7., 10.00, 1092.0, 17902.00000];
+  const negativeIntegerfloats = positiveIntegerfloats.map(x => -x);
 
-      test('can not contain letters', () => {
-        const values = ['hello', '12a', 'a12', '1a2'];
+  const positivefloats = [0.0009, .01, .6, 0.9, 12.7, 987.001, 120730.999];
+  const negativefloats = positivefloats.map(x => -x);
 
-        values.forEach(value => expectToThrow(value));
-      });
-
-      test('can not contain non-leading or non-trailing whitespace', () => {
-        const values = ['', ' ', '1 0'];
-
-        values.forEach(value => expectToThrow(value));
-      });
-
-      test('just out of range', () => {
-        expectToThrow((minId - 1).toString());
-        expectToThrow((maxId + 1).toString());
-      });
-    });
-
-    describe('valid strings', () => {
-      test('numbers with decimal zero', () => {
-        decimalZeroes.forEach(value => expect(parseId(value.toString())).toBe(value));
-      });
-
-      test('can contain positive sign', () => {
-        expect(parseId('+10')).toBe(10);
-      });
-
-      test('can contain leading and trailing whitespace', () => {
-        const values = ['10 ', ' 10', ' 10 '];
-
-        values.forEach(value => expect(parseId(value)).toBe(10));
-      });
-
-      test('min/max', () => {
-        expect(parseId(minId.toString())).toBe(minId);
-        expect(parseId(maxId.toString())).toBe(maxId);
-      });
-
-      test('interior', () => {
-        interiors.forEach(value => expect(parseId(value.toString())).toBe(value));
-      });
-    });
-  });
+  const zeroes = [0, 0.0];
 
   describe('number parameters', () => {
-    describe('invalid numbers', () => {
-      test('true decimals are not allowed', () => {
-        trueDecimals.forEach(value => expectToThrow(value));
+    describe('allowed values are returned as it is', () => {
+      test('zeroes are allowed', () => {
+        zeroes.forEach(value => expect(parseId(value)).toBe(0));
       });
 
-      test('negatives are not allowed', () => {
-        negatives.forEach(value => expectToThrow(value));
+      test('positive integers are allowed', () => {
+        positiveIntegers.forEach(value => expect(parseId(value)).toBe(value));
+      });
+
+      test('positive integer floats are allowed', () => {
+        positiveIntegerfloats.forEach(value => expect(parseId(value)).toBe(value));
+      });
+    });
+
+    describe('invalid values throw', () => {
+      test('positive floats are not allowed', () => {
+        positivefloats.forEach(value => expectToThrow(value));
+      });
+
+      test('negative values are not allowed', () => {
+        negativeIntegers.forEach(value => expectToThrow(value));
+        negativeIntegerfloats.forEach(value => expectToThrow(value));
+        negativefloats.forEach(value => expectToThrow(value));
       });
 
       test('NaN is not allowed', () => {
         expectToThrow(NaN);
       });
 
-      test('just out of range', () => {
-        expectToThrow(minId - 1);
-        expectToThrow(maxId + 1);
+      test('infinities are not allowed', () => {
+        expectToThrow(Infinity);
+        expectToThrow(-Infinity);
+      });
+    });
+  });
+
+  describe('string parameters', () => {
+    describe('allowed values are converted into numbers', () => {
+      test('zeroes are allowed', () => {
+        zeroes.forEach(value => expect(parseId(value.toString())).toBe(0));
+      });
+
+      test('positive integers are allowed', () => {
+        positiveIntegers.forEach(value => expect(parseId(value.toString())).toBe(value));
+      });
+
+      test('positive integer floats are allowed', () => {
+        positiveIntegerfloats.forEach(value => expect(parseId(value.toString())).toBe(value));
+      });
+
+      test('leading zeroes are allowed', () => {
+        const leadingZeroes = ['09', '0010', '0000098'];
+        leadingZeroes.forEach(value => expect(parseId(value)).toBe(Number(value)));
       });
     });
 
-    describe('valid numbers', () => {
-      test('numbers with decimal zero', () => {
-        decimalZeroes.forEach(value => expect(parseId(value)).toBe(value));
-      })
-
-      test('min/max', () => {
-        expect(parseId(minId)).toBe(minId);
-        expect(parseId(maxId)).toBe(maxId);
+    describe('invalid values throw', () => {
+      test('positive floats are not allowed', () => {
+        positivefloats.forEach(value => expectToThrow(value.toString()));
+      });
+      
+      test('negative values are not allowed', () => {
+        negativeIntegers.forEach(value => expectToThrow(value.toString()));
+        negativeIntegerfloats.forEach(value => expectToThrow(value.toString()));
+        negativefloats.forEach(value => expectToThrow(value.toString()));
       });
 
-      test('interior', () => {
-        interiors.forEach(value => expect(parseId(value)).toBe(value));
+      test('white space is not allowed', () => {
+        const whitespaces = ['', ' ', ' 10', '90 '];
+        whitespaces.forEach(value => expectToThrow(value));
+      });
+
+      test('letters are not allowed', () => {
+        const letters = ['a', '298h', 'e19', '4r9'];
+        letters.forEach(value => expectToThrow(value));
       });
     });
   });
 
   test('other parameters', () => {
-    const others = [null, undefined, false, true, [], [6], {}, { 1: 2 }];
+    const others = [null, undefined, false, true, [], [6], ['12'], {}, { 1: 2 }];
 
     others.forEach(value => expectToThrow(value));
   });
