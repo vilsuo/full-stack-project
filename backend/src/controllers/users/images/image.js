@@ -4,7 +4,7 @@ const fileStorage = require('../../../util/file-storage'); // importing this way
 
 const { isAllowedToViewImage, isSessionUser } = require('../../../util/middleware/auth');
 const { getNonSensitiveImage } = require('../../../util/dto');
-const { parseImagePrivacy, parseStringType } = require('../../../util/parser');
+const { parseImagePrivacy, parseStringType, parseTextType } = require('../../../util/parser');
 
 router.get('/', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
@@ -17,7 +17,7 @@ router.put('/', isSessionUser, async (req, res) => {
   // all parameters are optional
   const { title, caption, privacy } = req.body;
   if (title !== undefined)    { image.title = parseStringType(title, 'title'); }
-  if (caption !== undefined)  { image.caption = caption; }
+  if (caption !== undefined)  { image.caption = parseTextType(caption, 'caption'); }
   if (privacy !== undefined)  { image.privacy = parseImagePrivacy(privacy); }
 
   const updatedImage = await image.save();

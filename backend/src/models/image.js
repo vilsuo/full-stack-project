@@ -28,7 +28,7 @@ Image.init({
     defaultValue: '',
   },
   caption: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT, // text type stores strings of any length
     defaultValue: '',
   },
   privacy: {

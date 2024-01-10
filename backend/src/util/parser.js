@@ -36,6 +36,7 @@ const parseId = (value) => {
   return parseNonNegativeInteger(value, 'id');
 };
 
+// ENUMS
 const parseRelationType = type => {
   const relationTypes = Relation.getAttributes().type.values;
 
@@ -62,18 +63,26 @@ const parseImagePrivacy = privacy => {
   return privacy;
 };
 
-const parseStringType = (value, parameterName) => {
+// STRING TYPES
+const parseTextType = (value, parameterName) => {
   if (value === undefined) throw new ParseError(`${parameterName} is missing`);
 
   if (typeof value !== 'string') {
     throw new ParseError(`${parameterName} is not of type string`);
-  } 
-  
-  if (value.length > STRING_MAX_LENGTH) {
-    throw new ParseError(`${parameterName} has a max length of ${STRING_MAX_LENGTH}`);
   }
 
   return value;
+};
+
+const parseStringType = (value, parameterName) => {
+  const text = parseTextType(value, parameterName);
+
+  // additional length restriction
+  if (text.length > STRING_MAX_LENGTH) {
+    throw new ParseError(`${parameterName} has a max length of ${STRING_MAX_LENGTH}`);
+  }
+
+  return text;
 };
 
 module.exports = {
@@ -84,6 +93,7 @@ module.exports = {
   // SEQUELIZE DATATYPES
   parseId,          // (DATATYPES.INTEGER)
   parseStringType,  // DATATYPES.STRING
+  parseTextType,    // DATATYPES.TEXT
 
   // enums
   parseRelationType,
