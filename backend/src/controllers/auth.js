@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { cookieKey } = require('../constants');
+const { SESSION_ID } = require('../constants');
 const { User } = require('../models');
 
 const { comparePassword } = require('../util/password');
@@ -12,7 +12,7 @@ router.post('/register', async (req, res) => {
   const user = await User.create({
     name, username,
 
-    // beforeCreate hook encodes password
+    // beforeCreate hook encodes password so the password can be validated
     passwordHash: password
   });
 
@@ -65,7 +65,7 @@ router.post('/logout', async (req, res, next) => {
     if (error) return next(error);
 
     return res
-      .clearCookie(cookieKey)
+      .clearCookie(SESSION_ID)
       .send({ message: "you've been signed out" });
   });
 });

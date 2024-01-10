@@ -1,4 +1,4 @@
-const { cookieKey } = require('../../constants');
+const { SESSION_ID } = require('../../constants');
 const { User } = require('../../models');
 const { IllegalStateError } = require('../error');
 const { userFinder, imageFinder } = require('./finder');
@@ -19,7 +19,7 @@ const sessionExtractor = async (req, res, next) => {
   if (!session.user) {
     // there is no session or session is invalid/expired
     return res
-      .clearCookie(cookieKey)
+      .clearCookie(SESSION_ID)
       .status(401).send({ message: 'authentication required' });
   }
 
@@ -30,7 +30,7 @@ const sessionExtractor = async (req, res, next) => {
       if (error) return next(error);
   
       return res
-        .clearCookie(cookieKey)
+        .clearCookie(SESSION_ID)
         .status(404).send({ message: 'session user does not exist' });
     });
   }

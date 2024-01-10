@@ -3,7 +3,7 @@ const RedisStore = require('connect-redis').default;
 const { redisClient } = require('../db');
 
 const { SECRET } = require('../config');
-const { cookieKey } = require('../../constants');
+const { SESSION_ID } = require('../../constants');
 
 const sessionOptions = {
   store: new RedisStore({ client: redisClient }),
@@ -16,7 +16,7 @@ const sessionOptions = {
 
   secret: SECRET,
 
-  name: cookieKey,
+  name: SESSION_ID,
 
   cookie: {
     //maxAge: 60 * 60 * 1000, // (ms)

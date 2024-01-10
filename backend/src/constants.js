@@ -1,5 +1,5 @@
 // session
-const cookieKey = 'connect.sid';
+const SESSION_ID = 'connect.sid';
 
 // file upload
 const FILE_SIZE_LIMIT = 2097152; //1048576 1 Mb; //2097152; // 2 Mb
@@ -9,7 +9,7 @@ const DEFAULT_PAGE_NUMBER = 0;
 const DEFAULT_PAGE_SIZE = 10;
 
 module.exports = {
-  cookieKey,
+  SESSION_ID,
   
   FILE_SIZE_LIMIT,
 

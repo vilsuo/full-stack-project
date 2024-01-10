@@ -1,18 +1,18 @@
 const { User, Image, Potrait, Relation } = require('../../src/models');
-const { cookieKey } = require('../../src/constants');
+const { SESSION_ID } = require('../../src/constants');
 
 const cookieHeader = cookie => {
-  return { 'Cookie': `${cookieKey}=${cookie}` };
+  return { 'Cookie': `${SESSION_ID}=${cookie}` };
 };
 
 const get_SetCookie = response => {
   const cookie = response
     .get('set-cookie')
-    .find(value => value.startsWith(cookieKey));
+    .find(value => value.startsWith(SESSION_ID));
   
   if (cookie) {
-    // remove `${cookieKey}=` from the start:
-    return cookie.split(';')[0].substring(cookieKey.length + 1);
+    // remove `${SESSION_ID}=` from the start:
+    return cookie.split(';')[0].substring(SESSION_ID.length + 1);
   }
 
   throw new Error('"Set-Cookie" is not found');
