@@ -2,12 +2,7 @@ const router = require('express').Router({ mergeParams: true });
 
 const { Relation, User } = require('../../models');
 const { isSessionUser } = require('../../util/middleware/auth');
-const { parseId, parseRelationType } = require('../../util/middleware/parser');
-
-/*
-TODO
-- parsers for GET-methods
-*/
+const { parseId, parseRelationType } = require('../../util/parser');
 
 router.get('/', async (req, res) => {
   const user = req.foundUser;

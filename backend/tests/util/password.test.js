@@ -27,7 +27,6 @@ test('encoded password does not compare to itself', async () => {
 
   const comparisonResult = await comparePassword(encodedPassword, encodedPassword);
 
-  console.log('result', comparisonResult);
   expect(comparisonResult).toBe(false);
 });
 

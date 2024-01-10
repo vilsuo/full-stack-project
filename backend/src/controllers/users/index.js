@@ -8,7 +8,7 @@ const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
 const { isSessionUser } = require('../../util/middleware/auth');
-const { paginationParser } = require('../../util/middleware/parser');
+const { paginationParser } = require('../../util/middleware/query');
 const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { cookieKey } = require('../../constants');
 

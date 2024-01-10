@@ -1,6 +1,6 @@
 const { User, Image, Potrait } = require('../../models');
 const { IllegalStateError, ParseError } = require('../error');
-const parser = require('./parser');
+const parser = require('../parser');
 
 /**
  * Extracts the User from request parameter 'username' to request.foundUser.

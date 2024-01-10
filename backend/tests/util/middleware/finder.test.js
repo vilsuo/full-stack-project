@@ -1,7 +1,7 @@
 const { User, Image, Potrait } = require('../../../src/models');
 const { IllegalStateError, ParseError } = require('../../../src/util/error');
 const { userFinder, imageFinder, potraitFinder } = require('../../../src/util/middleware/finder');
-const parser = require('../../../src/util/middleware/parser');
+const parser = require('../../../src/util/parser');
 const { createUser } = require('../../helpers');
 
 const {
