@@ -10,7 +10,7 @@ const { userFinder } = require('../../util/middleware/finder');
 const { isSessionUser } = require('../../util/middleware/auth');
 const { pagination } = require('../../util/middleware/query');
 const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
-const { cookieKey } = require('../../constants');
+const { SESSION_ID } = require('../../constants');
 
 const getUserSearchFilter = (columnName, query) => {
   return sequelize.where(
@@ -73,7 +73,7 @@ router.delete('/:username', userFinder, isSessionUser, async (req, res, next) =>
     if (error) return next(error);
 
     return res
-      .clearCookie(cookieKey)
+      .clearCookie(SESSION_ID)
       .status(204)
       .send();
   });

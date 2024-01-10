@@ -1,13 +1,10 @@
 const router = require('express').Router({ mergeParams: true });
 
-const { isAllowedToViewImage, isSessionUser } = require('../../../util/middleware/auth');
-const { getNonSensitiveImage } = require('../../../util/dto');
 const fileStorage = require('../../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 
-/*
-TODO
-- convert put to patch?
-*/
+const { isAllowedToViewImage, isSessionUser } = require('../../../util/middleware/auth');
+const { getNonSensitiveImage } = require('../../../util/dto');
+const { parseImagePrivacy, parseStringType } = require('../../../util/parser');
 
 router.get('/', isAllowedToViewImage, async (req, res) => {
   const image = req.image;
@@ -17,10 +14,11 @@ router.get('/', isAllowedToViewImage, async (req, res) => {
 router.put('/', isSessionUser, async (req, res) => {
   const image = req.image;
 
+  // all parameters are optional
   const { title, caption, privacy } = req.body;
-  if (title !== undefined)    { image.title = title; }
+  if (title !== undefined)    { image.title = parseStringType(title, 'title'); }
   if (caption !== undefined)  { image.caption = caption; }
-  if (privacy !== undefined)  { image.privacy = privacy; }
+  if (privacy !== undefined)  { image.privacy = parseImagePrivacy(privacy); }
 
   const updatedImage = await image.save();
   return res.send(getNonSensitiveImage(updatedImage));

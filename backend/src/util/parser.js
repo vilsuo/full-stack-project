@@ -1,4 +1,5 @@
-const { Relation } = require('../models');
+const { STRING_MAX_LENGTH } = require('../constants');
+const { Relation, Image } = require('../models');
 const { ParseError } = require('./error');
 
 const parseNonNegativeInteger = (value, parameterName) => {
@@ -48,9 +49,43 @@ const parseRelationType = type => {
   return type;
 };
 
+const parseImagePrivacy = privacy => {
+  const imagePrivacies = Image.getAttributes().privacy.values;
+
+  if (privacy === undefined) {
+    throw new ParseError('image privacy is missing');
+  }
+
+  if (!imagePrivacies.includes(privacy)) {
+    throw new ParseError('invalid image privacy');
+  }
+  return privacy;
+};
+
+const parseStringType = (value, parameterName) => {
+  if (value === undefined) throw new ParseError(`${parameterName} is missing`);
+
+  if (typeof value !== 'string') {
+    throw new ParseError(`${parameterName} is not of type string`);
+  } 
+  
+  if (value.length > STRING_MAX_LENGTH) {
+    throw new ParseError(`${parameterName} has a max length of ${STRING_MAX_LENGTH}`);
+  }
+
+  return value;
+};
+
 module.exports = {
+  // numbers
   parseNonNegativeInteger,
   parsePositiveInteger,
-  parseId,
+
+  // SEQUELIZE DATATYPES
+  parseId,          // (DATATYPES.INTEGER)
+  parseStringType,  // DATATYPES.STRING
+
+  // enums
   parseRelationType,
+  parseImagePrivacy,
 };

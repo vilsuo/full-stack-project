@@ -8,6 +8,9 @@ const FILE_SIZE_LIMIT = 2097152; //1048576 1 Mb; //2097152; // 2 Mb
 const DEFAULT_PAGE_NUMBER = 0;
 const DEFAULT_PAGE_SIZE = 10;
 
+// database data types
+const STRING_MAX_LENGTH = 255;
+
 module.exports = {
   SESSION_ID,
   
@@ -15,4 +18,6 @@ module.exports = {
 
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
+
+  STRING_MAX_LENGTH,
 };
