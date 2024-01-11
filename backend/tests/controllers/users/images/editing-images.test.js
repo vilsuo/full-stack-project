@@ -161,20 +161,21 @@ describe('editing images', () => {
       });
     });
 
-    describe.only('editing other users images', () => {
+    describe('editing other users images', () => {
       const otherUsername = otherExistingUserValues.username;
-      let otherPublicImage;
-      let otherPrivateImage;
+      const otherUsersImages = {};
       
       beforeEach(async () => {
-        ({ publicImage : otherPublicImage, privateImage: otherPrivateImage } =
-          await findPublicAndPrivateImage(otherUsername)
-        );
+        const { publicImage : otherPublicImage, privateImage: otherPrivateImage } =
+          await findPublicAndPrivateImage(otherUsername);
+
+        otherUsersImages.public = otherPublicImage;
+        otherUsersImages.private = otherPrivateImage;
       });
       
       test.each(IMAGE_PRIVACIES)('can not edit a %s image', async (privacy) => {
         const responseBody = await editImage(
-          otherUsername, otherPublicImage.id, { ...newImageValues, privacy }, authHeader, 401
+          otherUsername, otherUsersImages[privacy].id, { ...newImageValues, privacy }, authHeader, 401
         );
 
         expect(responseBody.message).toBe('session user is not the owner')
