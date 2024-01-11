@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const omit = require('lodash.omit');
+const pick = require('lodash.pick');
 
 const app = require('../../../../src/app');
 const { User, Image } = require('../../../../src/models');
@@ -14,16 +15,22 @@ const {
 
 const { getNonSensitiveImage } = require('../../../../src/util/dto');
 const fileStorage = require('../../../../src/util/file-storage');
+const parser = require('../../../../src/util/parser');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
 
 /*
 TODO
-- reset mock after each test
 - test more file types
 - how to test that file was (/was) not saved to the filesystem?
 */
+
+const IMAGE_PRIVACIES = Image.getAttributes().privacy.values;
+
+const parseTextTypeSpy = jest.spyOn(parser, 'parseTextType');
+const parseStringTypeSpy = jest.spyOn(parser, 'parseStringType');
+const parseImagePrivacySpy = jest.spyOn(parser, 'parseImagePrivacy');
 
 const postImage = async (username, extraHeaders, formValues, statusCode = 201) => {
   const { filepath, ...fieldValues } = formValues;
@@ -46,16 +53,17 @@ const postImage = async (username, extraHeaders, formValues, statusCode = 201) =
 
 describe('posting images', () => {
   const formValues = {
-    ...omit(nonExistingImageValues, ['mimetype', 'originalname']),
+    ...pick(nonExistingImageValues, ['title', 'caption', 'filepath']),
     privacy: 'public'
   };
-  const { title, caption, privacy } = formValues;
+
+  const { title, caption, privacy, filepath } = formValues;
   const originalname = nonExistingImageValues.originalname;
 
   const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
-    .mockImplementation((filepath) => undefined);
+    .mockImplementation(filepath => undefined);
 
-  test('can not post without authentication', async () => {
+  test.each(IMAGE_PRIVACIES)('can not post a %s image without authentication', async (privacy) => {
     const username = existingUserValues.username;
 
     const headers = {
@@ -66,7 +74,7 @@ describe('posting images', () => {
     };
 
     const responseBody = await postImage(
-      username, headers, formValues, 401
+      username, headers, { ...formValues, privacy }, 401
     );
 
     expect(responseBody.message).toBe('authentication required');
@@ -83,18 +91,12 @@ describe('posting images', () => {
     });
 
     describe('posting to self', () => {
-      test('can post a public image', async () => {
-        const returnedImage = await postImage(postingUsersUsername, authHeader, formValues);
-
-        expect(returnedImage.privacy).toBe('public');
-      });
-
-      test('can post a private image', async () => {
+      test.each(IMAGE_PRIVACIES)('can post a %s image', async (privacy) => {
         const returnedImage = await postImage(
-          postingUsersUsername, authHeader, { ...formValues, privacy: 'private' }
+          postingUsersUsername, authHeader, { ...formValues, privacy }
         );
 
-        expect(returnedImage.privacy).toBe('private');
+        expect(returnedImage.privacy).toBe(privacy);
       });
 
       test('response contains set values', async () => {
@@ -148,26 +150,6 @@ describe('posting images', () => {
         expect(responseImage).not.toHaveProperty('filepath');
       });
 
-      test('default privacy is public', async () => {
-        const noPrivacyValue = omit(formValues, ['privacy']);
-        expect(noPrivacyValue).not.toHaveProperty('privacy');
-
-        const responseImage = await postImage(
-          postingUsersUsername, authHeader, noPrivacyValue
-        );
-
-        expect(responseImage.privacy).toBe('public');
-      });
-
-      test('title and caption are empty by default', async () => {
-        const responseImage = await postImage(
-          postingUsersUsername, authHeader, omit(formValues, ['title', 'caption'])
-        );
-
-        expect(responseImage.title).toBe('');
-        expect(responseImage.caption).toBe('');
-      });
-
       test('image must be present in the request', async () => {
         const responseBody = await postImage(
           postingUsersUsername,
@@ -185,22 +167,74 @@ describe('posting images', () => {
         expect(removeFileSpy).not.toHaveBeenCalled();
       });
 
-      describe('invalid field values', () => {
-        const invalidPrivacy = 'friends';
-        const invalidFormValues = { ...formValues, privacy: invalidPrivacy };
-
-        test('can not post an image with invalid privacy option', async () => {
-          const responseBody = await postImage(
-            postingUsersUsername, authHeader, invalidFormValues, 400
+      describe('default values', () => {
+        test('default privacy is public', async () => {
+          const noPrivacyValue = omit(formValues, ['privacy']);
+          expect(noPrivacyValue).not.toHaveProperty('privacy');
+  
+          const responseImage = await postImage(
+            postingUsersUsername, authHeader, noPrivacyValue
           );
   
-          expect(responseBody.message).toContain('invalid image privacy');
+          expect(responseImage.privacy).toBe('public');
+        });
+  
+        test('title and caption are empty by default', async () => {
+          const responseImage = await postImage(
+            postingUsersUsername, authHeader, omit(formValues, ['title', 'caption'])
+          );
+  
+          expect(responseImage.title).toBe('');
+          expect(responseImage.caption).toBe('');
+        });
+      });
+
+      describe('parsing field values', () => {
+        describe('valid field values', () => {
+          test('when the only field value is the title, the title is parsed', async () => {
+            await postImage(postingUsersUsername, authHeader, { title, filepath });
+
+            expect(parseStringTypeSpy).toHaveBeenCalledWith(title, expect.anything());
+          });
+
+          test('when the only field value is the caption, the caption is parsed', async () => {
+            await postImage(postingUsersUsername, authHeader, { caption, filepath });
+
+            expect(parseTextTypeSpy).toHaveBeenCalledWith(caption, expect.anything());
+          });
+
+          test('when the only field value is the image privacy, the privacy is parsed', async () => {
+            await postImage(postingUsersUsername, authHeader, { privacy, filepath });
+
+            expect(parseImagePrivacySpy).toHaveBeenCalledWith(privacy);
+          });
         });
 
-        test('attempt is made to remove the failed upload image from filesystem', async () => {
-          await postImage(postingUsersUsername, authHeader, invalidFormValues, 400);
-          
-          expect(removeFileSpy).toHaveBeenCalled();
+        describe('invalid field values', () => {
+          const invalidTitle = 'x'.repeat(1000);
+          const invalidPrivacy = 'hi';
+
+          test('invalid title is bad request', async () => {
+            const responseBody = await postImage(
+              postingUsersUsername, authHeader, { ...formValues, title: invalidTitle }, 400
+            );
+
+            expect(responseBody).toHaveProperty('message');
+          });
+
+          test('invalid privacy is bad request', async () => {
+            const responseBody = await postImage(
+              postingUsersUsername, authHeader, { ...formValues, privacy: invalidPrivacy }, 400
+            );
+
+            expect(responseBody).toHaveProperty('message');
+          });
+
+          // after field value parsing error an attempt is made to remove the uploaded
+          // image from filesystem
+          afterEach(async () => {
+            expect(removeFileSpy).toHaveBeenCalled()
+          });
         });
       });
 
@@ -219,10 +253,10 @@ describe('posting images', () => {
       });
     });
 
-    test('can not post image to other user', async () => {
+    test.each(IMAGE_PRIVACIES)('can not post a %s image to other user', async (privacy) => {
       const otherUsername = otherExistingUserValues.username;
       const responseBody = await postImage(
-        otherUsername, authHeader, formValues, 401
+        otherUsername, authHeader, { ...formValues,privacy }, 401
       );
 
       expect(responseBody.message).toBe('session user is not the owner');

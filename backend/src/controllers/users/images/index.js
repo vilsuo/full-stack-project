@@ -7,7 +7,7 @@ const { getNonSensitiveImage } = require('../../../util/dto');
 const logger = require('../../../util/logger');
 const fileStorage = require('../../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { imageFinder } = require('../../../util/middleware/finder');
-const { parseStringType, parseTextType, parseImagePrivacy } = require('../../../util/parser');
+const parser = require('../../../util/parser');
 
 const fileUpload = fileStorage.upload.single('image');
 
@@ -15,9 +15,9 @@ const createImage = async (filepath, file, fields, userId) => {
   const { mimetype, size, originalname } = file;
   let { title, caption, privacy } = fields;
 
-  if (title !== undefined)    { title = parseStringType(title, 'title'); }
-  if (caption !== undefined)  { caption = parseTextType(caption, 'caption'); }
-  if (privacy !== undefined)  { privacy = parseImagePrivacy(privacy); }
+  if (title !== undefined)    { title = parser.parseStringType(title, 'title'); }
+  if (caption !== undefined)  { caption = parser.parseTextType(caption, 'caption'); }
+  if (privacy !== undefined)  { privacy = parser.parseImagePrivacy(privacy); }
 
   const image = await Image.create({
     // from file
