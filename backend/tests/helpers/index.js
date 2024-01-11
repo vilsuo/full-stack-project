@@ -1,5 +1,5 @@
 const { User, Image, Potrait, Relation } = require('../../src/models');
-const { SESSION_ID } = require('../../src/constants');
+const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE } = require('../../src/constants');
 
 const cookieHeader = cookie => {
   return { 'Cookie': `${SESSION_ID}=${cookie}` };
@@ -65,12 +65,12 @@ const createImage = async (values) => {
 
 const createPublicAndPrivateImage = async (userId, { publicImageValues, privateImageValues }) => {
   const publicImage = await createImage({
-    userId, privacy: 'public',
+    userId, privacy: IMAGE_PUBLIC,
     ...publicImageValues,
   });
 
   const privateImage = await createImage({
-    userId, privacy: 'private',
+    userId, privacy: IMAGE_PRIVATE,
     ...privateImageValues,
   });
 
@@ -85,11 +85,11 @@ const findPublicAndPrivateImage = async (username) => {
   }
 
   publicImage = await Image.findOne({
-    where: { userId, privacy: 'public' }
+    where: { userId, privacy: IMAGE_PUBLIC }
   });
 
   privateImage = await Image.findOne({
-    where: { userId, privacy: 'private' }
+    where: { userId, privacy: IMAGE_PRIVATE }
   });
 
   return { publicImage, privateImage };
