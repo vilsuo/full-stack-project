@@ -64,7 +64,7 @@ const parseImagePrivacy = privacy => {
 };
 
 // STRING TYPES
-const parseTextType = (value, parameterName) => {
+const parseTextType = (value, parameterName = 'text type') => {
   if (value === undefined) throw new ParseError(`${parameterName} is missing`);
 
   if (typeof value !== 'string') {
@@ -74,7 +74,7 @@ const parseTextType = (value, parameterName) => {
   return value;
 };
 
-const parseStringType = (value, parameterName) => {
+const parseStringType = (value, parameterName = 'string type') => {
   const text = parseTextType(value, parameterName);
 
   // additional length restriction

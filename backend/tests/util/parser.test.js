@@ -1,6 +1,11 @@
-const { Relation } = require('../../src/models');
+const { STRING_MAX_LENGTH } = require('../../src/constants');
+const { Relation, Image } = require('../../src/models');
 const { ParseError } = require('../../src/util/error');
-const { parseRelationType, parseNonNegativeInteger } = require('../../src/util/parser');
+const { 
+  parseNonNegativeInteger, 
+  parseRelationType, parseImagePrivacy, 
+  parseStringType, parseTextType
+} = require('../../src/util/parser');
 
 describe('parseNonNegativeInteger', () => {
   const expectToThrow = (value) => expect(() => parseNonNegativeInteger(value))
@@ -116,28 +121,84 @@ describe('parseNonNegativeInteger', () => {
   });
 });
 
-describe('relation type parser', () => {
-  const relationTypes = Relation.getAttributes().type.values;
+describe('enum parsers', () => {
+  describe('relation type parser', () => {
+    const relationTypes = Relation.getAttributes().type.values;
 
-  const expectToThrow = (value) => expect(() => parseRelationType(value)).toThrow(ParseError);
+    const expectToThrow = (value) => expect(() => parseRelationType(value)).toThrow(ParseError);
 
-  test.each(relationTypes)('parsing valid relation type %s returns the type', (type) => {
-    expect(parseRelationType(type)).toBe(type);
+    test.each(relationTypes)('parsing valid relation type %s returns the type', (type) => {
+      expect(parseRelationType(type)).toBe(type);
+    });
+
+    test('missing relation throws error', () => {
+      expectToThrow();
+    });
+
+    test('invalid strings throws error', () => {
+      const invalidTypes = ['', 'public', 'private', 'blok', 'follower'];
+
+      invalidTypes.forEach(value => expectToThrow(value));
+    });
+
+    test('other invalid values throws error', () => {
+      const other = [false, true, undefined, [], ['follow'], relationTypes, {}];
+
+      other.forEach(value => expectToThrow(value));
+    });
   });
 
-  test('missing relation throws error', () => {
-    expectToThrow();
+  describe('image privacy parser', () => {
+    const imagePrivacies = Image.getAttributes().privacy.values;
+
+    const expectToThrow = (value) => expect(() => parseImagePrivacy(value)).toThrow(ParseError);
+
+    test.each(imagePrivacies)('parsing valid image privacy %s returns the privacy', (privacy) => {
+      expect(parseImagePrivacy(privacy)).toBe(privacy);
+    });
+
+    test('missing image privacy throws error', () => {
+      expectToThrow();
+    });
+
+    test('invalid strings throws error', () => {
+      const invalidTypes = ['', 'follow', 'privat', 'frined', 'follower'];
+
+      invalidTypes.forEach(value => expectToThrow(value));
+    });
+
+    test('other invalid values throws error', () => {
+      const other = [false, true, undefined, [], ['follow'], imagePrivacies, {}];
+
+      other.forEach(value => expectToThrow(value));
+    });
+  });
+});
+
+describe('string parsers', () => {
+  describe('text type', () => {
+    test('strings are returned as they are', () => {
+      const lengths = [1, 10, 100, 1000, 10000, 100000];
+      lengths.forEach(length => {
+        value = 'x'.repeat(length);
+        expect(parseTextType(value)).toBe(value);
+      });
+    });
+
+    test('other than strings do throw error', () => {
+      const otherTypes = [null, undefined, 10, ['10'], { '1': '2' }];
+
+      otherTypes.forEach(value =>
+        expect(() => parseTextType(value)).toThrow(ParseError)
+      );
+    });
   });
 
-  test('invalid strings throws error', () => {
-    const invalidTypes = ['', 'public', 'private', 'blok', 'follower'];
+  test(`string type length limit is ${STRING_MAX_LENGTH}`, () => {
+    const maxLengthString = 'x'.repeat(STRING_MAX_LENGTH);
+    expect(parseStringType(maxLengthString)).toBe(maxLengthString);
 
-    invalidTypes.forEach(value => expectToThrow(value));
-  });
-
-  test('other invalid values throws error', () => {
-    const other = [false, true, undefined, [], ['follow'], relationTypes, {}];
-
-    other.forEach(value => expectToThrow(value));
+    const tooLongString = maxLengthString + 'x';
+    expect(() => parseStringType(tooLongString)).toThrow(ParseError);
   });
 });
