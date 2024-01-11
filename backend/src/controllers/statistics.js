@@ -1,5 +1,6 @@
 const router = require('express').Router();
 
+const { IMAGE_PRIVACIES } = require('../constants');
 const { User, Image, Potrait, Relation } = require('../models');
 
 const getUserCounts = async () => {
@@ -32,7 +33,7 @@ const getImageCounts = async () => {
   );
 
   const defaultImageCounts = Object.assign(
-    {}, ...Image.getAttributes().privacy.values.map(privacy => ({ [privacy]: 0 }))
+    {}, ...IMAGE_PRIVACIES.map(privacy => ({ [privacy]: 0 }))
   );
 
   return { ...defaultImageCounts, ...imageCounts };

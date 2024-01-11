@@ -8,6 +8,7 @@ const logger = require('../../../util/logger');
 const fileStorage = require('../../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { imageFinder } = require('../../../util/middleware/finder');
 const parser = require('../../../util/parser');
+const { IMAGE_PUBLIC } = require('../../../constants');
 
 const fileUpload = fileStorage.upload.single('image');
 
@@ -35,7 +36,7 @@ const createImage = async (filepath, file, fields, userId) => {
 router.get('/', async (req, res) => {
   const foundUser = req.foundUser;
 
-  const where = { userId: foundUser.id, privacy: 'public' };
+  const where = { userId: foundUser.id, privacy: IMAGE_PUBLIC };
 
   if (req.session.user) {
     const userId = req.session.user.id;

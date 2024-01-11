@@ -2,7 +2,7 @@
 const SESSION_ID = 'connect.sid';
 
 // file upload
-const FILE_SIZE_LIMIT = 2097152; //1048576 1 Mb; //2097152; // 2 Mb
+const FILE_SIZE_LIMIT = 2097152; // = 2 Mb, 1048576 = 1 Mb
 
 // pagination
 const DEFAULT_PAGE_NUMBER = 0;
