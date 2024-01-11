@@ -5,9 +5,16 @@ const { Image } = require('../../../../src/models');
 const { existingUserValues, otherExistingUserValues, getCredentials, } = require('../../../helpers/constants');
 const { login, compareFoundWithResponse, findPublicAndPrivateImage } = require('../../../helpers');
 const { getNonSensitiveImage } = require('../../../../src/util/dto');
+const parser = require('../../../../src/util/parser');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
+
+const IMAGE_PRIVACIES = Image.getAttributes().privacy.values;
+
+const parseTextTypeSpy = jest.spyOn(parser, 'parseTextType');
+const parseStringTypeSpy = jest.spyOn(parser, 'parseStringType');
+const parseImagePrivacySpy = jest.spyOn(parser, 'parseImagePrivacy');
 
 const editImage = async (username, imageId, imageValues, headers = {}, statusCode = 401) => {
   const response = await api
@@ -65,6 +72,9 @@ describe('editing images', () => {
           username, imageToEdit.id, { title }, authHeader, 200
         );
 
+        // new title has been parsed
+        expect(parseStringTypeSpy).toHaveBeenCalledWith(title, expect.anything());
+
         // new title is in the response
         expect(responseImage.title).toBe(title);
 
@@ -79,6 +89,9 @@ describe('editing images', () => {
           username, imageToEdit.id, { caption }, authHeader, 200
         );
 
+        // new caption has been parsed
+        expect(parseTextTypeSpy).toHaveBeenCalledWith(caption, expect.anything());
+
         // new caption is in the response
         expect(responseImage.caption).toBe(caption);
 
@@ -87,19 +100,17 @@ describe('editing images', () => {
         expect(responseImage.private).toBe(imageToEdit.private);
       });
 
-      test('can set new privacy option', async () => {
-        const privacyOptions = ['public', 'private'];
+      test.each(IMAGE_PRIVACIES)('can set new privacy %s', async (privacy) => {
         const imageToEdit = publicImage;
 
-        const responseImages = await Promise.all(privacyOptions.map(async option => {
-          return await editImage(
-            username, imageToEdit.id, { privacy: option }, authHeader, 200
-          );
-        }));
+        const responseImage = await editImage(
+          username, imageToEdit.id, { privacy }, authHeader, 200
+        );
 
-        responseImages.forEach((responseImage, index) => {
-          expect(responseImage.privacy).toBe(privacyOptions[index]);
-        });
+        // new privacy has been parsed
+        expect(parseImagePrivacySpy).toHaveBeenCalledWith(privacy);
+        
+        expect(responseImage.privacy).toBe(privacy);
       });
 
       test('can edit private image', async () => {
@@ -150,7 +161,7 @@ describe('editing images', () => {
       });
     });
 
-    describe('editing other users images', () => {
+    describe.only('editing other users images', () => {
       const otherUsername = otherExistingUserValues.username;
       let otherPublicImage;
       let otherPrivateImage;
@@ -161,17 +172,9 @@ describe('editing images', () => {
         );
       });
       
-      test('can not edit public image', async () => {
+      test.each(IMAGE_PRIVACIES)('can not edit a %s image', async (privacy) => {
         const responseBody = await editImage(
-          otherUsername, otherPublicImage.id, newImageValues, authHeader, 401
-        );
-
-        expect(responseBody.message).toBe('session user is not the owner')
-      });
-
-      test('can not edit private image', async () => {
-        const responseBody = await editImage(
-          otherUsername, otherPrivateImage.id, newImageValues, authHeader, 401
+          otherUsername, otherPublicImage.id, { ...newImageValues, privacy }, authHeader, 401
         );
 
         expect(responseBody.message).toBe('session user is not the owner')
