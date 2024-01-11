@@ -1,11 +1,13 @@
-const { STRING_MAX_LENGTH } = require('../../src/constants');
-const { Relation, Image } = require('../../src/models');
+const { STRING_MAX_LENGTH, IMAGE_PRIVACIES, IMAGE_PUBLIC } = require('../../src/constants');
+const { Relation } = require('../../src/models');
 const { ParseError } = require('../../src/util/error');
 const { 
   parseNonNegativeInteger, 
   parseRelationType, parseImagePrivacy, 
   parseStringType, parseTextType
 } = require('../../src/util/parser');
+
+const RELATION_FOLLOW = 'follow';
 
 describe('parseNonNegativeInteger', () => {
   const expectToThrow = (value) => expect(() => parseNonNegativeInteger(value))
@@ -149,11 +151,9 @@ describe('enum parsers', () => {
   });
 
   describe('image privacy parser', () => {
-    const imagePrivacies = Image.getAttributes().privacy.values;
-
     const expectToThrow = (value) => expect(() => parseImagePrivacy(value)).toThrow(ParseError);
 
-    test.each(imagePrivacies)('parsing valid image privacy %s returns the privacy', (privacy) => {
+    test.each(IMAGE_PRIVACIES)('parsing valid image privacy %s returns the privacy', (privacy) => {
       expect(parseImagePrivacy(privacy)).toBe(privacy);
     });
 
@@ -162,13 +162,13 @@ describe('enum parsers', () => {
     });
 
     test('invalid strings throws error', () => {
-      const invalidTypes = ['', 'follow', 'privat', 'frined', 'follower'];
+      const invalidTypes = ['', RELATION_FOLLOW, IMAGE_PUBLIC + 'x', 'frined', 'follower'];
 
       invalidTypes.forEach(value => expectToThrow(value));
     });
 
     test('other invalid values throws error', () => {
-      const other = [false, true, undefined, [], ['follow'], imagePrivacies, {}];
+      const other = [false, true, undefined, [], [RELATION_FOLLOW], IMAGE_PRIVACIES, {}];
 
       other.forEach(value => expectToThrow(value));
     });

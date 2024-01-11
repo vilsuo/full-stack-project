@@ -1,5 +1,6 @@
 const { User, Image, Potrait } = require('../../../src/models');
 const { IllegalStateError, ParseError } = require('../../../src/util/error');
+const { IMAGE_PRIVACIES } = require('../../../src/constants');
 const { userFinder, imageFinder, potraitFinder } = require('../../../src/util/middleware/finder');
 const parser = require('../../../src/util/parser');
 const { createUser } = require('../../helpers');
@@ -17,8 +18,6 @@ const  {
   existingUserValues, otherExistingUserValues, 
   disabledExistingUserValues, nonExistingUserValues,
 } = require('../../helpers/constants');
-
-const privacyOptions = Image.getAttributes().privacy.values;
 
 const next = jest.fn();
 
@@ -169,7 +168,7 @@ describe('image finder', () => {
       request[userProperty] = await User.findOne({ where: { username } });
     });
 
-    describe.each(privacyOptions)('when "%s" image belongs to the found user', (privacy) => {
+    describe.each(IMAGE_PRIVACIES)('when "%s" image belongs to the found user', (privacy) => {
 
       let image;
 
@@ -198,7 +197,7 @@ describe('image finder', () => {
       });
     });
   
-    describe.each(privacyOptions)('when "%s" image does not belong to the found user', (privacy) => {
+    describe.each(IMAGE_PRIVACIES)('when "%s" image does not belong to the found user', (privacy) => {
       let image;
 
       let response;
