@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../util/db');
+const { IMAGE_PRIVACIES, IMAGE_PUBLIC } = require('../constants');
 
 class Image extends Model {};
 
@@ -32,13 +33,13 @@ Image.init({
     defaultValue: '',
   },
   privacy: {
-    type: DataTypes.ENUM('public', 'private'),
-    defaultValue: 'public',
+    type: DataTypes.ENUM(...IMAGE_PRIVACIES),
+    defaultValue: IMAGE_PUBLIC,
     allowNull: false,
     validate: {
       isIn: {
-        args: [['public', 'private']],
-        msg: 'image must be public or private'
+        args: [IMAGE_PRIVACIES],
+        msg: `image must be have privacy of ${IMAGE_PRIVACIES.join('|')}`
       },
     },
   },

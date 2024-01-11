@@ -11,6 +11,11 @@ const DEFAULT_PAGE_SIZE = 10;
 // database data types
 const STRING_MAX_LENGTH = 255;
 
+// database enums
+const IMAGE_PUBLIC = 'public';
+const IMAGE_PRIVATE = 'private';
+const IMAGE_PRIVACIES = [IMAGE_PUBLIC, IMAGE_PRIVATE];
+
 module.exports = {
   SESSION_ID,
   
@@ -20,4 +25,7 @@ module.exports = {
   DEFAULT_PAGE_SIZE,
 
   STRING_MAX_LENGTH,
+
+  IMAGE_PUBLIC, IMAGE_PRIVATE,
+  IMAGE_PRIVACIES,
 };

@@ -1,5 +1,5 @@
-const { STRING_MAX_LENGTH } = require('../constants');
-const { Relation, Image } = require('../models');
+const { STRING_MAX_LENGTH, IMAGE_PRIVACIES } = require('../constants');
+const { Relation } = require('../models');
 const { ParseError } = require('./error');
 
 const parseNonNegativeInteger = (value, parameterName) => {
@@ -51,13 +51,11 @@ const parseRelationType = type => {
 };
 
 const parseImagePrivacy = privacy => {
-  const imagePrivacies = Image.getAttributes().privacy.values;
-
   if (privacy === undefined) {
     throw new ParseError('image privacy is missing');
   }
 
-  if (!imagePrivacies.includes(privacy)) {
+  if (!IMAGE_PRIVACIES.includes(privacy)) {
     throw new ParseError('invalid image privacy');
   }
   return privacy;
@@ -68,7 +66,7 @@ const parseTextType = (value, parameterName = 'text type') => {
   if (value === undefined) throw new ParseError(`${parameterName} is missing`);
 
   if (typeof value !== 'string') {
-    throw new ParseError(`${parameterName} is not of type string`);
+    throw new ParseError(`${parameterName} is not a string`);
   }
 
   return value;

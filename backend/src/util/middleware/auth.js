@@ -1,4 +1,4 @@
-const { SESSION_ID } = require('../../constants');
+const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE } = require('../../constants');
 const { User } = require('../../models');
 const { IllegalStateError } = require('../error');
 const { userFinder, imageFinder } = require('./finder');
@@ -56,16 +56,16 @@ const isAllowedToViewImage = async (req, res, next) => {
   const image = req.image;
 
   switch (image.privacy) {
-    case 'public':
+    case IMAGE_PUBLIC:
       return next();
 
-    case 'private':
+    case IMAGE_PRIVATE:
       // only authenticated user can view the image, if the authenticated
       // user is the owner of the image
       return await sessionExtractor(req, res, () => {
         const user = req.user;
         if (user.id !== image.userId) {
-          return res.status(401).send({ message: 'image is private' });
+          return res.status(401).send({ message: `image is ${IMAGE_PRIVATE}` });
         }
 
         return next();
