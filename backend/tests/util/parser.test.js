@@ -1,5 +1,4 @@
-const { STRING_MAX_LENGTH, IMAGE_PRIVACIES, IMAGE_PUBLIC } = require('../../src/constants');
-const { Relation } = require('../../src/models');
+const { STRING_MAX_LENGTH, IMAGE_PRIVACIES, IMAGE_PUBLIC, RELATION_FOLLOW, RELATION_TYPES } = require('../../src/constants');
 const { ParseError } = require('../../src/util/error');
 const { 
   parseNonNegativeInteger, 
@@ -7,7 +6,6 @@ const {
   parseStringType, parseTextType
 } = require('../../src/util/parser');
 
-const RELATION_FOLLOW = 'follow';
 
 describe('parseNonNegativeInteger', () => {
   const expectToThrow = (value) => expect(() => parseNonNegativeInteger(value))
@@ -125,11 +123,9 @@ describe('parseNonNegativeInteger', () => {
 
 describe('enum parsers', () => {
   describe('relation type parser', () => {
-    const relationTypes = Relation.getAttributes().type.values;
-
     const expectToThrow = (value) => expect(() => parseRelationType(value)).toThrow(ParseError);
 
-    test.each(relationTypes)('parsing valid relation type %s returns the type', (type) => {
+    test.each(RELATION_TYPES)('parsing valid relation type %s returns the type', (type) => {
       expect(parseRelationType(type)).toBe(type);
     });
 
@@ -138,13 +134,13 @@ describe('enum parsers', () => {
     });
 
     test('invalid strings throws error', () => {
-      const invalidTypes = ['', 'public', 'private', 'blok', 'follower'];
+      const invalidTypes = ['', IMAGE_PUBLIC, 'private', 'blok', 'follower'];
 
       invalidTypes.forEach(value => expectToThrow(value));
     });
 
     test('other invalid values throws error', () => {
-      const other = [false, true, undefined, [], ['follow'], relationTypes, {}];
+      const other = [false, true, undefined, [], ['follow'], RELATION_TYPES, {}];
 
       other.forEach(value => expectToThrow(value));
     });

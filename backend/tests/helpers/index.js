@@ -1,5 +1,5 @@
 const { User, Image, Potrait, Relation } = require('../../src/models');
-const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE } = require('../../src/constants');
+const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE, RELATION_TYPES } = require('../../src/constants');
 
 const cookieHeader = cookie => {
   return { 'Cookie': `${SESSION_ID}=${cookie}` };
@@ -117,9 +117,7 @@ const findPotrait = async (username) => {
 // RELATIONS
 
 const createRelationsOfAllTypes = async (sourceUserId, targetUserId) => {
-  const relationTypes = Relation.getAttributes().type.values;
-
-  return await Promise.all(relationTypes.map(async type => 
+  return await Promise.all(RELATION_TYPES.map(async type => 
     await Relation.create({ sourceUserId, targetUserId, type })
   ));
 };

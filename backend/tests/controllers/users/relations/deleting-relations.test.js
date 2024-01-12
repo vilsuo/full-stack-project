@@ -7,14 +7,12 @@ const {
 } = require('../../../helpers/constants');
 
 const { login, compareFoundArrayWithResponseArray, createRelationsOfAllTypes } = require('../../../helpers');
+const { RELATION_TYPES } = require('../../../../src/constants');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
 
-const relationTypes = Relation.getAttributes().type.values;
-
-const deleteRelation = async (username, relationId, headers, statusCode = 204) => {
-
+const deleteRelation = async (username, relationId, headers, statusCode) => {
   const response = await api
     .delete(`${baseUrl}/${username}/relations/${relationId}`)
     .set(headers)
@@ -42,7 +40,7 @@ describe('deleting relations', () => {
       .forEach(relation => relations[relation.type] = relation);
   });
 
-  test.each(relationTypes)
+  test.each(RELATION_TYPES)
   ('can not delete of relation of type %s without authentication', async (type) => {
     const responseBody = await deleteRelation(
       username, relations[type].id, {}, 401
@@ -59,34 +57,36 @@ describe('deleting relations', () => {
     });
 
     describe('deleting relations where the user is the source', () => {
-      test.each(relationTypes)
+      test.each(RELATION_TYPES)
       ('can delete relation of type %s', async (type) => {
-        await deleteRelation(username, relations[type].id, authHeader);
+        await deleteRelation(username, relations[type].id, authHeader, 204);
       });
 
-      describe.each(relationTypes)
+      describe.each(RELATION_TYPES)
       ('after succesully deleting a relation of type %s', (type) => {
 
-        let relationToDeleteId;
+        let relationToDelete;
 
         beforeEach(() => {
-          relationToDeleteId = relations[type].id;
+          relationToDelete = relations[type];
         });
 
         test('relation can not be found after deleting', async () => {
-          await deleteRelation(username, relationToDeleteId, authHeader);
+          await deleteRelation(username, relationToDelete.id, authHeader, 204);
 
-          const foundRelation = await Relation.findByPk(relationToDeleteId);
+          const foundRelation = await Relation.findByPk(relationToDelete.id);
           expect(foundRelation).toBeFalsy();
         });
 
         test('relation with the same type is not removed the other way', async () => {
           // create relation with the same type in the other direction
           const relation = await Relation.create({ 
-            sourceUserId: otherUserId, targetUserId: userId, type 
+            sourceUserId: relationToDelete.targetUserId, 
+            targetUserId: relationToDelete.sourceUserId,
+            type 
           });
 
-          await deleteRelation(username, relationToDeleteId, authHeader);
+          await deleteRelation(username, relationToDelete.id, authHeader, 204);
 
           // the relation is not deleted
           const foundRelation = await Relation.findByPk(relation.id);
@@ -94,7 +94,7 @@ describe('deleting relations', () => {
         });
 
         test('users other relations with the same user are not removed', async () => {
-          await deleteRelation(username, relationToDeleteId, authHeader);
+          await deleteRelation(username, relationToDelete.id, authHeader, 204);
 
           const otherRelationTypes = Object.keys(relations)
             .filter(relationType => relationType !== type);
@@ -109,16 +109,18 @@ describe('deleting relations', () => {
         });
 
         test('neither the source or the target user are removed', async () => {
-          const foundUser = await User.findByPk(userId);
-          const foundOtherUser = await User.findByPk(otherUserId);
+          await deleteRelation(username, relationToDelete.id, authHeader, 204);
 
-          expect(foundUser).not.toBeFalsy();
-          expect(foundOtherUser).not.toBeFalsy();
+          const foundSourceUser = await User.findByPk(relationToDelete.sourceUserId);
+          const foundTargetUser = await User.findByPk(relationToDelete.targetUserId);
+
+          expect(foundSourceUser).not.toBeFalsy();
+          expect(foundTargetUser).not.toBeFalsy();
         });
       });
     });
 
-    test.each(relationTypes)
+    test.each(RELATION_TYPES)
     ('can not delete relation of type %s where the user is the target', async (type) => {
       const relation = await Relation.create({
         sourceUserId: otherUserId, targetUserId: userId, type

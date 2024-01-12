@@ -6,7 +6,7 @@ const { IMAGE_PRIVACIES, IMAGE_PUBLIC } = require('../../../../src/constants');
 const fileStorage = require('../../../../src/util/file-storage');
 
 const { existingUserValues, otherExistingUserValues, getCredentials } = require('../../../helpers/constants');
-const { login, getUsersImageCount, findPublicAndPrivateImage, } = require('../../../helpers');
+const { login, findPublicAndPrivateImage, } = require('../../../helpers');
 
 const api = supertest(app);
 const baseUrl = '/api/users';

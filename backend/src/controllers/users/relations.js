@@ -2,7 +2,7 @@ const router = require('express').Router({ mergeParams: true });
 
 const { Relation, User } = require('../../models');
 const { isSessionUser } = require('../../util/middleware/auth');
-const { parseId, parseRelationType } = require('../../util/parser');
+const parser = require('../../util/parser');
 
 router.get('/', async (req, res) => {
   const user = req.foundUser;
@@ -10,10 +10,10 @@ router.get('/', async (req, res) => {
 
   const searchFilters = {};
   if (type !== undefined) {
-    searchFilters.type = parseRelationType(type);
+    searchFilters.type = parser.parseRelationType(type);
   }
   if (targetUserId !== undefined) {
-    searchFilters.targetUserId = parseId(targetUserId);
+    searchFilters.targetUserId = parser.parseId(targetUserId);
   }
 
   const relations = await Relation.findAll({
@@ -31,10 +31,10 @@ router.get('/reverse', async (req, res) => {
 
   const searchFilters = {};
   if (type !== undefined) {
-    searchFilters.type = parseRelationType(type);
+    searchFilters.type = parser.parseRelationType(type);
   }
   if (sourceUserId !== undefined) {
-    searchFilters.sourceUserId = parseId(sourceUserId);
+    searchFilters.sourceUserId = parser.parseId(sourceUserId);
   }
 
   const relations = await Relation.findAll({
@@ -50,8 +50,8 @@ router.post('/', isSessionUser, async (req, res) => {
   const sourceUser = req.user;
 
   // parse request body
-  const type = parseRelationType(req.body.type);
-  const targetUserId = parseId(req.body.targetUserId);
+  const type = parser.parseRelationType(req.body.type);
+  const targetUserId = parser.parseId(req.body.targetUserId);
 
   // target user must exist
   const targetUser = await User.findByPk(targetUserId);
@@ -94,7 +94,7 @@ router.delete('/:relationId', isSessionUser, async (req, res) => {
   const { relationId } = req.params;
   const sourceUser = req.user;
 
-  const id = parseId(relationId);
+  const id = parser.parseId(relationId);
 
   const nDestroyed = await Relation.destroy({ 
     where: { id, sourceUserId: sourceUser.id } 
