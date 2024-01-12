@@ -11,7 +11,10 @@ const { login, createRelationsOfAllTypes } = require('../../helpers');
 const api = supertest(app);
 const baseUrl = '/api/users';
 
-const deleteUser = async (username, headers = {}, statusCode = 401) => {
+const removeUserFilesSpy = jest.spyOn(fileStorage, 'removeUserFiles')
+  .mockImplementation(userId => undefined);
+
+const deleteUser = async (username, headers, statusCode) => {
   return await api
     .delete(`${baseUrl}/${username}`)
     .set(headers)
@@ -19,9 +22,6 @@ const deleteUser = async (username, headers = {}, statusCode = 401) => {
 };
 
 describe('deleting users', () => {
-  const removeUserFilesSpy = jest.spyOn(fileStorage, 'removeUserFiles')
-    .mockImplementation(userId => undefined);
-
   const credentials = getCredentials(existingUserValues);
   const username = credentials.username;
 

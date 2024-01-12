@@ -11,6 +11,9 @@ const { login, getUsersImageCount, findPublicAndPrivateImage, } = require('../..
 const api = supertest(app);
 const baseUrl = '/api/users';
 
+const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
+  .mockImplementation(filepath => undefined);
+
 const deleteImage = async (username, imageId, headers, statusCode) => {
   const response = await api
     .delete(`${baseUrl}/${username}/images/${imageId}`)
@@ -21,9 +24,6 @@ const deleteImage = async (username, imageId, headers, statusCode) => {
 };
 
 describe('deleting images', () => {
-  const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
-    .mockImplementation(filepath => undefined);
-
   const credentials = getCredentials(existingUserValues);
   const username = existingUserValues.username;
   const userImages = {};
@@ -74,7 +74,7 @@ describe('deleting images', () => {
 
         test('users image count is decreased by one', async () => {
           const imageCountBefore = Object.keys(userImages).length;
-          const imageCountAfter = await getUsersImageCount(username);
+          const imageCountAfter = await Image.count({ where: { userId: imageToDelete.userId } });
 
           expect(imageCountAfter).toBe(imageCountBefore - 1);
         });

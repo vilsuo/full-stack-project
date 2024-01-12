@@ -45,6 +45,8 @@ const createUser = async ({ name, username, password, disabled = false }) => {
   });
 };
 
+// IMAGES
+
 /**
  * Creates a new {@link Image} from the parameters. The resulting image will
  *  have undefined 'filepath'.
@@ -95,15 +97,7 @@ const findPublicAndPrivateImage = async (username) => {
   return { publicImage, privateImage };
 };
 
-const getUsersImageCount = async username => {
-  const usersImageCount = await Image.count({
-    include: {
-      model: User,
-      where: { username },
-    },
-  });
-  return usersImageCount;
-};
+// POTRAITS
 
 // missing 'filepath'
 const createPotrait = async (userId, potraitValues) => {
@@ -120,6 +114,8 @@ const findPotrait = async (username) => {
   return await Potrait.findOne({ where: { userId } });
 };
 
+// RELATIONS
+
 const createRelationsOfAllTypes = async (sourceUserId, targetUserId) => {
   const relationTypes = Relation.getAttributes().type.values;
 
@@ -127,6 +123,8 @@ const createRelationsOfAllTypes = async (sourceUserId, targetUserId) => {
     await Relation.create({ sourceUserId, targetUserId, type })
   ));
 };
+
+// COMPARISONS
 
 const compareFoundArrayWithResponseArray = (foundNonSensitiveValuesArray, responseArray) => {
   expect(responseArray).toHaveLength(foundNonSensitiveValuesArray.length);
@@ -156,7 +154,6 @@ module.exports = {
   createPotrait,
   findPotrait,
   createRelationsOfAllTypes,
-  getUsersImageCount,
   compareFoundArrayWithResponseArray,
   compareFoundWithResponse,
 };

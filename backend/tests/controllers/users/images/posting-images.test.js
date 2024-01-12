@@ -9,7 +9,7 @@ const {
 } = require('../../../helpers/constants');
 
 const {
-  login, compareFoundWithResponse, getUsersImageCount
+  login, compareFoundWithResponse
 } = require('../../../helpers');
 
 const { getNonSensitiveImage } = require('../../../../src/util/dto');

@@ -2,9 +2,9 @@ const omit = require('lodash.omit');
 const supertest = require('supertest');
 const app = require('../../src/app');
 
-const { User, Potrait, Relation } = require('../../src/models');
+const { User, Potrait, Relation, Image } = require('../../src/models');
 const { 
-  get_SetCookie, compareFoundWithResponse, login, getUsersImageCount
+  get_SetCookie, compareFoundWithResponse, login,
 } = require('../helpers');
 const {
   existingUserValues,
@@ -16,7 +16,7 @@ const { getNonSensitiveUser } = require('../../src/util/dto');
 
 const api = supertest(app);
 
-const register = async (details, statusCode = 201) => {
+const register = async (details, statusCode) => {
   const response = await api
     .post('/api/auth/register')
     .send(details)
@@ -26,11 +26,27 @@ const register = async (details, statusCode = 201) => {
   return response.body;
 };
 
+const loginWithResponse = async (credentials, statusCode) => {
+  return await api
+    .post('/api/auth/login')
+    .send(credentials)
+    .expect(statusCode)
+    .expect('Content-Type', /application\/json/);
+};
+
+const logout = async (headers = {}, statusCode) => {
+  return await api 
+    .post('/api/auth/logout')
+    .set(headers)
+    .expect(statusCode)
+    .expect('Content-Type', /application\/json/);
+};
+
 const credentials = getCredentials(existingUserValues);
 
 describe('registering', () => {
   test('can register', async () => {
-    const responseBody = await register(nonExistingUserValues);
+    const responseBody = await register(nonExistingUserValues, 201);
   
     expect(responseBody.id).toBeDefined();
   
@@ -40,7 +56,7 @@ describe('registering', () => {
   });
 
   test('user can be found after registering', async () => {
-    const responseUser = await register(nonExistingUserValues);
+    const responseUser = await register(nonExistingUserValues, 201);
     const foundUser = await User.findByPk(responseUser.id);
 
     compareFoundWithResponse(getNonSensitiveUser(foundUser), responseUser);
@@ -49,37 +65,37 @@ describe('registering', () => {
   test('registering increments the user count', async () => {
     const userCountBefore = await User.count();
 
-    await register(nonExistingUserValues);
+    await register(nonExistingUserValues, 201);
 
     const userCountAfter = await User.count();
     expect(userCountAfter).toBe(userCountBefore + 1);
   });
 
   test('hashed password is not returned', async () => {
-    const responseBody = await register(nonExistingUserValues);
+    const responseBody = await register(nonExistingUserValues, 201);
   
     expect(responseBody).not.toHaveProperty('passwordHash');
   });
 
   test('new user does not have any images', async () => {
     // create a new user that does not have any images
-    const newUser = await register(nonExistingUserValues);
+    const newUser = await register(nonExistingUserValues, 201);
 
-    const imageCount = await getUsersImageCount(newUser.username);
+    const imageCount = await Image.count({ where: { userId: newUser.id } });
   
     expect(imageCount).toBe(0);
   });
 
   test('new user does not have a potrait', async () => {
     // create a new user that does not have any images
-    const newUser = await register(nonExistingUserValues);
+    const newUser = await register(nonExistingUserValues, 201);
   
     const potrait = await Potrait.findOne({ where: { userId: newUser.id }});
     expect(potrait).toBeFalsy();
   });
 
   test('new user does not have any relations', async () => {
-    const newUser = await register(nonExistingUserValues);
+    const newUser = await register(nonExistingUserValues, 201);
 
     const asRelationSource = await Relation.findAll({ where: { sourceUserId: newUser.id } });
     const asRelationTarget = await Relation.findAll({ where: { targetUserId: newUser.id } });
@@ -160,22 +176,14 @@ describe('registering', () => {
   });
 });
 
-const loginWithResponse = async (credentials, statusCode = 200) => {
-  return await api
-    .post('/api/auth/login')
-    .send(credentials)
-    .expect(statusCode)
-    .expect('Content-Type', /application\/json/);
-};
-
 describe('loggin in', () => {
   describe('successfull login', () => {
     test('can log in with a registered user', async () => {
-      await loginWithResponse(credentials);
+      await loginWithResponse(credentials, 200);
     });
 
     test('authentication cookie is set', async () => {
-      const response = await loginWithResponse(credentials);
+      const response = await loginWithResponse(credentials, 200);
 
       const setCookie = get_SetCookie(response);
 
@@ -184,7 +192,7 @@ describe('loggin in', () => {
     });
 
     test('the id, name and username of the logged in user are returned', async () => {
-      const response = await loginWithResponse(credentials);
+      const response = await loginWithResponse(credentials, 200);
       const returnedUser = response.body;
 
       // response contains the logged in users id, name and username
@@ -229,14 +237,6 @@ describe('loggin in', () => {
   });
 });
 
-const logout = async (headers = {}, statusCode = 200) => {
-  return await api 
-    .post('/api/auth/logout')
-    .set(headers)
-    .expect(statusCode)
-    .expect('Content-Type', /application\/json/);
-};
-
 describe('loggin out', () => {
   let authHeader;
 
@@ -245,14 +245,14 @@ describe('loggin out', () => {
   });
   
   test('can logout with cookie set (logged in)', async () => {
-    const response = await logout(authHeader);
+    const response = await logout(authHeader, 200);
     
     // cookie is cleared
     expect(get_SetCookie(response)).toBe('');
   });
 
   test('can logout without cookie set (not logged in)', async () => {
-    const response = await logout();
+    const response = await logout({}, 200);
 
     // cookie is cleared
     expect(get_SetCookie(response)).toBe('');

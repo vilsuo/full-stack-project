@@ -2,11 +2,15 @@ const supertest = require('supertest');
 const pick = require('lodash.pick');
 const app = require('../../../../src/app');
 const { Image } = require('../../../../src/models');
-const { existingUserValues, otherExistingUserValues, getCredentials, nonExistingImageValues, } = require('../../../helpers/constants');
+const { 
+  getCredentials, 
+  existingUserValues, otherExistingUserValues, // users
+  nonExistingImageValues, // images
+} = require('../../../helpers/constants');
 const { login, compareFoundWithResponse, findPublicAndPrivateImage } = require('../../../helpers');
 const { getNonSensitiveImage } = require('../../../../src/util/dto');
 const parser = require('../../../../src/util/parser');
-const { IMAGE_PRIVACIES } = require('../../../../src/constants');
+const { IMAGE_PRIVACIES, IMAGE_PUBLIC, IMAGE_PRIVATE } = require('../../../../src/constants');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -39,8 +43,8 @@ describe('editing images', () => {
   beforeEach(async () => {
     const { publicImage, privateImage } = await findPublicAndPrivateImage(username);
 
-    userImages.public = publicImage;
-    userImages.private = privateImage;
+    userImages[IMAGE_PUBLIC] = publicImage;
+    userImages[IMAGE_PRIVATE] = privateImage;
   });
 
   describe('without authentication', () => {
@@ -151,11 +155,10 @@ describe('editing images', () => {
       const otherUsersImages = {};
       
       beforeEach(async () => {
-        const { publicImage : otherPublicImage, privateImage: otherPrivateImage } =
-          await findPublicAndPrivateImage(otherUsername);
+        const { publicImage, privateImage } = await findPublicAndPrivateImage(otherUsername);
 
-        otherUsersImages.public = otherPublicImage;
-        otherUsersImages.private = otherPrivateImage;
+        otherUsersImages[IMAGE_PUBLIC] = publicImage;
+        otherUsersImages[IMAGE_PRIVATE] = privateImage;
       });
       
       test.each(IMAGE_PRIVACIES)('can not edit a %s image', async (privacy) => {
