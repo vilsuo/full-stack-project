@@ -50,7 +50,7 @@ const getRelationCounts = async () => {
   );
 
   const defaultRelationCounts = Object.assign(
-    {}, ...RELATION_TYPES.type.values.map(type => ({ [type]: 0 }))
+    {}, ...RELATION_TYPES.map(type => ({ [type]: 0 }))
   );
 
   return { ...defaultRelationCounts, ...relationCounts };
