@@ -16,6 +16,10 @@ const IMAGE_PUBLIC = 'public';
 const IMAGE_PRIVATE = 'private';
 const IMAGE_PRIVACIES = [IMAGE_PUBLIC, IMAGE_PRIVATE];
 
+const RELATION_FOLLOW = 'follow';
+const RELATION_BLOCK = 'block';
+const RELATION_TYPES = [RELATION_FOLLOW, RELATION_BLOCK];
+
 module.exports = {
   SESSION_ID,
   
@@ -28,4 +32,7 @@ module.exports = {
 
   IMAGE_PUBLIC, IMAGE_PRIVATE,
   IMAGE_PRIVACIES,
+
+  RELATION_FOLLOW, RELATION_BLOCK,
+  RELATION_TYPES,
 };

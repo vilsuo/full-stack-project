@@ -1,5 +1,4 @@
-const { STRING_MAX_LENGTH, IMAGE_PRIVACIES } = require('../constants');
-const { Relation } = require('../models');
+const { STRING_MAX_LENGTH, IMAGE_PRIVACIES, RELATION_TYPES } = require('../constants');
 const { ParseError } = require('./error');
 
 const parseNonNegativeInteger = (value, parameterName) => {
@@ -38,13 +37,11 @@ const parseId = (value) => {
 
 // ENUMS
 const parseRelationType = type => {
-  const relationTypes = Relation.getAttributes().type.values;
-
   if (type === undefined) {
     throw new ParseError('relation type is missing');
   }
 
-  if (!relationTypes.includes(type)) {
+  if (!RELATION_TYPES.includes(type)) {
     throw new ParseError('invalid relation type');
   }
   return type;

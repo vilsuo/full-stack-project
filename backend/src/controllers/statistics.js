@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const { IMAGE_PRIVACIES } = require('../constants');
+const { IMAGE_PRIVACIES, RELATION_TYPES } = require('../constants');
 const { User, Image, Potrait, Relation } = require('../models');
 
 const getUserCounts = async () => {
@@ -50,7 +50,7 @@ const getRelationCounts = async () => {
   );
 
   const defaultRelationCounts = Object.assign(
-    {}, ...Relation.getAttributes().type.values.map(type => ({ [type]: 0 }))
+    {}, ...RELATION_TYPES.type.values.map(type => ({ [type]: 0 }))
   );
 
   return { ...defaultRelationCounts, ...relationCounts };

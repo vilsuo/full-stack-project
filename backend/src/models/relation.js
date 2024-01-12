@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../util/db');
+const { RELATION_TYPES } = require('../constants');
 
 class Relation extends Model {}
 
@@ -10,12 +11,12 @@ Relation.init({
     primaryKey: true,
   },
   type: {
-    type: DataTypes.ENUM('follow', 'block'),
+    type: DataTypes.ENUM(...RELATION_TYPES),
     allowNull: false,
     validate: {
       isIn: {
-        args: [['follow', 'block']],
-        msg: 'relation type must be follow or block'
+        args: [RELATION_TYPES],
+        msg: `relation type must be one of [${RELATION_TYPES.join('|')}]`
       },
     },
   },
