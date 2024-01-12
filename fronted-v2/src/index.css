@@ -48,16 +48,15 @@ main {
   margin: 40px auto;
 }
 
-/* navbar */
-header nav {
+/* nav */
+nav {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
   padding: 6px;
-  gap: 10px;
+  gap: 20px;
   border: var(--border);
   border-radius: var(--border-radius);
   background-color: var(--secondary);
@@ -70,6 +69,9 @@ header nav {
     &.active {
       background-color: var(--primary);
     }
+  }
+  & .dropdown {
+    margin-left: auto;
   }
 }
 
@@ -88,7 +90,7 @@ header nav {
 .avatar {
   object-fit: cover;
   object-position: top center;
-  border-radius:50%;
+  border-radius: 50%;
   width: 40px;
   height: 40px;
 }
@@ -140,6 +142,15 @@ header nav {
 
   & p {
     margin: 0;
+  }
+}
+
+.file-input {
+  & div:first-of-type {
+    display: flex;
+    /*justify-content: center;*/
+    align-items: center;
+    margin: 20px 0;
   }
 }
 

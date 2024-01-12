@@ -3,9 +3,14 @@ const ErrorAlert = ({ message, clearMessage }) => {
     return null;
   }
 
+  let messages = message;
+  if (message.constructor === Array) {
+    messages = message.join('. ');
+  }
+
   return (
     <div className='alert error'>
-      <p>{message}</p>
+      <p>{messages}</p>
       <button className='close-btn' onClick={clearMessage}></button>
     </div>
   );

@@ -120,7 +120,7 @@ export const autoLogin = createAsyncThunk(
       return { user, ...details };
 
     } catch (error) {
-      return thunkApi.rejectWithValue(error.response.data.message);
+      return thunkApi.rejectWithValue(getErrorMessage(error));
     }
   },
 );
@@ -135,7 +135,7 @@ export const login = createAsyncThunk(
       return { user, ...details };
 
     } catch (error) {
-      return thunkApi.rejectWithValue(error.response.data.message);
+      return thunkApi.rejectWithValue(getErrorMessage(error));
     }
   },
 );
@@ -147,7 +147,7 @@ export const logout = createAsyncThunk(
       return await authService.logout();
 
     } catch (error) {
-      return thunkApi.rejectWithValue(error.response.data.message);
+      return thunkApi.rejectWithValue(getErrorMessage(error));
     }
   },
 );

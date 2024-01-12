@@ -12,6 +12,7 @@ import {
 import RootLayout from './layouts/RootLayout';
 import SearchLayout from './layouts/SearchLayout';
 import UserLayout, { userLoader } from './layouts/UserLayout';
+import SettingsLayout from './layouts/SettingsLayout';
 
 // PAGES
 import Home from './pages/Home';
@@ -25,9 +26,17 @@ import About, { statisticsLoader } from './pages/About';
 // user
 import UserErrorBoundary from './pages/user/UserErrorBoundary';
 import Profile, { imageLoader } from './pages/user/Profile';
-import Settings from './pages/user/Settings';
+// user settings
+import SettingsPotrait from './pages/user/settings/SettingsPotrait';
+import SettingsOther from './pages/user/settings/SettingsOther';
 // other
 import ErrorPage from './pages/ErrorPage';
+
+/*
+TODO
+- change reducer error messages
+- is potrait reducer needed?
+*/
 
 const ProtectedRoute = () => {
   const { user, authenticatedUser } = useOutletContext();
@@ -56,7 +65,10 @@ const router = createBrowserRouter(
         >
           <Route path='profile' element={<Profile />} loader={imageLoader} />
           <Route element={<ProtectedRoute />}>
-            <Route path='settings' element={<Settings />} />
+            <Route path='settings' element={<SettingsLayout />}>
+              <Route path='potrait' element={<SettingsPotrait />} />
+              <Route path='other' element={<SettingsOther />} />
+            </Route>
           </Route>
         </Route>
       </Route>

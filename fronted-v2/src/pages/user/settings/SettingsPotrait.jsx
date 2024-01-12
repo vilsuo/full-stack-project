@@ -1,9 +1,7 @@
-import { useOutletContext } from 'react-router-dom';
-
 import { useRef, useState } from 'react';
+import ErrorAlert from '../../../components/ErrorAlert';
+import { changePotrait, removePotrait } from '../../../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
-import { changePotrait, removePotrait } from '../../reducers/auth';
-import ErrorAlert from '../../components/ErrorAlert';
 
 const FileInput = ({ upload }) => {
   const [file, setFile] = useState();
@@ -31,22 +29,21 @@ const FileInput = ({ upload }) => {
   };
 
   return (
-    <div>
+    <div className='file-input'>
       <div>
         <input 
           type='file'
           ref={inputRef}
           onChange={handleFileChange}
         />
-        <button type='close-btn' disabled={!file} onClick={handleReset}>×</button>
+        { file && <button className='close-btn' onClick={handleReset} /> }
       </div>
-
       <button disabled={!file} onClick={handleUpload}>Upload</button>
     </div>
   );
 };
 
-const PotraitSettings = ({ user }) => {
+const SettingsPotrait = () => {
   const potrait = useSelector(state => state.auth.potrait);
   const dispatch = useDispatch();
 
@@ -69,28 +66,20 @@ const PotraitSettings = ({ user }) => {
   };
 
   return (
-    <div>
+    <div className='container'>
       <ErrorAlert message={message} clearMessage={() => setMessage('')} />
 
-      <p>Change potrait</p>
-      <FileInput upload={handleUpload} />
+      <div>
+        <p>Change potrait</p>
+        <FileInput upload={handleUpload} />
+      </div>
 
-      <p>Remove potrait</p>
-      <button disabled={!potrait} onClick={handleRemove}>Remove</button>
+      { potrait && <div>
+        <p>Remove potrait</p>
+        <button onClick={handleRemove}>Remove</button>
+      </div>}
     </div>
   );
 };
 
-const Settings = () => {
-  const { user, authenticatedUser } = useOutletContext();
-
-  return (
-    <div className='settings'>
-      <h3>Settings</h3>
-
-      <PotraitSettings user={user} />
-    </div>
-  );
-};
-
-export default Settings;
+export default SettingsPotrait;

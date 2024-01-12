@@ -28,7 +28,7 @@ const Register = () => {
 
     try {
       await authService.register({ name, username, password });
-      navigate('/auth/login');
+      navigate('/login');
 
     } catch (error) {
       const { message: returnedMessage } = error.response.data;
