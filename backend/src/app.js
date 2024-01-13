@@ -14,6 +14,7 @@ const statisticsRouter = require('./controllers/statistics');
 const app = express();
 
 // serve static content
+app.use(express.static('dist'))
 app.use('/static', express.static('public'));
 
 // MIDDLEWARE
