@@ -15,8 +15,13 @@ const getUser = async (username) => {
   return data;
 };
 
+const deleteUser = async (username) => {
+  const { data } = await axios.delete(`${BASE_URL}/${username}`);
+  return data;
+};
 
 export default {
   getUsers,
   getUser,
+  deleteUser,
 };

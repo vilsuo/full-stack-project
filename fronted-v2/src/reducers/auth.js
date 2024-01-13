@@ -19,6 +19,11 @@ const initialState = {
 const authSlice = createSlice({
   name: 'auth',
   initialState,
+  reducers: {
+    resetAll: (state) => {
+      return initialState;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // AUTO-LOGIN
@@ -87,6 +92,8 @@ const authSlice = createSlice({
       })
   },
 });
+
+export const { resetAll } = authSlice.actions;
 
 const getUserDetails = async (user) => {
   const { username } = user;
