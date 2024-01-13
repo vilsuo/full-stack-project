@@ -70,7 +70,7 @@ nav {
       background-color: var(--primary);
     }
   }
-  & .dropdown {
+  &>div {
     margin-left: auto;
   }
 }

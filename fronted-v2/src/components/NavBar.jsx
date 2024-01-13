@@ -8,7 +8,7 @@ const Potrait = ({ user, onClick }) => {
 
   return (
     <button className='potrait-btn' onClick={onClick}>
-      <span>{user.username}</span>
+      <span>{username}</span>
       <img className='avatar' 
         src='https://www.wikipedia.org/static/apple-touch/wikipedia.png'
       />
@@ -45,10 +45,13 @@ const NavBar = ({ user }) => {
       <NavLink to='/'>Home</NavLink>
       <NavLink to='search'>Search</NavLink>
       <NavLink to='about'>About</NavLink>
-      { user
-        ? <LoggedInMenu user={user} />
-        : <NavLink to='login'>Login</NavLink>
-      }
+
+      <div>
+        { user
+          ? <LoggedInMenu user={user} />
+          : <NavLink to='login'>Login</NavLink>
+        }
+      </div>
     </nav>
   );
 };
