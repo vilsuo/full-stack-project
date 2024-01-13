@@ -70,12 +70,14 @@ const SettingsPotrait = () => {
       <ErrorAlert message={message} clearMessage={() => setMessage('')} />
 
       <div>
-        <p>Change potrait</p>
+        <h3>Change potrait</h3>
+        <p>Changing a potrait will <strong>delete</strong> the current potrait if it exists.</p>
         <FileInput upload={handleUpload} />
       </div>
 
       { potrait && <div>
-        <p>Remove potrait</p>
+        <h3>Remove potrait</h3>
+        <p>The potrait will be deleted <strong>permanently!</strong></p>
         <button onClick={handleRemove}>Remove</button>
       </div>}
     </div>
