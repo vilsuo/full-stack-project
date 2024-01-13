@@ -18,6 +18,8 @@ const sessionOptions = {
 
   name: SESSION_ID,
 
+  domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
+
   cookie: {
     //maxAge: 60 * 60 * 1000, // (ms)
 
