@@ -1,36 +1,41 @@
 import { useDispatch } from 'react-redux';
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { login } from '../reducers/auth';
-import ErrorAlert from '../components/ErrorAlert';
+import Alert from '../components/Alert';
 
 const Login = () => {
-  const [message, setMessage] = useState(null);
+  const [alert, setAlert] = useState({});
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const dispatch = useDispatch();
-  const location = useLocation();
+  //const location = useLocation();
   const navigate = useNavigate();
 
-  const clearMessage = () => setMessage(null);
+  const clearAlert = () => setAlert({});
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-    clearMessage();
+    clearAlert();
     dispatch(login({ username, password }))
       .unwrap()
-      .then((auth) => {
+      .then(() => {
         /*
         const { from } = location.state || { from: { pathname: '/' } };
         navigate(from, { replace: true });
         */
         navigate('/');
       })
-      .catch((error) => {
-        setMessage(error);
+      .catch(rejectedValueError => {
+        setAlert({
+          type: 'error',
+          prefix: 'Login failed',
+          details: rejectedValueError,
+        });
         setPassword('');
       });
   };
@@ -39,7 +44,7 @@ const Login = () => {
     <div className='login container'>
       <h3>Login</h3>
 
-      <ErrorAlert message={message} clearMessage={clearMessage} />
+      <Alert alert={alert} clearAlert={clearAlert} />
 
       <form method='post' onSubmit={handleSubmit}>
         <label>

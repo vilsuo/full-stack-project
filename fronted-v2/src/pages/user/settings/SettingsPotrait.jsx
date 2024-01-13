@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import ErrorAlert from '../../../components/ErrorAlert';
+import Alert from '../../../components/Alert';
 import { changePotrait, removePotrait } from '../../../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -47,31 +47,49 @@ const SettingsPotrait = () => {
   const potrait = useSelector(state => state.auth.potrait);
   const dispatch = useDispatch();
 
-  const [message, setMessage] = useState('');
+  const [alert, setAlert] = useState({});
+
+  const clearAlert = () => setAlert({});
 
   const handleUpload  = async (formData) => {
     try {
       await dispatch(changePotrait(formData)).unwrap();
-    } catch (error) {
-      setMessage(`Potrait upload failed: ${error}.`);
+      setAlert({
+        type: 'success',
+        prefix: 'Potrait uploaded'
+      });
+    } catch (rejectedValueError) {
+      setAlert({
+        type: 'error',
+        prefix: 'Potrait upload failed',
+        details: rejectedValueError,
+      });
     }
   };
 
-  const handleRemove  = async (formData) => {
+  const handleRemove  = async () => {
     try {
       await dispatch(removePotrait()).unwrap();
-    } catch (error) {
-      setMessage(`Removing potrait failed: ${error}.`);
+      setAlert({
+        type: 'success',
+        prefix: 'Potrait removed'
+      });
+    } catch (rejectedValueError) {
+      setAlert({
+        type: 'error',
+        prefix: 'Removing potrait failed',
+        details: rejectedValueError,
+      });
     }
   };
 
   return (
     <div className='container'>
-      <ErrorAlert message={message} clearMessage={() => setMessage('')} />
+      <Alert alert={alert} clearAlert={clearAlert} />
 
       <div>
         <h3>Change potrait</h3>
-        <p>Changing a potrait will <strong>delete</strong> the current potrait if it exists.</p>
+        <p>Changing the potrait will <strong>delete</strong> the current potrait if it exists.</p>
         <FileInput upload={handleUpload} />
       </div>
 

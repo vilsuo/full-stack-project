@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../services/auth';
 import potraitService from '../services/potrait';
 import relationsService from '../services/relations';
+import { createErrorMessage } from '../util/error';
 
 /*
 TODO
@@ -20,9 +21,7 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    resetAll: (state) => {
-      return initialState;
-    },
+    resetAll: () => initialState,
   },
   extraReducers: (builder) => {
     builder
@@ -32,9 +31,6 @@ const authSlice = createSlice({
 
         return { ...state, user, potrait, relations };
       })
-      .addCase(autoLogin.rejected, (state, action) => {
-        return state;
-      })
 
       // LOGIN
       .addCase(login.fulfilled, (state, action) => {
@@ -42,17 +38,11 @@ const authSlice = createSlice({
 
         return { ...state, user, potrait, relations };
       })
-      .addCase(login.rejected, (state, action) => {
-        return state;
-      })
 
       // LOGOUT
       .addCase(logout.fulfilled, (state, action) => {
         // reset all values
         return initialState;
-      })
-      .addCase(logout.rejected, (state, action) => {
-        return state;
       })
 
       // POTRAIT
@@ -61,14 +51,8 @@ const authSlice = createSlice({
 
         return { ...state, potrait };
       })
-      .addCase(changePotrait.rejected, (state, action) => {
-        return state;
-      })
       .addCase(removePotrait.fulfilled, (state, action) => {
         return { ...state, potrait: null };
-      })
-      .addCase(removePotrait.rejected, (state, action) => {
-        return state;
       })
 
       // RELATIONS
@@ -78,17 +62,11 @@ const authSlice = createSlice({
 
         return { ...state, relations };
       })
-      .addCase(addRelation.rejected, (state, action) => {
-        return state;
-      })
       .addCase(removeRelation.fulfilled, (state, action) => {
         const relationId = action.payload;
         const relations = state.relations.filter(relation => relation.id !== relationId);
         
         return { ...state, relations };
-      })
-      .addCase(removeRelation.rejected, (state, action) => {
-        return state;
       })
   },
 });
@@ -123,11 +101,10 @@ export const autoLogin = createAsyncThunk(
     try {
       const user = await authService.autoLogin();
       const details = await getUserDetails(user);
-
       return { user, ...details };
 
     } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error));
+      return thunkApi.rejectWithValue(createErrorMessage(error));
     }
   },
 );
@@ -138,11 +115,10 @@ export const login = createAsyncThunk(
     try {
       const user = await authService.login(credentials);
       const details = await getUserDetails(user);
-
       return { user, ...details };
 
     } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error));
+      return thunkApi.rejectWithValue(createErrorMessage(error));
     }
   },
 );
@@ -154,7 +130,7 @@ export const logout = createAsyncThunk(
       return await authService.logout();
 
     } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error));
+      return thunkApi.rejectWithValue(createErrorMessage(error));
     }
   },
 );
@@ -167,7 +143,7 @@ export const changePotrait = createAsyncThunk(
       return await potraitService.putPotrait(username, formData);
 
     } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error));
+      return thunkApi.rejectWithValue(createErrorMessage(error));
     }
   }
 );
@@ -180,7 +156,7 @@ export const removePotrait = createAsyncThunk(
       return await potraitService.removePotrait(username);
 
     } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error));
+      return thunkApi.rejectWithValue(createErrorMessage(error));
     }
   }
 );
@@ -193,7 +169,7 @@ export const addRelation = createAsyncThunk(
       return await relationsService.addRelation(username, targetUserId, type);
 
     } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error));
+      return thunkApi.rejectWithValue(createErrorMessage(error));
     }
   }
 );
@@ -204,32 +180,12 @@ export const removeRelation = createAsyncThunk(
     try {
       const { username } = thunkApi.getState().auth.user;
       await relationsService.removeRelation(username, relationId);
-
       return relationId;
 
     } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error));
+      return thunkApi.rejectWithValue(createErrorMessage(error));
     }
   }
 );
-
-const getErrorMessage = (error) => {
-  const { response, request } = error;
-  
-  if (response) {
-    // The request was made and the server responded with a status code
-    // that falls out of the range of 2xx
-
-    return response.data.message || 'something went wrong';
-
-  } else if (request) {
-    // The request was made but no response was received
-    return 'server time out';
-
-  } else {
-    // Something happened in setting up the request that triggered an Error
-    return 'something went wrong while setting up the request'
-  }
-};
 
 export default authSlice.reducer;

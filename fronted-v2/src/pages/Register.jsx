@@ -2,10 +2,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/auth';
 import { useState } from 'react';
-import ErrorAlert from '../components/ErrorAlert';
+import Alert from '../components/Alert';
+import { createErrorMessage } from '../util/error';
 
 const Register = () => {
-  const [message, setMessage] = useState(null);
+  const [alert, setAlert] = useState({});
+
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -13,14 +15,18 @@ const Register = () => {
 
   const navigate = useNavigate();
 
-  const clearMessage = () => setMessage(null);
+  const clearAlert = () => setAlert({});
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    clearMessage();
+    clearAlert();
 
     if (password !== password2) {
-      setMessage('Passwords do not match.');
+      setAlert({
+        type: 'error',
+        prefix: 'Registering failed',
+        details: 'Passwords do not match'
+      });
       setPassword('');
       setPassword2('');
       return;
@@ -31,8 +37,11 @@ const Register = () => {
       navigate('/login');
 
     } catch (error) {
-      const { message: returnedMessage } = error.response.data;
-      setMessage(returnedMessage);
+      setAlert({ 
+        type: 'error',
+        prefix: 'Registering failed',
+        details: createErrorMessage(error),
+      });
     }
   };
 
@@ -40,7 +49,7 @@ const Register = () => {
     <div className='register container'>
       <h3>Register</h3>
 
-      <ErrorAlert message={message} clearMessage={clearMessage} />
+      <Alert alert={alert} clearAlert={clearAlert} />
 
       <form method='post' onSubmit={handleSubmit}>
         <label>
