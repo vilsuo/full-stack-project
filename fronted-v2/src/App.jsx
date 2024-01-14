@@ -1,11 +1,12 @@
 import { 
-  createBrowserRouter,
+  //createBrowserRouter,
   Route, 
   createRoutesFromElements,
   RouterProvider,
   Navigate,
   useOutletContext,
-  Outlet, 
+  Outlet,
+  createHashRouter, 
 } from 'react-router-dom';
 
 // LAYOUTS
@@ -48,7 +49,7 @@ const ProtectedRoute = () => {
   return <Outlet context={{ user, authenticatedUser }} />;
 };
 
-const router = createBrowserRouter(
+const router = createHashRouter(
   createRoutesFromElements(
     <Route path='/' element={<RootLayout />}>
       <Route index element={<Home />} />

@@ -23,7 +23,7 @@ const sessionOptions = {
 
     // cookie is not sent on cross-site requests, but is sent when a user is
     // navigating to the origin site from an external site
-    sameSite: 'none',//'lax',
+    sameSite: 'lax', // 'none',
 
     // cookie is inaccessible to the JavaScript Document.cookie API
     httpOnly: true,
