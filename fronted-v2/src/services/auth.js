@@ -15,6 +15,7 @@ const login = async credentials => {
   const response = await axios.post(
     `${baseUrl}/login`,
     credentials,
+    { withCredentials: true }
   );
 
   return response.data;

@@ -18,14 +18,12 @@ const sessionOptions = {
 
   name: SESSION_ID,
 
-  domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
-
   cookie: {
     //maxAge: 60 * 60 * 1000, // (ms)
 
     // cookie is not sent on cross-site requests, but is sent when a user is
     // navigating to the origin site from an external site
-    sameSite: 'lax',
+    sameSite: 'none',//'lax',
 
     // cookie is inaccessible to the JavaScript Document.cookie API
     httpOnly: true,
