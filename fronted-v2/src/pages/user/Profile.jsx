@@ -36,6 +36,10 @@ const ImageForm = ({ user, addImage }) => {
     setCaption('');
     // do not reset privacy
 
+    handleFileReset();
+  };
+
+  const handleFileReset = () => {
     setFile(null);
     inputRef.current.value = '';
   };
@@ -126,7 +130,7 @@ const ImageForm = ({ user, addImage }) => {
               onChange={handleFileChange}
               required
             />
-            { file && <button className='close-btn' onClick={handleFormReset} /> }
+            { file && <button className='close-btn' onClick={handleFileReset} /> }
           </div>
         </div>
 
