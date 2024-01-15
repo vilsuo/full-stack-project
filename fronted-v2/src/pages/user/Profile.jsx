@@ -136,7 +136,37 @@ const ImageForm = ({ user, addImage }) => {
   );
 };
 
+const FilterGroup = ({ filter, setFilter }) => {
+
+  const FilterOptions = [
+    { 'value': 'none', 'label': 'All' },
+    ...IMAGE_PRIVACIES,
+  ];
+
+  return (
+    <label>
+      <span>Filter:</span>
+      <div className='radio-group'>
+        {FilterOptions.map(option => (
+          <div key={`filter-privacy-${option.value}`} className='radio'>
+              <input
+                type='radio'
+                name='filter'
+                value={option.value}
+                id={`radio-filter-privacy-${option.value}`}
+                checked={filter === option.value}
+                onChange={ ({ target}) => setFilter(target.value) }
+              />
+              <label htmlFor={`radio-filter-privacy-${option.value}`}>{option.label}</label>
+          </div>
+          ))}
+      </div>
+    </label>
+  );
+};
+
 const ImageList = ({ user, images, showExtra }) => {
+  const [filter, setFilter] = useState('none');
 
   const navigate = useNavigate();
 
@@ -149,6 +179,8 @@ const ImageList = ({ user, images, showExtra }) => {
     <div className='container'>
       <h4>Images</h4>
 
+      { showExtra && <FilterGroup filter={filter} setFilter={setFilter} /> }
+
       <table className='image-table navigable'>
         <thead>
           <tr>
@@ -158,15 +190,18 @@ const ImageList = ({ user, images, showExtra }) => {
           </tr>
         </thead>
         <tbody>
-          {images.map(image => (
-            <tr key={image.id} onClick={() => handleClick(image)}>
-              { showExtra && <td className='table-icon icon'>
-                { image.privacy === IMAGE_PRIVATE.value && <FaLock /> }
-              </td> }
-              <td className='title'>{image.title}</td>
-              <td className='date'>{util.formatDate(image.createdAt)}</td>
-            </tr>
-          ))}
+          {images
+            .filter(image => (filter === 'none') ? true : image.privacy === filter)
+            .map(image => (
+              <tr key={image.id} onClick={() => handleClick(image)}>
+                { showExtra && <td className='table-icon icon'>
+                  { image.privacy === IMAGE_PRIVATE.value && <FaLock /> }
+                </td> }
+                <td className='title'>{image.title}</td>
+                <td className='date'>{util.formatDate(image.createdAt)}</td>
+              </tr>
+            ))
+          }
         </tbody>
       </table>
     </div>
