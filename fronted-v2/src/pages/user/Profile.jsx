@@ -1,13 +1,13 @@
 import { useLoaderData, useOutletContext } from 'react-router-dom';
 
 import imagesService from '../../services/images';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createErrorMessage } from '../../util/error';
 import Alert from '../../components/Alert';
 
 export const imageLoader = async ({ params }) => {
   const { username } = params;
-
+  console.log('loader run')
   return await imagesService.getImages(username);
 };
 
@@ -15,7 +15,7 @@ const IMAGE_PUBLIC = { value: 'public', label: 'Public' };
 const IMAGE_PRIVATE = { value: 'private', label: 'Private' };
 const IMAGE_PRIVACIES = [IMAGE_PUBLIC, IMAGE_PRIVATE];
 
-const ImageForm = ({ authenticatedUser }) => {
+const ImageForm = ({ authenticatedUser, addImage }) => {
 
   // alert
   const [alert, setAlert] = useState({});
@@ -55,6 +55,7 @@ const ImageForm = ({ authenticatedUser }) => {
       formData.append('image', file, file.name);
 
       const image = await imagesService.createImage(authenticatedUser.username, formData);
+      addImage(image);
 
       setAlert({
         type: 'success',
@@ -134,15 +135,24 @@ const ImageForm = ({ authenticatedUser }) => {
 
 const Profile = () => {
   const { user, authenticatedUser } = useOutletContext();
-  const images = useLoaderData();
+  const [images, setImages] = useState([]);
+
+  const loadedImages = useLoaderData();
+  useEffect(() => {
+    setImages(loadedImages);
+  }, [loadedImages]);
+
+  const addImage = image => setImages([ ...images, image ]);
+
+  const isOwnPage =  authenticatedUser && (authenticatedUser.id === user.id);
 
   return (
     <div className='profile'>
       <h3>Profile of {user.username}</h3>
 
-      { authenticatedUser && (authenticatedUser.id === user.id) && <p>Own page</p> }
-
-      <ImageForm authenticatedUser={authenticatedUser} />
+      { isOwnPage && (
+        <ImageForm authenticatedUser={authenticatedUser} addImage={addImage} />
+      )}
 
       <h4>Images</h4>
       <ul>
