@@ -1,20 +1,23 @@
 import { useRef, useState } from 'react';
-import Alert from '../../../components/Alert';
 import { changePotrait, removePotrait } from '../../../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
+import Alert from '../../../components/Alert';
 
-const FileInput = ({ upload }) => {
+const SettingsPotrait = () => {
+  const potrait = useSelector(state => state.auth.potrait);
+  const dispatch = useDispatch();
+
+  const [alert, setAlert] = useState({});
+
+  // file
   const [file, setFile] = useState();
   const inputRef = useRef();
 
-  const handleUpload = async () => {
-    if (file) {
-      const formData = new FormData();
-      formData.append('image', file, file.name);
+  const clearAlert = () => setAlert({});
 
-      await upload(formData);
-      handleReset();
-    }
+  const handleReset = () => {
+    setFile(null);
+    inputRef.current.value = '';
   };
 
   const handleFileChange = (event) => {
@@ -23,41 +26,17 @@ const FileInput = ({ upload }) => {
     }
   };
 
-  const handleReset = () => {
-    setFile(null);
-    inputRef.current.value = '';
-  };
-
-  return (
-    <div className='file-input'>
-      <div>
-        <input 
-          type='file'
-          ref={inputRef}
-          onChange={handleFileChange}
-        />
-        { file && <button className='close-btn' onClick={handleReset} /> }
-      </div>
-      <button disabled={!file} onClick={handleUpload}>Upload</button>
-    </div>
-  );
-};
-
-const SettingsPotrait = () => {
-  const potrait = useSelector(state => state.auth.potrait);
-  const dispatch = useDispatch();
-
-  const [alert, setAlert] = useState({});
-
-  const clearAlert = () => setAlert({});
-
-  const handleUpload  = async (formData) => {
+  const handleUpload  = async () => {
     try {
+      const formData = new FormData();
+      formData.append('image', file, file.name);
+
       await dispatch(changePotrait(formData)).unwrap();
       setAlert({
         type: 'success',
         prefix: 'Potrait uploaded'
       });
+      handleReset();
     } catch (rejectedValueError) {
       setAlert({
         type: 'error',
@@ -87,12 +66,26 @@ const SettingsPotrait = () => {
     <div className='container'>
       <Alert alert={alert} clearAlert={clearAlert} />
 
+      {/* uploading the potrait */}
       <div>
         <h3>Change potrait</h3>
         <p>Changing the potrait will <strong>delete</strong> the current potrait if it exists.</p>
-        <FileInput upload={handleUpload} />
+
+        <div>
+          <div className='file-input'>
+            <input 
+              type='file'
+              ref={inputRef}
+              onChange={handleFileChange}
+            />
+            { file && <button className='close-btn' onClick={handleReset} /> }
+          </div>
+
+          <button disabled={!file} onClick={handleUpload}>Upload</button>
+        </div>
       </div>
 
+      {/* removing the potrait */}
       { potrait && <div>
         <h3>Remove potrait</h3>
         <p>The potrait will be deleted <strong>permanently!</strong></p>
