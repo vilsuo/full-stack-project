@@ -1,13 +1,15 @@
-import { useLoaderData, useOutletContext } from 'react-router-dom';
+import { useLoaderData, useNavigate, useOutletContext } from 'react-router-dom';
 
 import imagesService from '../../services/images';
+import util from '../../util';
 import { useEffect, useRef, useState } from 'react';
 import { createErrorMessage } from '../../util/error';
 import Alert from '../../components/Alert';
 
+import { FaLock } from 'react-icons/fa';
+
 export const imageLoader = async ({ params }) => {
   const { username } = params;
-  console.log('loader run')
   return await imagesService.getImages(username);
 };
 
@@ -15,7 +17,7 @@ const IMAGE_PUBLIC = { value: 'public', label: 'Public' };
 const IMAGE_PRIVATE = { value: 'private', label: 'Private' };
 const IMAGE_PRIVACIES = [IMAGE_PUBLIC, IMAGE_PRIVATE];
 
-const ImageForm = ({ authenticatedUser, addImage }) => {
+const ImageForm = ({ user, addImage }) => {
 
   // alert
   const [alert, setAlert] = useState({});
@@ -46,6 +48,7 @@ const ImageForm = ({ authenticatedUser, addImage }) => {
 
   const handleSubmit  = async (event) => {
     event.preventDefault();
+    const { username } = user;
 
     try {
       const formData = new FormData();
@@ -54,7 +57,7 @@ const ImageForm = ({ authenticatedUser, addImage }) => {
       formData.append('privacy', privacy);
       formData.append('image', file, file.name);
 
-      const image = await imagesService.createImage(authenticatedUser.username, formData);
+      const image = await imagesService.createImage(username, formData);
       addImage(image);
 
       setAlert({
@@ -133,6 +136,43 @@ const ImageForm = ({ authenticatedUser, addImage }) => {
   );
 };
 
+const ImageList = ({ user, images, showExtra }) => {
+
+  const navigate = useNavigate();
+
+  const handleClick = (image) => {
+    const { username } = user;
+    navigate(`/users/${username}/images/${image.id}`);
+  };
+
+  return (
+    <div className='container'>
+      <h4>Images</h4>
+
+      <table className='image-table navigable'>
+        <thead>
+          <tr>
+            { showExtra && <th className='icon'></th> }
+            <th className='title'>Title</th>
+            <th className='date'>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {images.map(image => (
+            <tr key={image.id} onClick={() => handleClick(image)}>
+              { showExtra && <td className='table-icon icon'>
+                { image.privacy === IMAGE_PRIVATE.value && <FaLock /> }
+              </td> }
+              <td className='title'>{image.title}</td>
+              <td className='date'>{util.formatDate(image.createdAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 const Profile = () => {
   const { user, authenticatedUser } = useOutletContext();
   const [images, setImages] = useState([]);
@@ -144,24 +184,17 @@ const Profile = () => {
 
   const addImage = image => setImages([ ...images, image ]);
 
-  const isOwnPage =  authenticatedUser && (authenticatedUser.id === user.id);
+  const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
 
   return (
     <div className='profile'>
       <h3>Profile of {user.username}</h3>
 
       { isOwnPage && (
-        <ImageForm authenticatedUser={authenticatedUser} addImage={addImage} />
+        <ImageForm user={user} addImage={addImage} />
       )}
 
-      <h4>Images</h4>
-      <ul>
-        {images.map(image => 
-          <li key={image.id}>
-            {image.title}, privacy: {image.privacy}
-          </li>
-        )}
-      </ul>
+      <ImageList user={user} images={images} showExtra={isOwnPage} />
     </div>
   );
 };

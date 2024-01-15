@@ -320,13 +320,33 @@ table {
 
   & th,
   & td {
-    text-align: center;
+    /*max-width: 100px;*/
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: black;
+    padding-left: 10px;
+
+    /* SPECIAL COLUMNS */
+    &.icon {
+      width: 30px;
+    }
+
+    &.title {
+      width: auto;
+    }
+
+    &.date {
+      width: 100px;
+    }
+  }
+
+  & tbody tr:nth-child(odd) {
+    background-color: #dde2eb;
   }
 
   /* SPECIAL TABLES */
-
-  &.users-table {
+  &.navigable {
     & tbody > tr:hover {
       background-color: var(--btn-bg);
     }
@@ -334,6 +354,18 @@ table {
 
   &.count-table {
     width: 200px;
+  }
+
+  /* TABLE ICONS */
+
+  & .table-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &> * {
+      fill: darkgrey;
+    }
   }
 }
 

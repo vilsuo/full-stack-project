@@ -10,12 +10,12 @@ const UsersTable = ({ users }) => {
   };
 
   return (
-    <table className='users-table'>
+    <table className='navigable'>
       <thead>
         <tr>
           <th>Name</th>
           <th>Username</th>
-          <th>Created</th>
+          <th className='date'>Created</th>
         </tr>
       </thead>
       <tbody>
@@ -23,7 +23,7 @@ const UsersTable = ({ users }) => {
           <tr key={user.id} className='user-row' onClick={() => handleClick(user)}>
             <td>{user.name}</td>
             <td>{user.username}</td>
-            <td>{util.formatDate(user.createdAt)}</td>
+            <td className='date'>{util.formatDate(user.createdAt)}</td>
           </tr>
         ))}
       </tbody>
