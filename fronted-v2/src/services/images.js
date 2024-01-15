@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = '/api/users';
 
-const addImage = async (username, formData) => {
+const createImage = async (username, formData) => {
   const { data } = await axios.post(
     `${BASE_URL}/${username}/images`,
     formData,
@@ -35,7 +35,7 @@ const deleteImage = async (username, imageId) => {
 };
 
 export default {
-  addImage,
+  createImage,
   getImages,
   getImageContent,
   deleteImage,

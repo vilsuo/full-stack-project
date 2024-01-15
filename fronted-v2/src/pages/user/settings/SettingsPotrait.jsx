@@ -7,15 +7,15 @@ const SettingsPotrait = () => {
   const potrait = useSelector(state => state.auth.potrait);
   const dispatch = useDispatch();
 
+  // alert
   const [alert, setAlert] = useState({});
+  const clearAlert = () => setAlert({});
 
   // file
   const [file, setFile] = useState();
   const inputRef = useRef();
 
-  const clearAlert = () => setAlert({});
-
-  const handleReset = () => {
+  const handleFileReset = () => {
     setFile(null);
     inputRef.current.value = '';
   };
@@ -26,7 +26,7 @@ const SettingsPotrait = () => {
     }
   };
 
-  const handleUpload  = async () => {
+  const handleFileUpload  = async () => {
     try {
       const formData = new FormData();
       formData.append('image', file, file.name);
@@ -36,7 +36,7 @@ const SettingsPotrait = () => {
         type: 'success',
         prefix: 'Potrait uploaded'
       });
-      handleReset();
+      handleFileReset();
     } catch (rejectedValueError) {
       setAlert({
         type: 'error',
@@ -46,7 +46,7 @@ const SettingsPotrait = () => {
     }
   };
 
-  const handleRemove  = async () => {
+  const handlePotraitRemove  = async () => {
     try {
       await dispatch(removePotrait()).unwrap();
       setAlert({
@@ -73,15 +73,19 @@ const SettingsPotrait = () => {
 
         <div>
           <div className='file-input'>
-            <input 
-              type='file'
-              ref={inputRef}
-              onChange={handleFileChange}
-            />
-            { file && <button className='close-btn' onClick={handleReset} /> }
+            <label htmlFor=''>Select Image: *</label>
+            <div className='resettable'>
+              <input 
+                type='file'
+                ref={inputRef}
+                onChange={handleFileChange}
+                required
+              />
+              { file && <button className='close-btn' onClick={handleFileReset} /> }
+            </div>
           </div>
 
-          <button disabled={!file} onClick={handleUpload}>Upload</button>
+          <button disabled={!file} onClick={handleFileUpload}>Upload</button>
         </div>
       </div>
 
@@ -89,7 +93,7 @@ const SettingsPotrait = () => {
       { potrait && <div>
         <h3>Remove potrait</h3>
         <p>The potrait will be deleted <strong>permanently!</strong></p>
-        <button onClick={handleRemove}>Remove</button>
+        <button onClick={handlePotraitRemove}>Remove</button>
       </div>}
     </div>
   );

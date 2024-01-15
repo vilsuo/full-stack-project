@@ -145,15 +145,6 @@ nav {
   }
 }
 
-.file-input {
-  & div:first-of-type {
-    display: flex;
-    /*justify-content: center;*/
-    align-items: center;
-    margin: 20px 0;
-  }
-}
-
 /* close button */
 .close-btn {
   background-color: transparent;
@@ -190,31 +181,54 @@ nav {
 /* forms and inputs */
 form {
   margin-top: 20px;
-}
-form label {
+} 
+label {
   display: flex;
   flex-flow: column nowrap;
   margin-bottom: 10px;
+
+  & span {
+    margin-bottom: 4px;
+  }
 }
-form input:focus {
+textarea {
+  min-height: 100px;
+}
+
+input:focus {
   background-color: burlywood;
   outline: none;
 }
-form label span {
-  margin-bottom: 4px;
-}
-form input, form label span, form textarea {
+
+input, 
+label span, 
+textarea {
   display: block;
 }
-form input, form textarea {
+
+input, 
+textarea {
   padding: 8px;
   border: var(--border);
   border-radius: var(--border-radius);
   color: black;
   flex: 1;
 }
-.required:after {
-  content: ' *';
+.radio-group {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 25px;
+
+  & .radio {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: 5px;
+
+    & label {
+      margin-bottom: 0;
+    }
+  }
 }
 .resettable {
   display: flex;
@@ -224,6 +238,24 @@ form input, form textarea {
 }
 .resettable input {
   width: 0;
+}
+.file-input {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 4px;
+
+  & label {
+    flex-shrink: 1;
+    margin: 0;
+  }
+
+  & input {
+    background-color: white;
+    min-width: 150px;
+    flex: 1;
+  }
 }
 
 /* generic */
