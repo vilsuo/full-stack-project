@@ -63,12 +63,12 @@ const SettingsPotrait = () => {
   };
 
   return (
-    <div className='container'>
+    <div>
       <Alert alert={alert} clearAlert={clearAlert} />
 
       {/* uploading the potrait */}
-      <div>
-        <h3>Change potrait</h3>
+      <div className='container'>
+        <h3>Change Potrait</h3>
         <p>Changing the potrait will <strong>delete</strong> the current potrait if it exists.</p>
 
         <div>
@@ -90,8 +90,8 @@ const SettingsPotrait = () => {
       </div>
 
       {/* removing the potrait */}
-      { potrait && <div>
-        <h3>Remove potrait</h3>
+      { potrait && <div className='container'>
+        <h3>Remove Potrait</h3>
         <p>The potrait will be deleted <strong>permanently!</strong></p>
         <button onClick={handlePotraitRemove}>Remove</button>
       </div>}

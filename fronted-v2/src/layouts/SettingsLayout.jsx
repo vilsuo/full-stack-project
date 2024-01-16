@@ -6,9 +6,7 @@ const SettingsLayout = () => {
   const baseUrl = `/users/${user.username}/settings`;
 
   return (
-    <div className='settings-layout'>
-      <h2>Settings</h2>
-
+    <div className='main_content'>
       <nav>
         <NavLink to={`${baseUrl}/potrait`}>Potrait</NavLink>
         <NavLink to={`${baseUrl}/other`}>Other</NavLink>

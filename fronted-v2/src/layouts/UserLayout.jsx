@@ -1,32 +1,16 @@
 import { NavLink, Outlet, useLoaderData, useOutletContext } from 'react-router-dom';
 
-import Banner from '../components/Banner';
-import relationsService from '../services/relations';
+import util from '../util';
+import { BannerPotrait } from '../components/Banner';
 
 import usersService from '../services/users';
 
 export const userLoader = async ({ params }) => {
   const { username } = params;
-  const user =  await usersService.getUser(username);
-
-  const query = { type: 'follow' };
-
-  const sources = await relationsService
-    .getRelationsBySource(username, query);
-
-  const targets = await relationsService
-    .getRelationsByTarget(username, query);
-
-  return { 
-    user, 
-    relations: { 
-      following: sources.length,
-      followers: targets.length
-    }
-  };
+  return await usersService.getUser(username);
 };
 
-const BannerNav = ({ user, showExtra }) => {
+const SideBarNav = ({ user, showExtra }) => {
 
   const PUBLIC_ROUTES = [
     { value: 'images', label: 'Images'},
@@ -38,49 +22,49 @@ const BannerNav = ({ user, showExtra }) => {
   const ROUTES = showExtra ? [ ...PUBLIC_ROUTES, ...PRIVATE_ROUTES ] : PUBLIC_ROUTES;
 
   return (
-    <nav>
+    <ul>
       {ROUTES.map(route => (
-        <NavLink key={`banner-nav-${route.value}`} to={route.value}>
-          {route.label}
-        </NavLink>
+        <li key={`banner-nav-${route.value}`}>
+          <NavLink to={route.value}>
+            {route.label}
+          </NavLink>
+        </li>
       ))}
-    </nav>
+    </ul>
   );
 };
 
-/*
-const Ban = ({ user, authenticatedUser, relations }) => {
+const SideBar = ({ user, authenticatedUser }) => {
 
   const showActions = authenticatedUser && (authenticatedUser.id !== user.id);
   const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
 
   return (
-    <div className='ban'>
+    <div className='sidebar'>
+      <h3>{user.username}</h3>
+      <p className='date'>
+        Joined {util.formatDate(user.createdAt)}
+      </p>
       <BannerPotrait user={user} />
 
-      <BannerNav user={user} showExtra={isOwnPage} />
+      <SideBarNav user={user} showExtra={isOwnPage} />
     </div>
   );
 };
-*/
 
 const UserLayout = () => {
   const { authenticatedUser } = useOutletContext();
-  const { user, relations } = useLoaderData();
+  const user = useLoaderData();
 
   const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
 
   return (
-    <div className='user-layout'>
-      <Banner 
-        user={user}
-        relations={relations}
-        authenticatedUser={authenticatedUser}
-      />
+    <div className='wrapper'>
+      <SideBar user={user} authenticatedUser={authenticatedUser} />
 
-      <BannerNav user={user} showExtra={isOwnPage} />
-
-      <Outlet context={{ user, authenticatedUser }} />
+      <div className='main_content'>
+        <Outlet context={{ user, authenticatedUser }} />
+      </div>
     </div>
   );
 };

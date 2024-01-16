@@ -14,6 +14,7 @@ body {
   margin: 0;
   padding: 20px;
   background: var(--tertiary);
+  min-height: 100%;
 }
 * {
   color: #fff;
@@ -24,6 +25,7 @@ p {
   margin: 20px 0;
 }
 h1, h2, h3, h4, h5, h5 {
+  margin-top: 20px;
   text-align: center;
 }
 
@@ -45,7 +47,7 @@ button {
 /* page content */
 main {
   max-width: 1200px;
-  margin: 20px auto;
+  margin: 0 auto;
 }
 
 /* nav */
@@ -55,6 +57,7 @@ nav {
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
+  margin-bottom: 20px;
   padding: 6px;
   gap: 20px;
   border: var(--border);
@@ -424,3 +427,62 @@ table {
   gap: 10px
 }
 
+
+/* user layout */
+.wrapper {
+  display: flex;
+  gap: 20px;
+
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+.wrapper .sidebar {
+  margin-bottom: -5000px; /* any large number will do */
+  padding-bottom: 5000px; 
+
+  background-color: var(--secondary);
+  padding: 10px;
+  border: var(--border);
+  border-radius: var(--border-radius);
+}
+
+.wrapper .sidebar h3,
+.wrapper .sidebar p {
+  text-align: center;
+}
+
+.wrapper img {
+  margin-bottom: 10px;
+}
+
+.wrapper .sidebar ul {
+  padding: 0;
+}
+
+.wrapper .sidebar ul li {
+  list-style: none;
+  padding: 5px;
+}
+
+.wrapper .sidebar ul li a {
+  text-decoration: none;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.wrapper .sidebar ul li a.active {
+  background-color: var(--primary);
+}
+
+.wrapper .main_content {
+  width: 100%;
+}
+
+.wrapper .main_content .container {
+  margin: 0 0 20px 0;
+
+  &:last-child {
+    margin: 0;
+  }
+}

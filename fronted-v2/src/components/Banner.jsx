@@ -15,7 +15,7 @@ TODO
 - display error messages
 */
 
-const BannerPotrait = ({ user }) => {
+export const BannerPotrait = ({ user }) => {
   const [potrait, setPotrait] = useState({ loading: true });
   const authPotrait = useSelector(state => state.auth.potrait);
 

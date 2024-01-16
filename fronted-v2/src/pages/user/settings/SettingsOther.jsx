@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { resetAll } from '../../../reducers/auth';
 
 const SettingsOther = () => {
-  const { user, authenticatedUser } = useOutletContext();
+  const { user } = useOutletContext();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -18,7 +18,7 @@ const SettingsOther = () => {
 
   return (
     <div className='container'>
-      <h3>Delete user</h3>
+      <h3>Delete User</h3>
       <p>
         Deleting a user will also delete the potrait and all images of the user.
         The deletion is <strong>irreversible!</strong>
