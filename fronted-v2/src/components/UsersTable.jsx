@@ -6,7 +6,7 @@ const UsersTable = ({ users }) => {
   const navigate = useNavigate();
 
   const handleClick = (user) => {
-    navigate(`/users/${user.username}/profile`);
+    navigate(`/users/${user.username}`);
   };
 
   return (

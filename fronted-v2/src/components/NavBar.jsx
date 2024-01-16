@@ -31,7 +31,7 @@ const LoggedInMenu = ({ user }) => {
     <Dropdown
       trigger={<Potrait user={user} />}
       menu={[
-        <button onClick={() => navigate(`/users/${username}/profile`)}>Profile</button>,
+        <button onClick={() => navigate(`/users/${username}`)}>Profile</button>,
         <button onClick={() => navigate(`/users/${username}/settings`)}>Settings</button>,
         <button onClick={handleLogout}>Logout</button>
       ]}

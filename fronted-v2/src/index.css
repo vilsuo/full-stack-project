@@ -45,7 +45,7 @@ button {
 /* page content */
 main {
   max-width: 1200px;
-  margin: 40px auto;
+  margin: 20px auto;
 }
 
 /* nav */
@@ -261,7 +261,7 @@ textarea {
 /* generic */
 .container {
   background-color: var(--secondary);
-  padding: 20px;
+  padding: 10px;
   margin: 20px auto;
   border: var(--border);
   border-radius: var(--border-radius);
@@ -369,7 +369,6 @@ table {
   }
 }
 
-/* profile banner */
 .banner {
   display: flex;
   flex-flow: row wrap;

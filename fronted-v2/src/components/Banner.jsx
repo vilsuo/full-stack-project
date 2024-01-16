@@ -4,7 +4,6 @@ import util from '../util';
 import potraitService from '../services/potrait';
 import { addRelation, removeRelation } from '../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -12,6 +11,8 @@ import 'react-loading-skeleton/dist/skeleton.css';
 /*
 TODO
 - increment/decrement the follow relations when toggling relation of type 'follow'
+
+- display error messages
 */
 
 const BannerPotrait = ({ user }) => {
@@ -66,7 +67,7 @@ const BannerInfo = ({ user, relations }) => {
 
   return (
     <div className='banner-info'>
-      <span>{name}</span>
+      {/*<span>{name}</span>*/}
       <span>{username}</span>
       <span>Followers: {followers}</span>
       <span>Following: {following}</span>
@@ -132,10 +133,8 @@ const BannerRelationActions = ({ user, relations, authenticatedUser }) => {
 };
 
 const Banner = ({ user, relations, authenticatedUser }) => {
-  const navigate = useNavigate();
-
+  
   const showActions = authenticatedUser && (authenticatedUser.id !== user.id);
-  const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
 
   return (
     <div className='banner container'>
@@ -150,14 +149,6 @@ const Banner = ({ user, relations, authenticatedUser }) => {
             relations={relations}
             authenticatedUser={authenticatedUser}
           /> 
-        )}
-
-        { isOwnPage && (
-          <div className='banner-actions'>
-            <button onClick={() => navigate('settings')}>
-              Settings
-            </button>
-          </div>
         )}
       </div>
     </div>

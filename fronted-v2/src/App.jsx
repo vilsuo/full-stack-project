@@ -26,7 +26,7 @@ import Results from './pages/search/Results';
 import About, { statisticsLoader } from './pages/About';
 // user
 import UserErrorBoundary from './pages/user/UserErrorBoundary';
-import Profile, { imageLoader } from './pages/user/Profile';
+import Images, { imageLoader } from './pages/user/images/Images';
 // user settings
 import SettingsPotrait from './pages/user/settings/SettingsPotrait';
 import SettingsOther from './pages/user/settings/SettingsOther';
@@ -64,7 +64,9 @@ const router = createHashRouter(
           element={<UserLayout />}
           errorElement={<UserErrorBoundary />}
         >
-          <Route path='profile' element={<Profile />} loader={imageLoader} />
+          <Route path='images' element={<Images />} loader={imageLoader} />
+
+
           <Route element={<ProtectedRoute />}>
             <Route path='settings' element={<SettingsLayout />}>
               <Route path='potrait' element={<SettingsPotrait />} />
