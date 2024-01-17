@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import ImageUploadForm from '../../../components/images/ImageUploadForm';
 import ImageList from '../../../components/images/ImageList';
 
-export const imageLoader = async ({ params }) => {
+export const imagesLoader = async ({ params }) => {
   const { username } = params;
   return await imagesService.getImages(username);
 };
@@ -15,6 +15,7 @@ const Images = () => {
   const [images, setImages] = useState([]);
 
   const loadedImages = useLoaderData();
+  
   useEffect(() => {
     setImages(loadedImages);
   }, [loadedImages]);

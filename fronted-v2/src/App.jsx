@@ -26,12 +26,13 @@ import Results from './pages/search/Results';
 import About, { statisticsLoader } from './pages/About';
 // user
 import UserErrorBoundary from './pages/user/UserErrorBoundary';
-import Images, { imageLoader } from './pages/user/images/Images';
+import Images, { imagesLoader } from './pages/user/images/Images';
 // user settings
 import SettingsPotrait from './pages/user/settings/SettingsPotrait';
 import SettingsOther from './pages/user/settings/SettingsOther';
 // other
 import ErrorPage from './pages/ErrorPage';
+import Image, { imageContentLoader } from './pages/user/images/Image';
 
 /*
 TODO
@@ -64,8 +65,8 @@ const router = createHashRouter(
           element={<UserLayout />}
           errorElement={<UserErrorBoundary />}
         >
-          <Route path='images' element={<Images />} loader={imageLoader} />
-
+          <Route path='images' element={<Images />} loader={imagesLoader} />
+          <Route path='images/:imageId' element={<Image />} loader={imageContentLoader} />
 
           <Route element={<ProtectedRoute />}>
             <Route path='settings' element={<SettingsLayout />}>

@@ -357,6 +357,11 @@ table {
 
   &.count-table {
     width: 200px;
+
+    & th,
+    & td {
+      text-align: center;
+    }
   }
 
   /* TABLE ICONS */
@@ -427,7 +432,6 @@ table {
   gap: 10px
 }
 
-
 /* user layout */
 .wrapper {
   display: flex;
@@ -485,4 +489,37 @@ table {
   &:last-child {
     margin: 0;
   }
+}
+
+/* image */
+.image {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+
+  & img {
+    width: 100%;
+  }
+
+  & .image-info {
+    width: 100%;
+    display: flex;
+    gap: 2px;
+    flex-flow: row wrap;
+    text-align: center;
+
+    & .image-info-end {
+      margin-left: auto;
+    }
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+
+  border-radius: 50px;
+  padding: 0 10px;
+  background-color: purple;
+  border: 1px solid black;
 }
