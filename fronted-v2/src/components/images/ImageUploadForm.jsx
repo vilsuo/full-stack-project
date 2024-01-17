@@ -123,7 +123,7 @@ const ImageUploadForm = ({ user, addImage }) => {
           </div>
         </div>
 
-        <button>Upload</button>
+        <button disabled={!file}>Upload</button>
       </form>
     </div>
   );
