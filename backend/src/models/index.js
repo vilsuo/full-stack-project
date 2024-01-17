@@ -31,6 +31,12 @@ Relation.belongsTo(User, {
   onDelete: 'CASCADE',
 });
 
+Relation.belongsTo(User, { 
+  as: 'sourceUser', 
+  foreignKey: { name: 'sourceUserId', allowNull: false },
+  onDelete: 'CASCADE',
+});
+
 // to see follow table
 // return res.status(200).send({ relation: Relation.getAttributes() });
 

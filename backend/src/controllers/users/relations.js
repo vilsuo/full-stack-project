@@ -17,6 +17,10 @@ router.get('/', async (req, res) => {
   }
 
   const relations = await Relation.findAll({
+    include: { 
+      model: User, as: 'targetUser',
+      attributes: ['id', 'username']
+    },
     where: { 
       sourceUserId: user.id,
       ...searchFilters
@@ -38,6 +42,10 @@ router.get('/reverse', async (req, res) => {
   }
 
   const relations = await Relation.findAll({
+    include: { 
+      model: User, as: 'sourceUser',
+      attributes: ['id', 'username']
+    },
     where: { 
       targetUserId: user.id,
       ...searchFilters
