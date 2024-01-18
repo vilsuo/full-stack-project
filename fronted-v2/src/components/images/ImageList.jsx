@@ -4,8 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { FaLock } from 'react-icons/fa';
 
 import util from '../../util';
-import { IMAGE_PRIVATE, OPTION_NONE } from '../../constants';
-import ImagesFilterGroup from './ImagesFilterGroup';
+import { IMAGE_PRIVACIES, IMAGE_PRIVATE, OPTION_NONE } from '../../constants';
+import RadioGroup from '../RadioGroup';
+
+const IMAGE_PRIVACY_FILTER_OPTIONS = [
+  OPTION_NONE, ...IMAGE_PRIVACIES,
+];
 
 const ImageList = ({ user, images, showExtra }) => {
   const [filter, setFilter] = useState('none');
@@ -21,7 +25,14 @@ const ImageList = ({ user, images, showExtra }) => {
     <div className='container'>
       <h3>Images</h3>
 
-      { showExtra && <ImagesFilterGroup filter={filter} setFilter={setFilter} /> }
+      { showExtra && (
+        <RadioGroup
+          options={IMAGE_PRIVACY_FILTER_OPTIONS}
+          value={filter}
+          setValue={setFilter}
+          optionName={'Image Privacy'}
+        />
+      )}
 
       <table className='image-table navigable'>
         <thead>

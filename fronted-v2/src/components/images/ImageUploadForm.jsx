@@ -3,6 +3,7 @@ import { IMAGE_PRIVACIES, IMAGE_PUBLIC } from '../../constants';
 import { createErrorMessage } from '../../util/error';
 import imagesService from '../../services/images';
 import Alert from '../Alert';
+import RadioGroup from '../RadioGroup';
 
 const ImageUploadForm = ({ user, addImage }) => {
 
@@ -91,24 +92,12 @@ const ImageUploadForm = ({ user, addImage }) => {
           />
         </label>
 
-        <label>
-          <span>Privacy:</span>
-          <div className='radio-group'>
-            {IMAGE_PRIVACIES.map(option => (
-              <div key={`privacy-${option.value}`} className='radio'>
-                  <input
-                    type='radio'
-                    name='privacy'
-                    value={option.value}
-                    id={`radio-privacy-${option.value}`}
-                    checked={privacy === option.value}
-                    onChange={ ({ target}) => setPrivacy(target.value) }
-                  />
-                  <label htmlFor={`radio-privacy-${option.value}`}>{option.label}</label>
-              </div>
-              ))}
-          </div>
-        </label>
+        <RadioGroup
+          options={IMAGE_PRIVACIES}
+          value={privacy}
+          setValue={setPrivacy}
+          optionName={'Privacy'}
+        />
 
         <div className='file-input'>
           <label htmlFor=''>Select Image: *</label>
