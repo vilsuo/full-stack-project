@@ -21,6 +21,9 @@ router.get('/', async (req, res) => {
       model: User, as: 'targetUser',
       attributes: ['id', 'username']
     },
+    order: [
+      [{ model: User, as:'targetUser' }, 'username', 'ASC']
+    ],
     where: { 
       sourceUserId: user.id,
       ...searchFilters
@@ -46,6 +49,9 @@ router.get('/reverse', async (req, res) => {
       model: User, as: 'sourceUser',
       attributes: ['id', 'username']
     },
+    order: [
+      [{ model: User, as:'sourceUser' }, 'username', 'ASC']
+    ],
     where: { 
       targetUserId: user.id,
       ...searchFilters
