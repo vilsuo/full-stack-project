@@ -11,25 +11,8 @@ import { removeRelation } from '../../reducers/auth';
 import { 
   FaTrash,
   FaUser,       // follow icon
-  FaUserSlash , // block icon
+  FaUserSlash,  // block icon
 } from 'react-icons/fa';
-
-/*
-Table
-  - add sort based on ASC | DESC on username
-*/
-
-/*
-relation action icons
-FOLLOW:
-import { FaUserCheck } from "react-icons/fa"; // WHEN FOLLOWING
-import { FaUserPlus } from "react-icons/fa"; // WHEN NOT FOLLOWING
-
-BLOCK
-
-
-
-*/
 
 const RELATION_SOURCE = { value: 'sourceUser', label: 'User Relations' };
 const RELATION_TARGET = { value: 'targetUser', label: 'Relations to User' };
@@ -48,9 +31,11 @@ const RELATION_TYPE_ICONS = {
   [RELATION_BLOCK.value]: <FaUserSlash />
 };
 
+const relationsInitialValue = { source: [], target: [], loading: true };
+
 const Relations = () => {
   const { user, authenticatedUser } = useOutletContext();
-  const [relations, setRelations] = useState({ loading: true });
+  const [relations, setRelations] = useState(relationsInitialValue);
 
   const [directionFilter, setDirectionFilter] = useState(RELATION_SOURCE.value);
   const [typeFilter, setTypeFilter] = useState(OPTION_NONE.value);
@@ -62,14 +47,14 @@ const Relations = () => {
 
   useEffect(() => {
     const fetchRelations = async () => {
-      setRelations({ loading: true});
+      setRelations(relationsInitialValue);
       try {
         const source = await relationsService.getRelationsBySource(username);
         const target = await relationsService.getRelationsByTarget(username);
         setRelations({ source, target, loading: false });
 
       } catch (error) {
-        setRelations({ loading: false });
+        setRelations(relationsInitialValue);
         console.log('error in loading relations', createErrorMessage(error));
       }
     };
@@ -97,10 +82,6 @@ const Relations = () => {
     }
   };
 
-  if (relations.loading) {
-    return <p>Loading relations</p>
-  }
-
   const isUsersRelations = (directionFilter === RELATION_SOURCE.value);
 
   // filter relation direction
@@ -120,6 +101,8 @@ const Relations = () => {
 
   const canEdit = authenticatedUser && (authenticatedUser.id === user.id) && isUsersRelations;
   
+  const loading = relations.loading;
+
   return (
     <div className='container'>
       <h3>Relations</h3>
@@ -138,7 +121,7 @@ const Relations = () => {
         optionName='Relation Type'
       />
 
-      <p>Relations: {filteredRelations.length}</p>
+      <p>Relations: { !loading && filteredRelations.length }</p>
 
       <table className='navigable'>
         <thead>
@@ -150,11 +133,15 @@ const Relations = () => {
         </thead>
         <tbody>
           {filteredRelations.map(relation => (
-            <tr key={relation.id} onClick={() => handleClick(relation[relationOtherUser])}>
+            <tr key={relation.id}
+              onClick={() => handleClick(relation[relationOtherUser])}
+            >
               <td className={`icon ${relation.type}-icon`}>
                 {RELATION_TYPE_ICONS[relation.type]}
               </td>
+
               <td>{relation[relationOtherUser].username}</td>
+
               { canEdit && (
                 <td className='action-icon'>
                   <button onClick={(event) => handleRemove(event, relation)}>

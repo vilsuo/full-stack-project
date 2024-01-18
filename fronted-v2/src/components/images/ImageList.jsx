@@ -12,7 +12,7 @@ const IMAGE_PRIVACY_FILTER_OPTIONS = [
 ];
 
 const ImageList = ({ user, images, showExtra }) => {
-  const [filter, setFilter] = useState('none');
+  const [privacyFilter, setPrivacyFilter] = useState('none');
 
   const navigate = useNavigate();
 
@@ -21,6 +21,11 @@ const ImageList = ({ user, images, showExtra }) => {
     navigate(`/users/${username}/images/${image.id}`);
   };
 
+  // filter image privacy
+  const filteredImages = images.filter(image => 
+    (privacyFilter === OPTION_NONE.value) ? true : (image.privacy === privacyFilter)
+  );
+
   return (
     <div className='container'>
       <h3>Images</h3>
@@ -28,11 +33,13 @@ const ImageList = ({ user, images, showExtra }) => {
       { showExtra && (
         <RadioGroup
           options={IMAGE_PRIVACY_FILTER_OPTIONS}
-          value={filter}
-          setValue={setFilter}
+          value={privacyFilter}
+          setValue={setPrivacyFilter}
           optionName={'Image Privacy'}
         />
       )}
+
+      <p>Images: { filteredImages.length }</p>
 
       <table className='navigable'>
         <thead>
@@ -43,8 +50,7 @@ const ImageList = ({ user, images, showExtra }) => {
           </tr>
         </thead>
         <tbody>
-          {images
-            .filter(image => (filter === OPTION_NONE.value) ? true : image.privacy === filter)
+          {filteredImages
             .map(image => (
               <tr key={image.id} onClick={() => handleClick(image)}>
                 { showExtra && <td className='icon lock-icon'>
