@@ -335,6 +335,15 @@ table {
       width: 30px;
     }
 
+    &.action-icon {
+      width: 100px;
+
+      & > button {
+        margin: auto;
+        display: block;
+      }
+    }
+
     &.title {
       width: auto;
     }
@@ -365,15 +374,16 @@ table {
   }
 
   /* TABLE ICONS */
+  & .lock-icon > * {
+    fill: darkgrey;
+  }
 
-  & .table-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  & .follow-icon > * {
+    fill: green;
+  }
 
-    &> * {
-      fill: darkgrey;
-    }
+  & .block-icon > * {
+    fill: red;
   }
 }
 

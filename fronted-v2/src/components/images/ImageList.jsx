@@ -34,7 +34,7 @@ const ImageList = ({ user, images, showExtra }) => {
         />
       )}
 
-      <table className='image-table navigable'>
+      <table className='navigable'>
         <thead>
           <tr>
             { showExtra && <th className='icon'></th> }
@@ -47,7 +47,7 @@ const ImageList = ({ user, images, showExtra }) => {
             .filter(image => (filter === OPTION_NONE.value) ? true : image.privacy === filter)
             .map(image => (
               <tr key={image.id} onClick={() => handleClick(image)}>
-                { showExtra && <td className='table-icon icon'>
+                { showExtra && <td className='icon lock-icon'>
                   { image.privacy === IMAGE_PRIVATE.value && <FaLock /> }
                 </td> }
                 <td className='title'>{image.title}</td>

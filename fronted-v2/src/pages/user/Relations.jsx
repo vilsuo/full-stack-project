@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 
 import relationsService from '../../services/relations';
 import { createErrorMessage } from '../../util/error';
 import RadioGroup from '../../components/RadioGroup';
-import { OPTION_NONE, RELATION_TYPES } from '../../constants';
+import { OPTION_NONE, RELATION_BLOCK, RELATION_FOLLOW, RELATION_TYPES } from '../../constants';
+import { removeRelation } from '../../reducers/auth';
 
 import { 
-  FaUserAltSlash, // block icon
+  FaTrash,
+  FaUser,       // follow icon
+  FaUserSlash , // block icon
 } from 'react-icons/fa';
 
 /*
 Table
-  - add radio (All | follow | block)
-  - add radio (source | target)
-
-  - add footer to count total
-
   - add sort based on ASC | DESC on username
 */
 
@@ -44,12 +43,20 @@ const RELATION_TYPE_FILTER_OPTIONS = [
   ...RELATION_TYPES,
 ];
 
+const RELATION_TYPE_ICONS = { 
+  [RELATION_FOLLOW.value]: <FaUser />,
+  [RELATION_BLOCK.value]: <FaUserSlash />
+};
+
 const Relations = () => {
   const { user, authenticatedUser } = useOutletContext();
   const [relations, setRelations] = useState({ loading: true });
 
   const [directionFilter, setDirectionFilter] = useState(RELATION_SOURCE.value);
   const [typeFilter, setTypeFilter] = useState(OPTION_NONE.value);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { username } = user;
 
@@ -70,16 +77,34 @@ const Relations = () => {
     fetchRelations();
   }, [username]);
 
-  const handleClick = (relation) => {
-    console.log('clicker', relation);
+  const handleClick = (otherUser) => {
+    navigate(`/users/${otherUser.username}`);
+  };
+
+  const handleRemove = async (event, relation) => {
+    event.stopPropagation(); // do not navigate
+
+    try {
+      await dispatch(removeRelation(relation.id)).unwrap();
+
+      setRelations({
+        ...relations,
+        source: relations.source.filter(rel => rel.id !== relation.id)
+      });
+
+    } catch (rejectedValueError) {
+      console.log('error removing relation', rejectedValueError);
+    }
   };
 
   if (relations.loading) {
     return <p>Loading relations</p>
   }
 
+  const isUsersRelations = (directionFilter === RELATION_SOURCE.value);
+
   // filter relation direction
-  const directionRelations = (directionFilter === RELATION_SOURCE.value)
+  const directionRelations = isUsersRelations
     ? relations.source
     : relations.target;
 
@@ -89,10 +114,12 @@ const Relations = () => {
   );
 
   // object key to select the other user from relation
-  const relationOtherUser = (directionFilter === RELATION_SOURCE.value)
+  const relationOtherUser = isUsersRelations
     ? RELATION_TARGET.value
     : RELATION_SOURCE.value;
 
+  const canEdit = authenticatedUser && (authenticatedUser.id === user.id) && isUsersRelations;
+  
   return (
     <div className='container'>
       <h3>Relations</h3>
@@ -113,29 +140,31 @@ const Relations = () => {
 
       <p>Relations: {filteredRelations.length}</p>
 
-      <table>
+      <table className='navigable'>
         <thead>
           <tr>
+            <th className='icon'></th>
             <th>Username</th>
-            <th>Relation Type</th>
+            { canEdit && <th className='action-icon'>Remove</th> }
           </tr>
         </thead>
         <tbody>
           {filteredRelations.map(relation => (
-            <tr key={relation.id} className='user-row' onClick={() => handleClick(relation)}>
+            <tr key={relation.id} onClick={() => handleClick(relation[relationOtherUser])}>
+              <td className={`icon ${relation.type}-icon`}>
+                {RELATION_TYPE_ICONS[relation.type]}
+              </td>
               <td>{relation[relationOtherUser].username}</td>
-              <td>{relation.type}</td>
+              { canEdit && (
+                <td className='action-icon'>
+                  <button onClick={(event) => handleRemove(event, relation)}>
+                    <FaTrash />
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
-        {/*
-        <tfoot>
-          <tr>
-            <td>Total</td>
-            <td>{filteredRelations.length}</td>
-          </tr>
-        </tfoot>
-        */}
       </table>
     </div>
   );
