@@ -401,6 +401,15 @@ table {
 }
 
 /* ABOUT PAGE */
+
+.technology {
+  border: var(--border);
+  border-radius: var(--border-radius);
+  background-color: midnightblue;
+  margin-top: 20px;
+  padding: 10px;
+}
+
 /* count table container */
 .count-tables {
   margin: 0 auto;
