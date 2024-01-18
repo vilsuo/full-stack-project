@@ -32,9 +32,11 @@ BLOCK
 
 */
 
+const RELATION_SOURCE = { value: 'sourceUser', label: 'User Relations' };
+const RELATION_TARGET = { value: 'targetUser', label: 'Relations to User' };
+
 const RELATION_DIRECTION_FILTER_OPTIONS = [
-  { value: 'sourceUser', label: 'Source' }, 
-  { value: 'targetUser', label: 'Target' }, 
+  RELATION_SOURCE, RELATION_TARGET,
 ];
 
 const RELATION_TYPE_FILTER_OPTIONS = [
@@ -46,7 +48,7 @@ const Relations = () => {
   const { user, authenticatedUser } = useOutletContext();
   const [relations, setRelations] = useState({ loading: true });
 
-  const [directionFilter, setDirectionFilter] = useState('sourceUser');
+  const [directionFilter, setDirectionFilter] = useState(RELATION_SOURCE.value);
   const [typeFilter, setTypeFilter] = useState(OPTION_NONE.value);
 
   const { username } = user;
@@ -68,9 +70,28 @@ const Relations = () => {
     fetchRelations();
   }, [username]);
 
+  const handleClick = (relation) => {
+    console.log('clicker', relation);
+  };
+
   if (relations.loading) {
     return <p>Loading relations</p>
   }
+
+  // filter relation direction
+  const directionRelations = (directionFilter === RELATION_SOURCE.value)
+    ? relations.source
+    : relations.target;
+
+  // filter relation type
+  const filteredRelations = directionRelations.filter(relation => 
+    (typeFilter === OPTION_NONE.value) ? true : (relation.type === typeFilter)
+  );
+
+  // object key to select the other user from relation
+  const relationOtherUser = (directionFilter === RELATION_SOURCE.value)
+    ? RELATION_TARGET.value
+    : RELATION_SOURCE.value;
 
   return (
     <div className='container'>
@@ -90,24 +111,31 @@ const Relations = () => {
         optionName='Relation Type'
       />
 
+      <p>Relations: {filteredRelations.length}</p>
+
       <table>
         <thead>
           <tr>
             <th>Username</th>
-            <th>Type</th>
+            <th>Relation Type</th>
           </tr>
         </thead>
         <tbody>
-          {/*
-          {users.map(user => (
-            <tr key={user.id} className='user-row' onClick={() => handleClick(user)}>
-              <td>{user.name}</td>
-              <td>{user.username}</td>
-              <td className='date'>{util.formatDate(user.createdAt)}</td>
+          {filteredRelations.map(relation => (
+            <tr key={relation.id} className='user-row' onClick={() => handleClick(relation)}>
+              <td>{relation[relationOtherUser].username}</td>
+              <td>{relation.type}</td>
             </tr>
           ))}
-          */}
         </tbody>
+        {/*
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td>{filteredRelations.length}</td>
+          </tr>
+        </tfoot>
+        */}
       </table>
     </div>
   );
