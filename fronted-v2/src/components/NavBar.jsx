@@ -41,18 +41,20 @@ const LoggedInMenu = ({ user }) => {
 
 const NavBar = ({ user }) => {
   return (
-    <nav>
-      <NavLink to='/'>Home</NavLink>
-      <NavLink to='search'>Search</NavLink>
-      <NavLink to='about'>About</NavLink>
+    <div className='container'>
+      <nav>
+        <NavLink to='/'>Home</NavLink>
+        <NavLink to='search'>Search</NavLink>
+        <NavLink to='about'>About</NavLink>
 
-      <div>
-        { user
-          ? <LoggedInMenu user={user} />
-          : <NavLink to='login'>Login</NavLink>
-        }
-      </div>
-    </nav>
+        <div>
+          { user
+            ? <LoggedInMenu user={user} />
+            : <NavLink to='login'>Login</NavLink>
+          }
+        </div>
+      </nav>
+    </div>
   );
 };
 

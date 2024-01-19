@@ -9,6 +9,8 @@ const Details = () => {
 
   return (
     <div className='container'>
+      <h2>Details</h2>
+      
       <p className='text'>Name: {name}</p>
       <p className='text'>Username: {username}</p>
       <p className='text'>Joined: {util.formatDate(createdAt)}</p>

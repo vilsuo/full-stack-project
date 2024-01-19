@@ -28,7 +28,7 @@ const ImageList = ({ user, images, showExtra }) => {
 
   return (
     <div className='container'>
-      <h3>Images</h3>
+      <h2>Images</h2>
 
       { showExtra && (
         <RadioGroup

@@ -25,7 +25,7 @@ p {
   margin: 20px 0;
 }
 h1, h2, h3, h4, h5, h5 {
-  margin-top: 20px;
+  margin: 20px 0;
   text-align: center;
 }
 
@@ -57,12 +57,14 @@ nav {
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
-  margin-bottom: 20px;
-  padding: 6px;
+  /*margin-bottom: 20px;*/
+  /*padding: 6px;*/
   gap: 20px;
+  /*
   border: var(--border);
   border-radius: var(--border-radius);
   background-color: var(--secondary);
+  */
 
   & a {
     text-decoration: none;
@@ -267,6 +269,7 @@ textarea {
   background-color: var(--secondary);
   padding: 10px;
   margin: 20px auto;
+  margin-top: 0;
   border: var(--border);
   border-radius: var(--border-radius);
 }
@@ -420,6 +423,7 @@ table {
   background-color: midnightblue;
   margin-top: 20px;
   padding: 10px;
+  width: 100%;
 }
 
 /* count table container */
@@ -439,7 +443,6 @@ table {
   overflow: hidden;
   min-height: 100vh;
 }
-
 .wrapper .sidebar {
   margin-bottom: -5000px; /* any large number will do */
   padding-bottom: 5000px; 
@@ -449,15 +452,9 @@ table {
   border: var(--border);
   border-radius: var(--border-radius);
 }
-
 .wrapper .sidebar h3 {
   margin-bottom: 10px;
 }
-
-.wrapper img {
-  margin-bottom: 10px;
-}
-
 .wrapper .sidebar .relation-actions {
   display: flex;
   justify-content: space-between;
@@ -475,32 +472,26 @@ table {
     color: darkred;
   }
 }
-
 .wrapper .sidebar ul {
   padding: 0;
 }
-
 .wrapper .sidebar ul li {
   list-style: none;
   padding: 5px;
 }
-
 .wrapper .sidebar ul li a {
   text-decoration: none;
   padding: 6px;
   border-radius: 4px;
   display: block;
 }
-
 .wrapper .sidebar ul li a.active {
   background-color: var(--primary);
   border: 1px solid black;
 }
-
 .wrapper .main_content {
   width: 100%;
 }
-
 .wrapper .main_content .container {
   margin: 0 0 20px 0;
 
@@ -515,32 +506,27 @@ table {
   flex-flow: column nowrap;
   align-items: center;
 
-  & h3 {
-    margin: 10px 0;
-  }
-
   & img {
     width: 100%;
     border: 2px solid black;
   }
-
-  & .image-actions {
-    width: 100%;
-    display: flex;
-    flex-flow: row-reverse nowrap;
-    justify-content: end;
-
-    gap: 4px;
-  }
-
-  & .image-info {
-    width: 100%;
-    display: flex;
-    flex-flow: row wrap;
-    gap: 4px;
-  }
 }
 
+.edit-actions {
+  width: 100%;
+  display: flex;
+  flex-flow: row-reverse nowrap;
+  justify-content: end;
+  gap: 4px;
+}
+
+.chips {
+  width: 100%;
+  display: flex;
+  flex-flow: row wrap;
+  margin-top: 10px;
+  gap: 4px;
+}
 .chip {
   display: inline-flex;
   align-items: center;
@@ -570,16 +556,13 @@ table {
 
   background-color: var(--btn-bg);
 }
-
 .action-button.delete {
   background-color: #f44336;
 }
-
 .action-button.on {
   background-color: darkgreen;
   color: white;
 }
-
 .action-button.off {
   background-color: darkred;
   color: white;

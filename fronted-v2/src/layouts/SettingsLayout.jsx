@@ -7,11 +7,15 @@ const SettingsLayout = () => {
 
   return (
     <div className='main_content'>
-      <nav>
-        <NavLink to={`${baseUrl}/potrait`}>Potrait</NavLink>
-        <NavLink to={`${baseUrl}/other`}>Other</NavLink>
-      </nav>
+      <div className='container'>
+        <h2>Settings</h2>
 
+        <nav>
+          <NavLink to={`${baseUrl}/potrait`}>Potrait</NavLink>
+          <NavLink to={`${baseUrl}/other`}>Other</NavLink>
+        </nav>
+      </div>
+      
       <Outlet context={{ user, authenticatedUser }} />
     </div>
   );

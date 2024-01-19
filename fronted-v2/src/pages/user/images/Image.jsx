@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLoaderData, useNavigate, useOutletContext } from 'react-router-dom';
+import { useLoaderData, useNavigate, useOutletContext } from 'react-router-dom';
 
-import util from '../../../util';
 import imagesService from '../../../services/images';
 
 import ToggleButton from '../../../components/ToggleButton';
 
-import { FaArrowLeft, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
+import ImageChips from '../../../components/images/ImageChips';
+import Alert from '../../../components/Alert';
+import { createErrorMessage } from '../../../util/error';
 
 export const imageContentLoader = async ({ params }) => {
   const { username, imageId } = params;
@@ -24,6 +26,9 @@ const Image = () => {
 
   const [editing, setEditing] = useState(false);
 
+  const [alert, setAlert] = useState({});
+  const clearAlert = () => setAlert({});
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,12 +43,14 @@ const Image = () => {
     if (confirm('Are you sure you want to delete the image?')) {
       try {
         await imagesService.deleteImage(user.username, image.id);
-        console.log('image removed', image);
-        
         navigate(`/users/${user.username}/images`, { replace: true });
   
       } catch (error) {
-        console.log('error removing image', error);
+        setAlert({
+          type: 'error',
+          prefix: 'Removing image failed',
+          details: createErrorMessage(error),
+        });
       }
     }
   };
@@ -52,41 +59,36 @@ const Image = () => {
 
   return (
     <div className='container'>
+
+      <div className='edit-actions'>
+        { canEdit && (
+          <ToggleButton toggled={editing} setToggled={setEditing}>
+            {<FaEdit  />}
+          </ToggleButton>
+        )}
+
+        { editing && (
+          <button className='action-button' onClick={ () => handleRemove(image) }>
+            <IconContext.Provider value={{ size: '15px' }}>
+              <div>
+                <FaTrash />
+              </div>
+            </IconContext.Provider>
+          </button>
+        )}
+      </div>
+
+      <Alert alert={alert} clearAlert={clearAlert} />
+
       <div className='image'>
-
-        <div className='image-actions'>
-          { canEdit && (
-            <ToggleButton toggled={editing} setToggled={setEditing}>
-              {<FaEdit  />}
-            </ToggleButton>
-          )}
-
-          { editing && (
-            <button className='action-button' onClick={ () => handleRemove(image) }>
-              <IconContext.Provider value={{ size: '15px' }}>
-                <div>
-                  <FaTrash />
-                </div>
-              </IconContext.Provider>
-            </button>
-          )}
-        </div>
-
-        <h3>{title}</h3>
+        <h2>{title}</h2>
 
         <img src={imageUrl}/>
 
-        <div className='image-info'>
-          <div className='chip'>Image by {user.username}</div>
-          <div className='chip'>Created {util.formatDate(createdAt)}</div>
-          { (createdAt !== updatedAt) && 
-            <div className='chip'>Last edited {util.formatDate(updatedAt)}</div>
-          }
-          <div className='chip'>{privacy}</div>
-        </div>
-      </div>
+        { !editing && <ImageChips user={user} image={image} /> }
 
-      <p className='text'>{caption}</p>
+        <p className='text'>{caption}</p>
+      </div>
     </div>
   );
 };

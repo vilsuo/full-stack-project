@@ -119,15 +119,15 @@ const Relations = () => {
 
   return (
     <div className='container'>
-      <div className='action-header'>
-        <h3>Relations</h3>
-
-        { canEdit && (
+      { canEdit && (
+        <div className='edit-actions'>
           <ToggleButton toggled={editing} setToggled={setEditing}>
             {<FaEdit  />}
           </ToggleButton>
-        )}
-      </div>
+        </div>
+      )}
+
+      <h2>Relations</h2>
 
       <RadioGroup
         options={RELATION_DIRECTION_FILTER_OPTIONS}
