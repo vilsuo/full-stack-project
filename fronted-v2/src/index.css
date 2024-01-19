@@ -515,9 +515,22 @@ table {
   flex-flow: column nowrap;
   align-items: center;
 
+  & h3 {
+    margin: 10px 0;
+  }
+
   & img {
     width: 100%;
     border: 2px solid black;
+  }
+
+  & .image-actions {
+    width: 100%;
+    display: flex;
+    flex-flow: row-reverse nowrap;
+    justify-content: end;
+
+    gap: 4px;
   }
 
   & .image-info {
@@ -550,18 +563,24 @@ table {
   }
 }
 
-.toggle-button {
-  border: 1px solid black;
+.action-button {
+  border: var(--border);
   background: none;
   padding: 4px;
+
+  background-color: var(--btn-bg);
 }
 
-.toggle-button.on {
-  background-color: #4CAF50;
+.action-button.delete {
+  background-color: #f44336;
+}
+
+.action-button.on {
+  background-color: darkgreen;
   color: white;
 }
 
-.toggle-button.off {
-  background-color: #f44336;
+.action-button.off {
+  background-color: darkred;
   color: white;
 }

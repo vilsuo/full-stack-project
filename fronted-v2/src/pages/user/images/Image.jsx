@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLoaderData, useOutletContext } from 'react-router-dom';
+import { NavLink, useLoaderData, useNavigate, useOutletContext } from 'react-router-dom';
 
 import util from '../../../util';
 import imagesService from '../../../services/images';
 
-import { FaArrowLeft, FaEdit } from 'react-icons/fa';
 import ToggleButton from '../../../components/ToggleButton';
+
+import { FaArrowLeft, FaEdit, FaTrash } from 'react-icons/fa';
+import { IconContext } from 'react-icons';
 
 export const imageContentLoader = async ({ params }) => {
   const { username, imageId } = params;
@@ -22,6 +24,8 @@ const Image = () => {
 
   const [editing, setEditing] = useState(false);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (content) setImageUrl(URL.createObjectURL(content));
 
@@ -30,20 +34,45 @@ const Image = () => {
 
   const canEdit = authenticatedUser && (authenticatedUser.id === image.userId);
 
+  const handleRemove = async (image) => {
+    if (confirm('Are you sure you want to delete the image?')) {
+      try {
+        await imagesService.deleteImage(user.username, image.id);
+        console.log('image removed', image);
+        
+        navigate(`/users/${user.username}/images`, { replace: true });
+  
+      } catch (error) {
+        console.log('error removing image', error);
+      }
+    }
+  };
+
   const { title, caption, privacy, createdAt, updatedAt } = image;
 
   return (
     <div className='container'>
       <div className='image'>
-      <div className='action-header'>
-        <h3>{title}</h3>
 
-        { canEdit && (
-          <ToggleButton toggled={editing} setToggled={setEditing}>
-            {<FaEdit  />}
-          </ToggleButton>
-        )}
-      </div>
+        <div className='image-actions'>
+          { canEdit && (
+            <ToggleButton toggled={editing} setToggled={setEditing}>
+              {<FaEdit  />}
+            </ToggleButton>
+          )}
+
+          { editing && (
+            <button className='action-button' onClick={ () => handleRemove(image) }>
+              <IconContext.Provider value={{ size: '15px' }}>
+                <div>
+                  <FaTrash />
+                </div>
+              </IconContext.Provider>
+            </button>
+          )}
+        </div>
+
+        <h3>{title}</h3>
 
         <img src={imageUrl}/>
 

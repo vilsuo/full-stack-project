@@ -6,7 +6,7 @@ const ToggleButton = ({ toggled, setToggled, children }) => {
 
   return (
     <button
-      className={`toggle-button ${toggled ? 'on' : 'off'}`}
+      className={`action-button ${toggled ? 'on' : 'off'}`}
       onClick={handleChange}
     >
       <IconContext.Provider value={{ size: '20px' }}>
