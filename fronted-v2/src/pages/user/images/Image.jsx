@@ -4,7 +4,8 @@ import { NavLink, useLoaderData, useOutletContext } from 'react-router-dom';
 import util from '../../../util';
 import imagesService from '../../../services/images';
 
-import { FaArrowLeft, FaWrench } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit } from 'react-icons/fa';
+import ToggleButton from '../../../components/ToggleButton';
 
 export const imageContentLoader = async ({ params }) => {
   const { username, imageId } = params;
@@ -19,6 +20,8 @@ const Image = () => {
   const { image, content } = useLoaderData();
   const [imageUrl, setImageUrl] = useState();
 
+  const [editing, setEditing] = useState(false);
+
   useEffect(() => {
     if (content) setImageUrl(URL.createObjectURL(content));
 
@@ -32,23 +35,15 @@ const Image = () => {
   return (
     <div className='container'>
       <div className='image'>
-        <div className='image-info'>
-          <button>
-            <NavLink to={`/users/${user.username}/images`}>
-              <FaArrowLeft />
-            </NavLink>
-          </button>
+      <div className='action-header'>
+        <h3>{title}</h3>
 
-          { canEdit && (
-            <div className='image-info-end'>
-              <button>
-                <FaWrench />
-              </button>
-            </div>
-          )}
-        </div>
-
-      <h3>{title}</h3>
+        { canEdit && (
+          <ToggleButton toggled={editing} setToggled={setEditing}>
+            {<FaEdit  />}
+          </ToggleButton>
+        )}
+      </div>
 
         <img src={imageUrl}/>
 
@@ -62,7 +57,7 @@ const Image = () => {
         </div>
       </div>
 
-      <p>{caption}</p>
+      <p className='text'>{caption}</p>
     </div>
   );
 };

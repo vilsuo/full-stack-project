@@ -106,7 +106,7 @@ const TechStack = () => {
           <div key={header}>
             <h3>{header}</h3>
             { technologies[header].map(tech =>
-              <div key={tech.title} className='technology'>
+              <div key={tech.title} className='text'>
                 <a href={tech.href}>{tech.title}</a>
                 <p>
                   {tech.description}
@@ -116,21 +116,6 @@ const TechStack = () => {
           </div>
         )
       }
-
-      {/*
-      {Object.keys(technologies).map((header, idx) =>
-        <ul key={'x' + idx}>
-          <li>{header}</li>
-          <ul>
-            {technologies[header].map((technology, idy) =>
-            <ul key={'y' + idy}>
-              <li>{technology}</li>
-            </ul>
-            )}
-          </ul>
-        </ul>
-      )}
-      */}
     </div>
   );
 };

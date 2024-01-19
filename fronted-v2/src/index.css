@@ -71,6 +71,7 @@ nav {
 
     &.active {
       background-color: var(--primary);
+      border: 1px solid black;
     }
   }
   &>div {
@@ -413,7 +414,7 @@ table {
 
 /* ABOUT PAGE */
 
-.technology {
+.text {
   border: var(--border);
   border-radius: var(--border-radius);
   background-color: midnightblue;
@@ -493,6 +494,7 @@ table {
 
 .wrapper .sidebar ul li a.active {
   background-color: var(--primary);
+  border: 1px solid black;
 }
 
 .wrapper .main_content {
@@ -515,18 +517,14 @@ table {
 
   & img {
     width: 100%;
+    border: 2px solid black;
   }
 
   & .image-info {
     width: 100%;
     display: flex;
-    gap: 2px;
     flex-flow: row wrap;
-    text-align: center;
-
-    & .image-info-end {
-      margin-left: auto;
-    }
+    gap: 4px;
   }
 }
 
@@ -544,6 +542,7 @@ table {
   display: flex;
   justify-content: center;
   gap: 5px;
+  margin-bottom: 10px;
 
   & h3,
   & h4 {
