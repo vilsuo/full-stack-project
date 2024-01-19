@@ -9,10 +9,14 @@ import { OPTION_NONE, RELATION_BLOCK, RELATION_FOLLOW, RELATION_TYPES } from '..
 import { removeRelation } from '../../reducers/auth';
 
 import { 
-  FaTrash,
-  FaUser,       // follow icon
-  FaUserSlash,  // block icon
+  FaEdit,         // edit icon
+  FaTimesCircle,  // delete icon
+
+  FaUser,         // follow icon
+  FaUserSlash,    // block icon
 } from 'react-icons/fa';
+import { IconContext } from 'react-icons';
+import ToggleButton from '../../components/ToggleButton';
 
 const RELATION_SOURCE = { value: 'sourceUser', label: 'User Relations' };
 const RELATION_TARGET = { value: 'targetUser', label: 'Relations to User' };
@@ -31,11 +35,14 @@ const RELATION_TYPE_ICONS = {
   [RELATION_BLOCK.value]: <FaUserSlash />
 };
 
-const relationsInitialValue = { source: [], target: [], loading: true };
+const relationsInitialValue = { source: [], target: [] };
 
 const Relations = () => {
   const { user, authenticatedUser } = useOutletContext();
   const [relations, setRelations] = useState(relationsInitialValue);
+
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
 
   const [directionFilter, setDirectionFilter] = useState(RELATION_SOURCE.value);
   const [typeFilter, setTypeFilter] = useState(OPTION_NONE.value);
@@ -48,13 +55,16 @@ const Relations = () => {
   useEffect(() => {
     const fetchRelations = async () => {
       setRelations(relationsInitialValue);
+      setLoading(true);
+
       try {
         const source = await relationsService.getRelationsBySource(username);
         const target = await relationsService.getRelationsByTarget(username);
         setRelations({ source, target, loading: false });
+        setLoading(false);
 
       } catch (error) {
-        setRelations(relationsInitialValue);
+        setLoading(false);
         console.log('error in loading relations', createErrorMessage(error));
       }
     };
@@ -69,6 +79,9 @@ const Relations = () => {
   const handleRemove = async (event, relation) => {
     event.stopPropagation(); // do not navigate
 
+    if (loading) return;
+    setLoading(true);
+
     try {
       await dispatch(removeRelation(relation.id)).unwrap();
 
@@ -76,8 +89,10 @@ const Relations = () => {
         ...relations,
         source: relations.source.filter(rel => rel.id !== relation.id)
       });
+      setLoading(false);
 
     } catch (rejectedValueError) {
+      setLoading(false);
       console.log('error removing relation', rejectedValueError);
     }
   };
@@ -100,12 +115,19 @@ const Relations = () => {
     : RELATION_SOURCE.value;
 
   const canEdit = authenticatedUser && (authenticatedUser.id === user.id) && isUsersRelations;
-  
-  const loading = relations.loading;
+  const showEdit = editing && isUsersRelations;
 
   return (
     <div className='container'>
-      <h3>Relations</h3>
+      <div className='action-header'>
+        <h3>Relations</h3>
+
+        { canEdit && (
+          <ToggleButton toggled={editing} setToggled={setEditing}>
+            {<FaEdit  />}
+          </ToggleButton>
+        )}
+      </div>
 
       <RadioGroup
         options={RELATION_DIRECTION_FILTER_OPTIONS}
@@ -128,7 +150,7 @@ const Relations = () => {
           <tr>
             <th className='icon'></th>
             <th>Username</th>
-            { canEdit && <th className='action-icon'>Remove</th> }
+            { showEdit && <th className='action-icon'>Remove</th> }
           </tr>
         </thead>
         <tbody>
@@ -142,10 +164,14 @@ const Relations = () => {
 
               <td>{relation[relationOtherUser].username}</td>
 
-              { canEdit && (
+              { showEdit && (
                 <td className='action-icon'>
                   <button onClick={(event) => handleRemove(event, relation)}>
-                    <FaTrash />
+                    <IconContext.Provider value={{ size: '20px' }}>
+                      <div>
+                        <FaTimesCircle  />
+                      </div>
+                    </IconContext.Provider>
                   </button>
                 </td>
               )}
