@@ -34,6 +34,15 @@ const getImageContent = async (username, imageId) => {
   return data;
 };
 
+const editImage = async (username, imageId, formData) => {
+  const { data } = await axios.put(
+    `${BASE_URL}/${username}/images/${imageId}`,
+    formData
+  );
+
+  return data;
+};
+
 const deleteImage = async (username, imageId) => {
   const { data } = await axios.delete(
     `${BASE_URL}/${username}/images/${imageId}`,
@@ -47,5 +56,6 @@ export default {
   getImages,
   getImage,
   getImageContent,
+  editImage,
   deleteImage,
 };

@@ -19,6 +19,32 @@ export const imageContentLoader = async ({ params }) => {
   return { image, content };
 };
 
+const ImageViewing = ({ user, image, imageUrl }) => {
+  const { title, caption } = image;
+
+  return (
+    <div className='image'>
+      <h2>{title}</h2>
+
+      <img src={imageUrl}/>
+
+      <ImageChips user={user} image={image} />
+
+      <p className='text'>{caption}</p>
+    </div>
+  );
+};
+
+const ImageEditing = ({ user, image, handleEdit }) => {
+  const { title, caption, privacy } = image;
+
+  return (
+    <div>
+      {'editing'}
+    </div>
+  );
+};
+
 const Image = () => {
   const { user, authenticatedUser } = useOutletContext();
   const { image, content } = useLoaderData();
@@ -55,7 +81,9 @@ const Image = () => {
     }
   };
 
-  const { title, caption, privacy, createdAt, updatedAt } = image;
+  const handleEdit = async () => {
+
+  };
 
   return (
     <div className='container'>
@@ -80,15 +108,20 @@ const Image = () => {
 
       <Alert alert={alert} clearAlert={clearAlert} />
 
-      <div className='image'>
-        <h2>{title}</h2>
+      { 
+        editing
+        ? <ImageEditing
+            user={user}
+            image={image}
+            handleEdit={handleEdit}
+          />
+        : <ImageViewing
+            user={user}
+            image={image}
+            imageUrl={imageUrl}
+          />
+      }
 
-        <img src={imageUrl}/>
-
-        { !editing && <ImageChips user={user} image={image} /> }
-
-        <p className='text'>{caption}</p>
-      </div>
     </div>
   );
 };
