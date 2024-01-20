@@ -10,11 +10,15 @@ import { IconContext } from 'react-icons';
 import ImageChips from '../../../components/images/ImageChips';
 import Alert from '../../../components/Alert';
 import { createErrorMessage } from '../../../util/error';
+import RadioGroup from '../../../components/RadioGroup';
+import { IMAGE_PRIVACIES } from '../../../constants';
 
 export const imageContentLoader = async ({ params }) => {
   const { username, imageId } = params;
   const image = await imagesService.getImage(username, imageId);
   const content = await imagesService.getImageContent(username, imageId);
+
+  console.log('loader run');
 
   return { image, content };
 };
@@ -36,18 +40,53 @@ const ImageViewing = ({ user, image, imageUrl }) => {
 };
 
 const ImageEditing = ({ user, image, handleEdit }) => {
-  const { title, caption, privacy } = image;
+  const [title, setTitle] = useState(image.title);
+  const [caption, setCaption] = useState(image.caption);
+  const [privacy, setPrivacy] = useState(image.privacy);
+
+  const [changeMade, setChangeMade] = useState(false);
 
   return (
     <div>
-      {'editing'}
+      <label>
+        <span>Title:</span>
+          <input
+            type='text'
+            value={title}
+            onChange={ ({ target }) => { setTitle(target.value); setChangeMade(true); }}
+          />
+        </label>
+
+        <label>
+          <span>Caption:</span>
+          <textarea
+            value={caption}
+            onChange={ ({ target }) => { setCaption(target.value); setChangeMade(true); }}
+          />
+        </label>
+
+        <RadioGroup
+          options={IMAGE_PRIVACIES}
+          value={privacy}
+          setValue={(value) => { setPrivacy(value); setChangeMade(true); }}
+          optionName={'Privacy'}
+        />
+
+        <button
+          disabled={!changeMade}
+          onClick={() => handleEdit({ title, caption, privacy })}
+        >
+          Save
+        </button>
     </div>
   );
 };
 
 const Image = () => {
   const { user, authenticatedUser } = useOutletContext();
-  const { image, content } = useLoaderData();
+  const { image: loadedImage, content } = useLoaderData();
+
+  const [image, setImage] = useState(loadedImage);
   const [imageUrl, setImageUrl] = useState();
 
   const [editing, setEditing] = useState(false);
@@ -81,8 +120,24 @@ const Image = () => {
     }
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (values) => {
+    try {
+      const editedImage = await imagesService.editImage(user.username, image.id, values);
+      setEditing(false);
+      setImage(editedImage);
 
+      setAlert({
+        type: 'success',
+        prefix: 'Edited image',
+      });
+
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        prefix: 'Editing image failed',
+        details: createErrorMessage(error),
+      });
+    }
   };
 
   return (
