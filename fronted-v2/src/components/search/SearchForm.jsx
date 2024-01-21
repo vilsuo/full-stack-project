@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { createSearchParams, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { FaTimes, FaSearch  } from 'react-icons/fa';
+
 const SearchForm = () => {
   const [searchParams] = useSearchParams();
 
   const [query, setQuery] = useState(searchParams.get('q') || '');
+
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {
@@ -34,9 +37,17 @@ const SearchForm = () => {
             value={query}
             onChange={event => setQuery(event.target.value)}
           />
-          <button type='button' onClick={() => setQuery('')}>×</button>
+          <button type='button' disabled={!query} onClick={() => setQuery('')}>
+            <div className='icon-button'>
+              <FaTimes />
+            </div>
+          </button>
         </div>
-        <button type='submit'>Search</button>
+        <button type='submit'>
+          <div className='icon-button'>
+            <FaSearch />
+          </div>
+        </button>
       </form>
     </div>
   );

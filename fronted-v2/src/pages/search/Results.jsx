@@ -40,6 +40,7 @@ const Results = () => {
         count: totalUsers
       } = await usersService.getUsers({ q, page, size });
 
+      //setTimeout(() => {
       const endTime = new Date();
       setTime(endTime - startTime); //in ms
 
@@ -51,6 +52,7 @@ const Results = () => {
       setTotal(Number(totalUsers));
 
       setLoading(false);
+      //}, [2000]);
     };
 
     fetchUsers();
@@ -67,17 +69,16 @@ const Results = () => {
 
   return (
     <div className='container search-results'>
-      { !loading && <SearchInfo total={total} time={time} /> }
+      <SearchInfo query={q} total={total} time={time} loading={loading} />
 
       <UsersTable users={users} />
 
-      { !loading && (
-        <PaginationNav
-          currentPage={currentPage}
-          lastPage={lastPage}
-          setPage={setPageParam}
-        />
-      )}
+      <PaginationNav
+        currentPage={currentPage}
+        lastPage={lastPage}
+        setPage={setPageParam}
+        loading={loading}
+      />
     </div>
   );
 };

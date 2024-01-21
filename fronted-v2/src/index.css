@@ -42,6 +42,11 @@ button {
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  & .icon-button {
+    display: flex;
+    justify-content: center;
+  }
 }
 
 /* page content */
@@ -57,14 +62,7 @@ nav {
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
-  /*margin-bottom: 20px;*/
-  /*padding: 6px;*/
   gap: 20px;
-  /*
-  border: var(--border);
-  border-radius: var(--border-radius);
-  background-color: var(--secondary);
-  */
 
   & a {
     text-decoration: none;
@@ -566,4 +564,8 @@ table {
 .action-button.off {
   background-color: darkred;
   color: white;
+}
+
+.italic {
+  font-style: italic;
 }

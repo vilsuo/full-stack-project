@@ -1,5 +1,5 @@
 
-const PaginationNav = ({ currentPage, lastPage, setPage }) => {
+const PaginationNav = ({ currentPage, lastPage, setPage, loading }) => {
   const isFirstPage = currentPage === 0;
   const isLastPage = currentPage === lastPage;
 
@@ -13,11 +13,14 @@ const PaginationNav = ({ currentPage, lastPage, setPage }) => {
 
   return (
     <div className='pagination-nav'>
-      <button disabled={isFirstPage} onClick={handleFirst}>{'<<'}</button>
-      <button disabled={isFirstPage} onClick={handlePrevious}>{'<'}</button>
-      <span>{currentPage + 1}/{lastPage + 1}</span>
-      <button disabled={isLastPage} onClick={handleNext}>{'>'}</button>
-      <button disabled={isLastPage} onClick={handleLast}>{'>>'}</button>
+      <button disabled={loading || isFirstPage} onClick={handleFirst}>{'<<'}</button>
+      <button disabled={loading || isFirstPage} onClick={handlePrevious}>{'<'}</button>
+      { !loading
+        ? <span>{currentPage + 1}/{lastPage + 1}</span>
+        : <span>?/?</span>
+      }
+      <button disabled={loading || isLastPage} onClick={handleNext}>{'>'}</button>
+      <button disabled={loading || isLastPage} onClick={handleLast}>{'>>'}</button>
     </div>
   );
 };
