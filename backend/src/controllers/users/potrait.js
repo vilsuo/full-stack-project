@@ -1,10 +1,9 @@
 const router = require('express').Router({ mergeParams: true });
-
 const { sequelize } = require('../../util/db');
-const { isSessionUser } = require('../../util/middleware/auth');
+const { isSessionUser, isAllowedToViewUser } = require('../../util/middleware/auth');
 const { potraitFinder } = require('../../util/middleware/finder');
 const { getNonSensitivePotrait } = require('../../util/dto');
-const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
+const fileStorage = require('../../util/file-storage');
 const { Potrait } = require('../../models');
 const logger = require('../../util/logger');
 
@@ -21,8 +20,8 @@ const createPotrait = async (filepath, file, userId, transaction = {}) => {
   return image;
 };
 
-router.get('/', potraitFinder, async (req, res) => {
-  const potrait = req.potrait;
+router.get('/', isAllowedToViewUser, potraitFinder, async (req, res) => {
+  const { potrait } = req;
   return res.send(getNonSensitivePotrait(potrait));
 });
 
@@ -95,7 +94,7 @@ router.put('/', isSessionUser, async (req, res, next) => {
 });
 
 router.delete('/', potraitFinder, isSessionUser, async (req, res) => {
-  const potrait = req.potrait;
+  const { potrait } = req;
   
   await potrait.destroy();
 
@@ -104,8 +103,8 @@ router.delete('/', potraitFinder, isSessionUser, async (req, res) => {
   return res.status(204).end();
 });
 
-router.get('/content', potraitFinder, async (req, res) => {
-  const potrait = req.potrait;
+router.get('/content', isAllowedToViewUser, potraitFinder, async (req, res) => {
+  const { potrait } = req;
   const fullfilepath = fileStorage.getImageFilePath(potrait.filepath);
 
   return res

@@ -7,10 +7,15 @@ const { sequelize } = require('../../util/db');
 const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
-const { isSessionUser } = require('../../util/middleware/auth');
+const { isSessionUser, isAllowedToViewUser } = require('../../util/middleware/auth');
 const { pagination } = require('../../util/middleware/query');
 const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { SESSION_ID } = require('../../constants');
+
+/*
+TODO
+- implement 'all users' route with 'isAllowedToViewUser'
+*/
 
 const getUserSearchFilter = (columnName, query) => {
   return sequelize.where(
@@ -56,18 +61,18 @@ router.get('/', pagination, async (req, res) => {
   return res.send({ users, page: pageNumber, pages, count });
 });
 
-router.get('/:username', userFinder, async (req, res) => {
-  const user = req.foundUser;
+router.get('/:username', userFinder, isAllowedToViewUser, async (req, res) => {
+  const { foundUser } = req;
 
-  return res.send(getNonSensitiveUser(user));
+  return res.send(getNonSensitiveUser(foundUser));
 });
 
 router.delete('/:username', userFinder, isSessionUser, async (req, res, next) => {
-  const user = req.foundUser;
+  const { foundUser } = req;
 
-  await fileStorage.removeUserFiles(user.id);
+  await fileStorage.removeUserFiles(foundUser.id);
 
-  await user.destroy();
+  await foundUser.destroy();
 
   return req.session.destroy((error) => {
     if (error) return next(error);

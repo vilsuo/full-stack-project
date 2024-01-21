@@ -154,13 +154,13 @@ describe('find users images', () => {
       test(`can not access a ${IMAGE_PRIVATE} image`, async () => {
         const responseBody = await getImage(username, userImages[IMAGE_PRIVATE].id, {}, 401);
 
-        expect(responseBody.message).toBe('authentication required');
+        expect(responseBody.message).toBe(`image is ${IMAGE_PRIVATE}`);
       });
 
       test(`can not view ${IMAGE_PRIVATE} image content`, async () => {
         const response = await getImageContent(username, userImages[IMAGE_PRIVATE].id, {}, 401);
 
-        expect(response.body.message).toBe('authentication required');
+        expect(response.body.message).toBe(`image is ${IMAGE_PRIVATE}`);
 
         expect(getImageFilePathSpy).not.toHaveBeenCalled();
       });

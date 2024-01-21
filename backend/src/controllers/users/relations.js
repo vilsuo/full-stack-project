@@ -1,11 +1,24 @@
 const router = require('express').Router({ mergeParams: true });
-
 const { Relation, User } = require('../../models');
-const { isSessionUser } = require('../../util/middleware/auth');
+const { isSessionUser, isAllowedToViewUser } = require('../../util/middleware/auth');
 const parser = require('../../util/parser');
 
-router.get('/', async (req, res) => {
-  const user = req.foundUser;
+/*
+TODO
+- get forward route:  
+  - return all types of relations only to the sourceUser, else return just follows
+  - remove query parameters for other than sourceUser
+  
+- get reverse route:
+  - return only relations of type 'follow'
+  - remove query parameters
+
+- post route:
+  - check if target user is disabled
+*/
+
+router.get('/', isAllowedToViewUser, async (req, res) => {
+  const { foundUser } = req;
   const { type, targetUserId } = req.query;
 
   const searchFilters = {};
@@ -25,15 +38,15 @@ router.get('/', async (req, res) => {
       [{ model: User, as:'targetUser' }, 'username', 'ASC']
     ],
     where: { 
-      sourceUserId: user.id,
+      sourceUserId: foundUser.id,
       ...searchFilters
     }
   });
   return res.send(relations);
 });
 
-router.get('/reverse', async (req, res) => {
-  const user = req.foundUser;
+router.get('/reverse', isAllowedToViewUser, async (req, res) => {
+  const { foundUser } = req;
   const { type, sourceUserId } = req.query;
 
   const searchFilters = {};
@@ -53,7 +66,7 @@ router.get('/reverse', async (req, res) => {
       [{ model: User, as:'sourceUser' }, 'username', 'ASC']
     ],
     where: { 
-      targetUserId: user.id,
+      targetUserId: foundUser.id,
       ...searchFilters
     }
   });
@@ -61,7 +74,7 @@ router.get('/reverse', async (req, res) => {
 });
 
 router.post('/', isSessionUser, async (req, res) => {
-  const sourceUser = req.user;
+  const { user: sourceUser } = req;
 
   // parse request body
   const type = parser.parseRelationType(req.body.type);
@@ -106,7 +119,7 @@ router.post('/', isSessionUser, async (req, res) => {
 
 router.delete('/:relationId', isSessionUser, async (req, res) => {
   const { relationId } = req.params;
-  const sourceUser = req.user;
+  const { user: sourceUser } = req;
 
   const id = parser.parseId(relationId);
 

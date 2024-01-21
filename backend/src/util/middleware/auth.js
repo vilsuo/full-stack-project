@@ -1,7 +1,9 @@
-const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE } = require('../../constants');
-const { User } = require('../../models');
+const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE, RELATION_BLOCK } = require('../../constants');
+const { User, Relation } = require('../../models');
 const { IllegalStateError } = require('../error');
 const { userFinder, imageFinder } = require('./finder');
+
+const { Op } = require('sequelize');
 
 /**
  * Extracts the authenticated User from request session to request.user.
@@ -26,7 +28,7 @@ const sessionExtractor = async (req, res, next) => {
   const user = await User.findByPk(session.user.id);
   if (!user) {
     // session exists, but the user does not
-    return req.session.destroy((error) => {
+    return session.destroy((error) => {
       if (error) return next(error);
   
       return res
@@ -40,9 +42,57 @@ const sessionExtractor = async (req, res, next) => {
 };
 
 /**
+ * Viewing is allowed if viewer is not authenticated or is authenticated but there
+ * does not exist a {@link Relation} with type {@link RELATION_BLOCK} between the viewer
+ * and the user.
+ * 
+ * Calls {@link sessionExtractor} middleware if session is present.
+ * 
+ * Expects middleware {@link userFinder} to have been called beforehand.
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ * @returns response with status
+ * - '401' if block exists between the user and the session user
+ */
+const isAllowedToViewUser = async (req, res, next) => {
+  const { foundUser } = req;
+
+  if (req.session.user) {
+    return await sessionExtractor(req, res, async () => {
+      const { user } = req;
+
+      if (user.id !== foundUser.id) {
+        // check if block exists
+        const blocksBetween = await Relation.findAll({
+          where: {
+            type: RELATION_BLOCK,
+            [Op.or]: [
+              { [Op.and]: [{ sourceUserId: user.id, targetUserId: foundUser.id }] },
+              { [Op.and]: [{ sourceUserId: foundUser.id, targetUserId: user.id }] },
+            ]
+          }
+        });
+
+        // empty array is NOT falsy!
+        if (blocksBetween.length > 0) {
+          return res.status(401).send({ message: 'block exists' });
+        }
+      }
+
+      return next();
+    });
+  }
+
+  next();
+};
+
+/**
  * Checks if image viewing is allowed.
  * 
- * Expects the middleware {@link imageFinder} to have been handled beforehand.
+ * Expects the middlewares {@link isAllowedToViewUser} and {@link imageFinder}
+ * to have been handled beforehand.
  * 
  * @param {*} req 
  * @param {*} res 
@@ -53,7 +103,8 @@ const sessionExtractor = async (req, res, next) => {
  * not owner of the image
  */
 const isAllowedToViewImage = async (req, res, next) => {
-  const image = req.image;
+  // session extractor should have been called if session exists.
+  const { image, user } = req;
 
   switch (image.privacy) {
     case IMAGE_PUBLIC:
@@ -61,15 +112,12 @@ const isAllowedToViewImage = async (req, res, next) => {
 
     case IMAGE_PRIVATE:
       // only authenticated user can view the image, if the authenticated
-      // user is the owner of the image
-      return await sessionExtractor(req, res, () => {
-        const user = req.user;
-        if (user.id !== image.userId) {
-          return res.status(401).send({ message: `image is ${IMAGE_PRIVATE}` });
-        }
+      // user is the owner of the image.
+      if (!user || (user.id !== image.userId)) {
+        return res.status(401).send({ message: `image is ${IMAGE_PRIVATE}` });
+      }
 
-        return next();
-      });
+      return next();
     
     default: 
       throw new IllegalStateError(`unhandled privacy '${image.privacy}`);
@@ -91,8 +139,8 @@ const isAllowedToViewImage = async (req, res, next) => {
  */
 const isSessionUser = async (req, res, next) => {
   await sessionExtractor(req, res, () => {
-    const sessionUser = req.user;
-    const foundUser = req.foundUser;
+    const { user: sessionUser, foundUser } = req;
+
     if (foundUser.id !== sessionUser.id) {
       return res.status(401).send({
         message: 'session user is not the owner'
@@ -105,6 +153,7 @@ const isSessionUser = async (req, res, next) => {
 
 module.exports = {
   sessionExtractor,
+  isAllowedToViewUser,
   isAllowedToViewImage,
   isSessionUser,
 };

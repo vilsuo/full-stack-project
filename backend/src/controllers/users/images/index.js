@@ -1,11 +1,10 @@
-const router = require('express').Router({ mergeParams: true }); // use parameter 'username'
+const router = require('express').Router({ mergeParams: true });
 const imageRouter = require('./image');
-
 const { Image, User } = require('../../../models');
-const { isSessionUser } = require('../../../util/middleware/auth');
+const { isSessionUser, isAllowedToViewUser } = require('../../../util/middleware/auth');
 const { getNonSensitiveImage } = require('../../../util/dto');
 const logger = require('../../../util/logger');
-const fileStorage = require('../../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
+const fileStorage = require('../../../util/file-storage');
 const { imageFinder } = require('../../../util/middleware/finder');
 const parser = require('../../../util/parser');
 const { IMAGE_PUBLIC } = require('../../../constants');
@@ -33,8 +32,8 @@ const createImage = async (filepath, file, fields, userId) => {
   return image;
 };
 
-router.get('/', async (req, res) => {
-  const foundUser = req.foundUser;
+router.get('/', isAllowedToViewUser, async (req, res) => {
+  const { foundUser } = req;
 
   const where = { userId: foundUser.id, privacy: IMAGE_PUBLIC };
 
@@ -56,8 +55,7 @@ router.post('/', isSessionUser, async (req, res, next) => {
   fileUpload(req, res, async (error) => {
     if (error) return next(error);
 
-    const file = req.file;
-    const fields = req.body;
+    const { file, body: fields } = req;
 
     logger.info('Image file:    ', file);
     logger.info('Image fields:  ', fields);
