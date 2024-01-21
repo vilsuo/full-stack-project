@@ -2,23 +2,20 @@ import { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate, useOutletContext } from 'react-router-dom';
 
 import imagesService from '../../../services/images';
-
 import ToggleButton from '../../../components/ToggleButton';
-
-import { FaEdit, FaTrash } from 'react-icons/fa';
-import { IconContext } from 'react-icons';
 import ImageChips from '../../../components/images/ImageChips';
 import Alert from '../../../components/Alert';
 import { createErrorMessage } from '../../../util/error';
 import RadioGroup from '../../../components/RadioGroup';
-import { IMAGE_PRIVACIES } from '../../../constants';
+import { IMAGE_PRIVACIES, SIZE_SMALL } from '../../../constants';
+import IconButton from '../../../components/IconButton';
+
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 export const imageContentLoader = async ({ params }) => {
   const { username, imageId } = params;
   const image = await imagesService.getImage(username, imageId);
   const content = await imagesService.getImageContent(username, imageId);
-
-  console.log('loader run');
 
   return { image, content };
 };
@@ -50,34 +47,34 @@ const ImageEditing = ({ user, image, handleEdit }) => {
     <div>
       <label>
         <span>Title:</span>
-          <input
-            type='text'
-            value={title}
-            onChange={ ({ target }) => { setTitle(target.value); setChangeMade(true); }}
-          />
-        </label>
-
-        <label>
-          <span>Caption:</span>
-          <textarea
-            value={caption}
-            onChange={ ({ target }) => { setCaption(target.value); setChangeMade(true); }}
-          />
-        </label>
-
-        <RadioGroup
-          options={IMAGE_PRIVACIES}
-          value={privacy}
-          setValue={(value) => { setPrivacy(value); setChangeMade(true); }}
-          optionName={'Privacy'}
+        <input
+          type='text'
+          value={title}
+          onChange={ ({ target }) => { setTitle(target.value); setChangeMade(true); }}
         />
+      </label>
 
-        <button
-          disabled={!changeMade}
-          onClick={() => handleEdit({ title, caption, privacy })}
-        >
-          Save
-        </button>
+      <label>
+        <span>Caption:</span>
+        <textarea
+          value={caption}
+          onChange={ ({ target }) => { setCaption(target.value); setChangeMade(true); }}
+        />
+      </label>
+
+      <RadioGroup
+        options={IMAGE_PRIVACIES}
+        value={privacy}
+        setValue={(value) => { setPrivacy(value); setChangeMade(true); }}
+        optionName={'Privacy'}
+      />
+
+      <button
+        disabled={!changeMade}
+        onClick={() => handleEdit({ title, caption, privacy })}
+      >
+        Save
+      </button>
     </div>
   );
 };
@@ -145,19 +142,22 @@ const Image = () => {
 
       <div className='edit-actions'>
         { canEdit && (
-          <ToggleButton toggled={editing} setToggled={setEditing}>
-            {<FaEdit  />}
+          <ToggleButton
+            toggled={editing}
+            setToggled={setEditing}
+          >
+            <FaEdit  />
           </ToggleButton>
         )}
 
         { editing && (
-          <button className='action-button' onClick={ () => handleRemove(image) }>
-            <IconContext.Provider value={{ size: '15px' }}>
-              <div>
-                <FaTrash />
-              </div>
-            </IconContext.Provider>
-          </button>
+          <IconButton
+            className='action-button'
+            onClick={ () => handleRemove(image) }
+            size={SIZE_SMALL}
+          >
+            <FaTrash />
+          </IconButton>
         )}
       </div>
 

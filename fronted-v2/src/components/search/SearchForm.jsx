@@ -5,6 +5,7 @@ import RadioGroup from '../RadioGroup';
 import IconButton from '../IconButton';
 
 import { FaTimes, FaSearch  } from 'react-icons/fa';
+import { SIZE_SMALL } from '../../constants';
 
 const SIZE_OPTIONS = [
   { value: '5', label: '5' },
@@ -59,13 +60,13 @@ const SearchForm = () => {
               type='button'
               disabled={!query}
               onClick={() => setQuery('')}
-              size='15px'
+              size={SIZE_SMALL}
             >
               <FaTimes />
             </IconButton>
           </div>
 
-          <IconButton type='submit' size='15px'>
+          <IconButton type='submit' size={SIZE_SMALL}>
             <FaSearch />
           </IconButton>
         </div>

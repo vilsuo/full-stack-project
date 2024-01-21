@@ -7,6 +7,8 @@ import { createErrorMessage } from '../../util/error';
 import RadioGroup from '../../components/RadioGroup';
 import { OPTION_NONE, RELATION_BLOCK, RELATION_FOLLOW, RELATION_TYPES } from '../../constants';
 import { removeRelation } from '../../reducers/auth';
+import ToggleButton from '../../components/ToggleButton';
+import IconButton from '../../components/IconButton';
 
 import { 
   FaEdit,         // edit icon
@@ -15,8 +17,6 @@ import {
   FaUser,         // follow icon
   FaUserSlash,    // block icon
 } from 'react-icons/fa';
-import { IconContext } from 'react-icons';
-import ToggleButton from '../../components/ToggleButton';
 
 const RELATION_SOURCE = { value: 'sourceUser', label: 'User Relations' };
 const RELATION_TARGET = { value: 'targetUser', label: 'Relations to User' };
@@ -122,7 +122,7 @@ const Relations = () => {
       { canEdit && (
         <div className='edit-actions'>
           <ToggleButton toggled={editing} setToggled={setEditing}>
-            {<FaEdit  />}
+            <FaEdit  />
           </ToggleButton>
         </div>
       )}
@@ -166,13 +166,9 @@ const Relations = () => {
 
               { showEdit && (
                 <td className='action-icon'>
-                  <button onClick={(event) => handleRemove(event, relation)}>
-                    <IconContext.Provider value={{ size: '20px' }}>
-                      <div>
-                        <FaTimesCircle  />
-                      </div>
-                    </IconContext.Provider>
-                  </button>
+                  <IconButton onClick={(event) => handleRemove(event, relation)}>
+                    <FaTimesCircle />
+                  </IconButton>
                 </td>
               )}
             </tr>

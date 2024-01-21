@@ -1,20 +1,16 @@
-import { IconContext } from 'react-icons';
+import IconButton from './IconButton';
 
 const ToggleButton = ({ toggled, setToggled, children }) => {
 
   const handleChange = () => setToggled(!toggled);
 
   return (
-    <button
+    <IconButton 
       className={`action-button ${toggled ? 'on' : 'off'}`}
       onClick={handleChange}
     >
-      <IconContext.Provider value={{ size: '20px' }}>
-        <div>
-          {children}
-        </div>
-      </IconContext.Provider>
-    </button>
+      {children}
+    </IconButton>
   );
 };
 

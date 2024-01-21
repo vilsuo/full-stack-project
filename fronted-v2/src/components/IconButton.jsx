@@ -1,7 +1,8 @@
 import { IconContext } from 'react-icons';
+import { SIZE_MEDIUM } from '../constants';
 
 const IconButton = ({ children, ...props }) => {
-  const size = props.size || '20px';
+  const size = props.size || SIZE_MEDIUM;
 
   return (
     <button { ...props }>
