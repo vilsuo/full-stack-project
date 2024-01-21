@@ -1,5 +1,4 @@
-import { 
-  //createBrowserRouter,
+import {
   Route, 
   createRoutesFromElements,
   RouterProvider,
@@ -24,20 +23,26 @@ import Register from './pages/Register';
 import Results from './pages/search/Results';
 // about
 import About, { statisticsLoader } from './pages/About';
-// user
-import UserErrorBoundary from './pages/user/UserErrorBoundary';
-// user images
+
+// USER PAGES
+// images
 import Images, { imagesLoader } from './pages/user/images/Images';
 import Image, { imageContentLoader } from './pages/user/images/Image';
-// user other
+// relations
+import Relations, { relationsLoader } from './pages/user/Relations';
+// details
 import Details from './pages/user/Details';
-import Relations from './pages/user/Relations';
-
-// user settings
+// settings
 import SettingsPotrait from './pages/user/settings/SettingsPotrait';
 import SettingsOther from './pages/user/settings/SettingsOther';
-// other
+
+// errors
 import ErrorPage from './pages/ErrorPage';
+import {
+  ImagesErrorElement, ImageErrorElement,
+  RelationsErrorElement,
+  UserErrorElement
+} from './pages/ErrorElements';
 
 
 /*
@@ -69,12 +74,24 @@ const router = createHashRouter(
         <Route path=':username'
           loader={userLoader}
           element={<UserLayout />}
-          errorElement={<UserErrorBoundary />}
+          errorElement={<UserErrorElement />}
         >
-          <Route path='images' element={<Images />} loader={imagesLoader} />
-          <Route path='images/:imageId' element={<Image />} loader={imageContentLoader} />
+          <Route path='images'
+            element={<Images />}
+            loader={imagesLoader}
+            errorElement={<ImagesErrorElement />}
+          />
+          <Route path='images/:imageId'
+            element={<Image />}
+            loader={imageContentLoader}
+            errorElement={<ImageErrorElement />}
+          />
 
-          <Route path='relations' element={<Relations />} />
+          <Route path='relations'
+            element={<Relations />}
+            loader={relationsLoader}
+            errorElement={<RelationsErrorElement />}
+          />
 
           <Route path='details' element={<Details />} />
 
@@ -87,7 +104,10 @@ const router = createHashRouter(
         </Route>
       </Route>
 
-      <Route path='about' element={<About />} loader={statisticsLoader} />
+      <Route path='about'
+        element={<About />}
+        loader={statisticsLoader}
+      />
 
       <Route path='login' element={<Login />} />
       <Route path='register' element={<Register />} />

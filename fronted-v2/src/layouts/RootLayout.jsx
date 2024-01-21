@@ -15,15 +15,13 @@ const RootLayout = () => {
   useEffect(() => {
     const checkIfAlreadyLoggedIn = async () => {
       try {
-        const result = await dispatch(autoLogin()).unwrap();
-        console.log('success in auto-loading', result);
-
+        await dispatch(autoLogin()).unwrap();
       } catch (error) {
         console.log('error in auto-loading', error);
       }
       setLoading(false);
     };
-
+    
     checkIfAlreadyLoggedIn();
     
   }, []);

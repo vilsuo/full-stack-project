@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useState } from 'react';
+import { useLoaderData, useNavigate, useOutletContext } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
 import relationsService from '../../services/relations';
-import { createErrorMessage } from '../../util/error';
 import RadioGroup from '../../components/RadioGroup';
 import { OPTION_NONE, RELATION_BLOCK, RELATION_FOLLOW, RELATION_TYPES } from '../../constants';
 import { removeRelation } from '../../reducers/auth';
 import ToggleButton from '../../components/ToggleButton';
 import IconButton from '../../components/IconButton';
+
+/*
+Todo
+- handle remove error
+*/
 
 import { 
   FaEdit,         // edit icon
@@ -17,6 +21,14 @@ import {
   FaUser,         // follow icon
   FaUserSlash,    // block icon
 } from 'react-icons/fa';
+
+export const relationsLoader = async ({ params }) => {
+  const { username } = params;
+  const source = await relationsService.getRelationsBySource(username);
+  const target = await relationsService.getRelationsByTarget(username);
+
+  return { source, target };
+};
 
 const RELATION_SOURCE = { value: 'sourceUser', label: 'User Relations' };
 const RELATION_TARGET = { value: 'targetUser', label: 'Relations to User' };
@@ -35,13 +47,13 @@ const RELATION_TYPE_ICONS = {
   [RELATION_BLOCK.value]: <FaUserSlash />
 };
 
-const relationsInitialValue = { source: [], target: [] };
-
 const Relations = () => {
   const { user, authenticatedUser } = useOutletContext();
-  const [relations, setRelations] = useState(relationsInitialValue);
 
-  const [loading, setLoading] = useState(true);
+  const loadedRelations = useLoaderData();
+  const [relations, setRelations] = useState(loadedRelations);
+
+  const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const [directionFilter, setDirectionFilter] = useState(RELATION_SOURCE.value);
@@ -49,28 +61,6 @@ const Relations = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const { username } = user;
-
-  useEffect(() => {
-    const fetchRelations = async () => {
-      setRelations(relationsInitialValue);
-      setLoading(true);
-
-      try {
-        const source = await relationsService.getRelationsBySource(username);
-        const target = await relationsService.getRelationsByTarget(username);
-        setRelations({ source, target, loading: false });
-        setLoading(false);
-
-      } catch (error) {
-        setLoading(false);
-        console.log('error in loading relations', createErrorMessage(error));
-      }
-    };
-
-    fetchRelations();
-  }, [username]);
 
   const handleClick = (otherUser) => {
     navigate(`/users/${otherUser.username}`);
