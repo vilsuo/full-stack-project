@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import util from '../util';
+import util from '../../util';
 
 const UsersTable = ({ users }) => {
   const navigate = useNavigate();

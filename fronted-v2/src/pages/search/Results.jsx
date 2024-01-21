@@ -2,8 +2,9 @@
 import { useSearchParams } from 'react-router-dom';
 import usersService from '../../services/users';
 import { useEffect, useState } from 'react';
-import PaginationNav from '../../components/PaginationNav';
-import UsersTable from '../../components/UsersTable';
+import PaginationNav from '../../components/search/PaginationNav';
+import UsersTable from '../../components/search/UsersTable';
+import SearchInfo from '../../components/search/SearchInfo';
 
 /*
 TODO
@@ -11,14 +12,8 @@ TODO
 - add error handler
 */
 
-const SearchInfo = ({ total, time }) => {
-  return (
-    <span>Results: {total}. Time {time} ms</span>
-  );
-};
-
 const Results = () => {
-  const [users, setUsers] = useState();
+  const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState();
   const [pages, setPages] = useState();
   const [total, setTotal] = useState();
@@ -70,21 +65,19 @@ const Results = () => {
     });
   };
 
-  if (loading) {
-    return <p>loading...</p>
-  }
-
   return (
-    <div className='search-results container'>
-      <SearchInfo total={total} time={time} />
+    <div className='container search-results'>
+      { !loading && <SearchInfo total={total} time={time} /> }
 
       <UsersTable users={users} />
 
-      <PaginationNav
-        currentPage={currentPage}
-        lastPage={lastPage}
-        setPage={setPageParam}
-      />
+      { !loading && (
+        <PaginationNav
+          currentPage={currentPage}
+          lastPage={lastPage}
+          setPage={setPageParam}
+        />
+      )}
     </div>
   );
 };
