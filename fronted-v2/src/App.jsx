@@ -37,12 +37,12 @@ import SettingsPotrait from './pages/user/settings/SettingsPotrait';
 import SettingsOther from './pages/user/settings/SettingsOther';
 
 // errors
-import ErrorPage from './pages/ErrorPage';
 import {
   ImagesErrorElement, ImageErrorElement,
   RelationsErrorElement,
   UserErrorElement
-} from './pages/ErrorElements';
+} from './components/ErrorElement';
+import NotFoundPage from './pages/NotFoundPage';
 
 
 /*
@@ -111,7 +111,7 @@ const router = createHashRouter(
 
       <Route path='login' element={<Login />} />
       <Route path='register' element={<Register />} />
-      <Route path='error' element={<ErrorPage />} />
+      <Route path='*' element={<NotFoundPage />} />
     </Route>
   )
 );

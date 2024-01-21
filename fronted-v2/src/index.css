@@ -325,7 +325,6 @@ table {
 
   & th,
   & td {
-    /*max-width: 100px;*/
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -568,4 +567,9 @@ table {
 
 .italic {
   font-style: italic;
+}
+
+.error-element {
+  background-color: darkred;
+  max-width: 500px;
 }

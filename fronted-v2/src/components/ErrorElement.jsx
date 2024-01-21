@@ -1,18 +1,25 @@
-import { useRouteError } from 'react-router-dom';
+import { useNavigate, useRouteError } from 'react-router-dom';
 import { createErrorMessage } from '../util/error';
 
 const ErrorElement = ({ header }) => {
   const error = useRouteError();
+  const message = error ? createErrorMessage(error) : undefined;
 
-  let message = createErrorMessage(error);
+  const navigate = useNavigate();
 
   return (
-    <div className='error-boundary'>
-      <h3>{ header }</h3>
+    <div className='container error-element'>
+      <h2>{ header }</h2>
       <p>{ message }</p>
+
+      <div className='edit-actions'>
+        <button onClick={ () => navigate('/') }>Home</button>
+      </div>
     </div>
   );
 };
+
+export default ErrorElement;
 
 // USER
 export const UserErrorElement = () => {
