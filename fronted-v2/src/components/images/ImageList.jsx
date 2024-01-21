@@ -12,7 +12,7 @@ const IMAGE_PRIVACY_FILTER_OPTIONS = [
 ];
 
 const ImageList = ({ user, images, showExtra }) => {
-  const [privacyFilter, setPrivacyFilter] = useState('none');
+  const [privacyFilter, setPrivacyFilter] = useState(OPTION_NONE.value);
 
   const navigate = useNavigate();
 
