@@ -21,7 +21,7 @@ const Alert = ({ alert, clearAlert }) => {
 
   return (
     <div className={`alert ${type}`}>
-      <p>{createMessage(prefix, details)}</p>
+      <p className='italic'>{createMessage(prefix, details)}</p>
       <button className='close-btn' onClick={clearAlert}></button>
     </div>
   );

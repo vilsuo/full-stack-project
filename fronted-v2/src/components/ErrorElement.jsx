@@ -10,7 +10,8 @@ const ErrorElement = ({ header }) => {
   return (
     <div className='container error-element'>
       <h2>{ header }</h2>
-      <p>{ message }</p>
+    
+      <p className='italic'>{ message }</p>
 
       <div className='edit-actions'>
         <button onClick={ () => navigate('/') }>Home</button>
