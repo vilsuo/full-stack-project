@@ -286,7 +286,7 @@ textarea {
   max-width: 350px;
   margin: 0 auto;
 
-  & form {
+  & .search-input {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;

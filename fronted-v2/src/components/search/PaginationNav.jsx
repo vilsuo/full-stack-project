@@ -1,3 +1,9 @@
+import IconButton from '../IconButton';
+
+import { 
+  FaAngleDoubleLeft, FaAngleLeft, 
+  FaAngleRight, FaAngleDoubleRight
+} from 'react-icons/fa';
 
 const PaginationNav = ({ currentPage, lastPage, setPage, loading }) => {
   const isFirstPage = currentPage === 0;
@@ -13,14 +19,26 @@ const PaginationNav = ({ currentPage, lastPage, setPage, loading }) => {
 
   return (
     <div className='pagination-nav'>
-      <button disabled={loading || isFirstPage} onClick={handleFirst}>{'<<'}</button>
-      <button disabled={loading || isFirstPage} onClick={handlePrevious}>{'<'}</button>
+      <IconButton disabled={loading || isFirstPage} onClick={handleFirst}>
+        <FaAngleDoubleLeft />
+      </IconButton>
+
+      <IconButton disabled={loading || isFirstPage} onClick={handlePrevious}>
+        <FaAngleLeft />
+      </IconButton>
+
       { !loading
         ? <span>{currentPage + 1}/{lastPage + 1}</span>
         : <span>?/?</span>
       }
-      <button disabled={loading || isLastPage} onClick={handleNext}>{'>'}</button>
-      <button disabled={loading || isLastPage} onClick={handleLast}>{'>>'}</button>
+
+      <IconButton disabled={loading || isLastPage} onClick={handleNext}>
+        <FaAngleRight />
+      </IconButton>
+
+      <IconButton disabled={loading || isLastPage} onClick={handleLast}>
+        <FaAngleDoubleRight />
+      </IconButton>
     </div>
   );
 };
