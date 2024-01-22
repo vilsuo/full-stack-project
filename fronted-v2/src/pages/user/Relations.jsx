@@ -95,8 +95,10 @@ const Relations = () => {
     : relations.target;
 
   // filter relation type
-  const filteredRelations = directionRelations.filter(relation => 
-    (typeFilter === OPTION_NONE.value) ? true : (relation.type === typeFilter)
+  const filteredRelations = directionRelations.filter(relation =>
+    // apply filter only if viewing users relations
+    (!isUsersRelations || (typeFilter === OPTION_NONE.value))
+      ? true : (relation.type === typeFilter)
   );
 
   // object key to select the other user from relation
@@ -104,19 +106,12 @@ const Relations = () => {
     ? RELATION_TARGET.value
     : RELATION_SOURCE.value;
 
-  const canEdit = authenticatedUser && (authenticatedUser.id === user.id) && isUsersRelations;
+  const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
+  const canEdit = isOwnPage && isUsersRelations;
   const showEdit = editing && isUsersRelations;
 
   return (
     <div className='container'>
-      { canEdit && (
-        <div className='edit-actions'>
-          <ToggleButton toggled={editing} setToggled={setEditing}>
-            <FaEdit  />
-          </ToggleButton>
-        </div>
-      )}
-
       <h2>Relations</h2>
 
       <RadioGroup
@@ -126,14 +121,24 @@ const Relations = () => {
         optionName='Relation Direction'
       />
 
-      <RadioGroup
-        options={RELATION_TYPE_FILTER_OPTIONS}
-        value={typeFilter}
-        setValue={setTypeFilter}
-        optionName='Relation Type'
-      />
+      { (isOwnPage && isUsersRelations) && (
+        <RadioGroup
+          options={RELATION_TYPE_FILTER_OPTIONS}
+          value={typeFilter}
+          setValue={setTypeFilter}
+          optionName='Relation Type'
+        />
+      )}
 
       <p>Relations: { !loading && filteredRelations.length }</p>
+
+      { canEdit && (
+        <div className='edit-actions'>
+          <ToggleButton toggled={editing} setToggled={setEditing}>
+            <FaEdit  />
+          </ToggleButton>
+        </div>
+      )}
 
       <table className='navigable'>
         <thead>
