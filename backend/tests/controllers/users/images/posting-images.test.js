@@ -117,12 +117,20 @@ describe('posting images', () => {
     
             compareFoundWithResponse(getNonSensitiveImage(foundImage), responseImage);
           });
+
+          test('image has 0 views', () => {
+            expect(responseImage.views).toBe(0);
+          });
+
+          test('image has not been edited', () => {
+            expect(responseImage.editedAt).toBe(null);
+          })
     
-          test('image filepath is not returned', async () => {
+          test('image filepath is not returned', () => {
             expect(responseImage).not.toHaveProperty('filepath');
           });
 
-          test('there is no attempt to remove an image', async () => {
+          test('there is no attempt to remove an image', () => {
             expect(removeFileSpy).not.toHaveBeenCalled();
           });
         });

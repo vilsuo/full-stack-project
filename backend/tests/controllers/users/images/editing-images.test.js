@@ -139,12 +139,16 @@ describe('editing images', () => {
             compareFoundWithResponse(getNonSensitiveImage(foundImage), editedImage);
           });
     
-          test('editing updates the field "updatedAt"', async () => {
-            const oldDate = imageToEdit.updatedAt;
-            const newDate = (await Image.findByPk(imageToEdit.id)).updatedAt;
-    
+          test('editing updates the field "editedAt"', async () => {
+            const newDate = editedImage.editedAt;
+
+            // edit again: the 'editedAt' field of original image is null
+            const newerDate = (await editImage(
+              username, imageToEdit.id, newImageValues, authHeader, 200
+            )).editedAt;
+            
             // new date is after the old date
-            expect(newDate.getTime()).toBeGreaterThan(oldDate.getTime());
+            expect(newerDate > newDate).toBe(true);
           });
         });
       });

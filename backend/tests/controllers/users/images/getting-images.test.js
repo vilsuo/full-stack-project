@@ -54,6 +54,10 @@ const getImageContent = async (username, imageId, headers, statusCode) => {
     .expect(statusCode);
 };
 
+const getWithIncrementedViews = image => {
+  return { ...image, views: image.views + 1 };
+};
+
 describe('find users images', () => {
   test('can not view non-existing users images', async () => {
     const username = nonExistingUserValues.username;
@@ -115,9 +119,19 @@ describe('find users images', () => {
         const returnedImage = await getImage(username, userImages[IMAGE_PUBLIC].id, {}, 200);
   
         compareFoundWithResponse(
-          getNonSensitiveImage(userImages[IMAGE_PUBLIC]),
+          getWithIncrementedViews(getNonSensitiveImage(userImages[IMAGE_PUBLIC])),
           returnedImage
         );
+      });
+
+      test(`accessing a ${IMAGE_PUBLIC} image increments the view count`, async () => {
+        const oldViewCount = userImages[IMAGE_PUBLIC].views;
+
+        const newViewCount = (await getImage(
+          username, userImages[IMAGE_PUBLIC].id, {}, 200
+        )).views;
+
+        expect(newViewCount).toBe(oldViewCount + 1);
       });
 
       test(`can view ${IMAGE_PUBLIC} image content`, async () => {
@@ -155,6 +169,17 @@ describe('find users images', () => {
         const responseBody = await getImage(username, userImages[IMAGE_PRIVATE].id, {}, 401);
 
         expect(responseBody.message).toBe(`image is ${IMAGE_PRIVATE}`);
+      });
+
+      test(`accessing a ${IMAGE_PRIVATE} image does not increments the view count`, async () => {
+        const imageToAccess = userImages[IMAGE_PRIVATE];
+        const oldViewCount = imageToAccess.views;
+
+        await getImage(username, imageToAccess.id, {}, 401);
+
+        const newViewCount = (await Image.findByPk(imageToAccess.id)).views;
+
+        expect(newViewCount).toBe(oldViewCount);
       });
 
       test(`can not view ${IMAGE_PRIVATE} image content`, async () => {
@@ -199,7 +224,7 @@ describe('find users images', () => {
             const returnedImage = await getImage(username, imageToAccess.id, authHeader, 200);
   
             compareFoundWithResponse(
-              getNonSensitiveImage(imageToAccess),
+              getWithIncrementedViews(getNonSensitiveImage(imageToAccess)),
               returnedImage
             );
           });
@@ -251,11 +276,11 @@ describe('find users images', () => {
             );
   
             compareFoundWithResponse(
-              getNonSensitiveImage(otherUserImages[IMAGE_PUBLIC]),
+              getWithIncrementedViews(getNonSensitiveImage(otherUserImages[IMAGE_PUBLIC])),
               returnedImage
             );
           });
-  
+
           test(`can view a ${IMAGE_PUBLIC} image content`, async () => {
             getImageFilePathSpy.mockImplementationOnce(filepath => {
               return path.join(path.resolve(), otherUserImages[IMAGE_PUBLIC].filepath);
@@ -278,7 +303,7 @@ describe('find users images', () => {
   
             expect(responseBody.message).toBe('image is private');
           });
-  
+
           test(`can not view a ${IMAGE_PRIVATE} image content`, async () => {
             const response = await getImageContent(
               otherUsername, otherUserImages[IMAGE_PRIVATE].id, authHeader, 401
