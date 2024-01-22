@@ -43,9 +43,20 @@ Image.init({
       },
     },
   },
+  views: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    allowNull: false,
+  },
+  editedAt: {
+    type: DataTypes.DATE,
+    defaultValue: null,
+    allowNull: true,
+  }
 }, {
   sequelize,
   underscored: true,
+  updatedAt: false,
   modelName: 'image',
 });
 

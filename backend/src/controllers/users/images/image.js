@@ -8,7 +8,10 @@ const parser = require('../../../util/parser');
 
 router.get('/', isAllowedToViewUser, isAllowedToViewImage, async (req, res) => {
   const { image } = req;
-  return res.send(getNonSensitiveImage(image));
+
+  const viewIncrementedImage = await image.increment('views');
+
+  return res.send(getNonSensitiveImage(viewIncrementedImage));
 });
 
 router.put('/', isSessionUser, async (req, res) => {
@@ -19,6 +22,8 @@ router.put('/', isSessionUser, async (req, res) => {
   if (title !== undefined)    { image.title = parser.parseStringType(title, 'title'); }
   if (caption !== undefined)  { image.caption = parser.parseTextType(caption, 'caption'); }
   if (privacy !== undefined)  { image.privacy = parser.parseImagePrivacy(privacy); }
+
+  image.editedAt = new Date();
 
   const updatedImage = await image.save();
   return res.send(getNonSensitiveImage(updatedImage));
