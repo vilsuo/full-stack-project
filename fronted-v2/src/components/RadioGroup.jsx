@@ -1,3 +1,4 @@
+import ToolTip from './ToolTip';
 
 const RadioGroup = ({ options, value, setValue, optionName }) => {
 
@@ -7,17 +8,23 @@ const RadioGroup = ({ options, value, setValue, optionName }) => {
       <div className='radio-group'>
         {options.map(option => (
           <div key={`${optionName}-${option.value}`} className='radio'>
-              <input
-                type='radio'
-                name={`${optionName}`}
-                value={option.value}
-                id={`radio-${optionName}-${option.value}`}
-                checked={value === option.value}
-                onChange={ ({ target}) => setValue(target.value) }
-              />
-              <label htmlFor={`radio-${optionName}-${option.value}`}>
-                {option.label}
-              </label>
+            <input
+              type='radio'
+              name={`${optionName}`}
+              value={option.value}
+              id={`radio-${optionName}-${option.value}`}
+              checked={value === option.value}
+              onChange={ ({ target}) => setValue(target.value) }
+            />
+            <label htmlFor={`radio-${optionName}-${option.value}`}>
+              { option.tooltipText
+                ? (
+                  <ToolTip tooltipText={option.tooltipText}>
+                    {option.label}
+                  </ToolTip>
+                ) : option.label
+              }
+            </label>
           </div>
           ))}
       </div>
