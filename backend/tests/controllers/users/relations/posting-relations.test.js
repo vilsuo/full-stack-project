@@ -65,13 +65,22 @@ describe('posting relations', () => {
         await postRelation(username, { targetUserId, type }, authHeader, 201);
       });
 
+      test.each(RELATION_TYPES)('user can not create a relation of type %s with a disabled user', async (type) => {
+        const disabledUser = await User.findOne({ where: { disabled: true } });
+        const responseBody = await postRelation(
+          username, { targetUserId: disabledUser.id, type }, authHeader, 400
+        );
+
+        expect(responseBody.message).toBe('target user is disabled');
+      });
+
       test('user can have multiple relations of different type with the same user', async () => {
         await Promise.all(RELATION_TYPES.map(async type => {
           await postRelation(username, { targetUserId, type }, authHeader, 201);
         }));
       });
 
-      test.each(RELATION_TYPES)('relation type is parsed', async (type) => {
+      test.each(RELATION_TYPES)('relation type %s is parsed', async (type) => {
         await postRelation(username, { targetUserId, type }, authHeader, 201);
 
         expect(parseRelationTypeSpy).toHaveBeenCalledWith(type);

@@ -1,30 +1,36 @@
 const router = require('express').Router({ mergeParams: true });
+const { RELATION_FOLLOW } = require('../../constants');
 const { Relation, User } = require('../../models');
 const { isSessionUser, isAllowedToViewUser } = require('../../util/middleware/auth');
 const parser = require('../../util/parser');
 
-/*
-TODO
-- get forward route:  
-  - return all types of relations only to the sourceUser, else return just follows
-  - remove query parameters for other than sourceUser
-  
-- get reverse route:
-  - return only relations of type 'follow'
-  - remove query parameters
-
-- post route:
-  - check if target user is disabled
-*/
-
+/**
+ * Only authenticated user can query for its own relation types.
+ * Other users can only view relation type of {@link RELATION_FOLLOW}.
+ * 
+ * Also allows querying for target user by id.
+ */
 router.get('/', isAllowedToViewUser, async (req, res) => {
-  const { foundUser } = req;
+  const { user, foundUser } = req;
   const { type, targetUserId } = req.query;
 
   const searchFilters = {};
-  if (type !== undefined) {
-    searchFilters.type = parser.parseRelationType(type);
+
+  // check if user is authenticated and viewing its own relations
+  if (user && user.id === foundUser.id) {
+    // apply type filter if specified, else return all types
+    if (type !== undefined) {
+      searchFilters.type = parser.parseRelationType(type);
+    }
+  } else {
+    if (type !== undefined) {
+      return res.status(401).send({
+        message: 'query parameter type is not allowed'
+      });
+    }
+    searchFilters.type = RELATION_FOLLOW;
   }
+
   if (targetUserId !== undefined) {
     searchFilters.targetUserId = parser.parseId(targetUserId);
   }
@@ -45,16 +51,23 @@ router.get('/', isAllowedToViewUser, async (req, res) => {
   return res.send(relations);
 });
 
+/**
+ * Only return relations of type {@link RELATION_FOLLOW}.
+ * Allows querying for source user by id.
+ */
 router.get('/reverse', isAllowedToViewUser, async (req, res) => {
   const { foundUser } = req;
-  const { type, sourceUserId } = req.query;
+  const { sourceUserId, type } = req.query;
 
   const searchFilters = {};
-  if (type !== undefined) {
-    searchFilters.type = parser.parseRelationType(type);
-  }
   if (sourceUserId !== undefined) {
     searchFilters.sourceUserId = parser.parseId(sourceUserId);
+  }
+
+  if (type !== undefined) {
+    return res.status(401).send({
+      message: 'query parameter type is not allowed'
+    });
   }
 
   const relations = await Relation.findAll({
@@ -67,6 +80,7 @@ router.get('/reverse', isAllowedToViewUser, async (req, res) => {
     ],
     where: { 
       targetUserId: foundUser.id,
+      type: RELATION_FOLLOW,
       ...searchFilters
     }
   });
@@ -84,6 +98,11 @@ router.post('/', isSessionUser, async (req, res) => {
   const targetUser = await User.findByPk(targetUserId);
   if (!targetUser) {
     return res.status(404).send({ message: 'target user does not exist' });
+  }
+
+  // target user can not be disabled
+  if (targetUser.disabled) {
+    return res.status(400).send({ message: 'target user is disabled' });
   }
 
   // can not create relation to self
