@@ -46,6 +46,7 @@ const ImageList = ({ user, images, showExtra }) => {
           <tr>
             { showExtra && <th className='icon'></th> }
             <th className='title'>Title</th>
+            <th className='tiny-column'>Views</th>
             <th className='date'>Created</th>
           </tr>
         </thead>
@@ -57,6 +58,7 @@ const ImageList = ({ user, images, showExtra }) => {
                   { image.privacy === IMAGE_PRIVATE.value && <FaLock /> }
                 </td> }
                 <td className='title'>{image.title}</td>
+                <td className='tiny-column'>{image.views}</td>
                 <td className='date'>{util.formatDate(image.createdAt)}</td>
               </tr>
             ))

@@ -362,6 +362,11 @@ table {
 
     &.date {
       width: 100px;
+      text-align: center;
+    }
+    &.tiny-column {
+      width: 75px;
+      text-align: center;
     }
   }
 
@@ -508,6 +513,16 @@ table {
     border: 2px solid black;
   }
 }
+.image .image-info {
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  margin: 10px;
+}
+.image .image-info .image-views {
+  padding: 0 10px;
+}
 
 .edit-actions {
   width: 100%;
@@ -521,10 +536,10 @@ table {
   width: 100%;
   display: flex;
   flex-flow: row wrap;
-  margin-top: 10px;
+  flex: 1;
   gap: 4px;
 }
-.chip {
+.chips .chip {
   display: inline-flex;
   align-items: center;
 

@@ -22,7 +22,7 @@ export const imageContentLoader = async ({ params }) => {
 };
 
 const ImageViewing = ({ user, image, imageUrl }) => {
-  const { title, caption } = image;
+  const { title, caption, views } = image;
 
   return (
     <div className='image'>
@@ -30,7 +30,11 @@ const ImageViewing = ({ user, image, imageUrl }) => {
 
       <img src={imageUrl}/>
 
-      <ImageChips user={user} image={image} />
+      <div className='image-info'>
+        <ImageChips user={user} image={image} />
+
+        <span className='image-views'>{views} views</span>
+      </div>
 
       <p className='text'>{caption}</p>
     </div>
