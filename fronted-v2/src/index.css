@@ -572,3 +572,25 @@ table {
 .error-element {
   background-color: darkred;
 }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+.tooltip .tooltip-text {
+  visibility: hidden;
+  background-color: black;
+  border: 1px solid white;
+  color: white;
+  text-align: center;
+  padding: 5px 10px;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+
+  right: 105%;
+}
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+}

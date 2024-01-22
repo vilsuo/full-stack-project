@@ -21,6 +21,7 @@ import {
   FaUser,         // follow icon
   FaUserSlash,    // block icon
 } from 'react-icons/fa';
+import ToolTip from '../../components/ToolTip';
 
 export const relationsLoader = async ({ params }) => {
   const { username } = params;
@@ -134,9 +135,11 @@ const Relations = () => {
 
       { canEdit && (
         <div className='edit-actions'>
-          <ToggleButton toggled={editing} setToggled={setEditing}>
-            <FaEdit  />
-          </ToggleButton>
+          <ToolTip tooltipText={editing ? 'cancel': 'edit'}>
+            <ToggleButton toggled={editing} setToggled={setEditing}>
+              <FaEdit  />
+            </ToggleButton>
+          </ToolTip>
         </div>
       )}
 

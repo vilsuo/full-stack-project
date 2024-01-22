@@ -7,10 +7,11 @@ import ImageChips from '../../../components/images/ImageChips';
 import Alert from '../../../components/Alert';
 import { createErrorMessage } from '../../../util/error';
 import RadioGroup from '../../../components/RadioGroup';
-import { IMAGE_PRIVACIES, SIZE_SMALL } from '../../../constants';
+import { IMAGE_PRIVACIES } from '../../../constants';
 import IconButton from '../../../components/IconButton';
 
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import ToolTip from '../../../components/ToolTip';
 
 export const imageContentLoader = async ({ params }) => {
   const { username, imageId } = params;
@@ -36,7 +37,7 @@ const ImageViewing = ({ user, image, imageUrl }) => {
   );
 };
 
-const ImageEditing = ({ user, image, handleEdit }) => {
+const ImageEditing = ({ image, handleEdit }) => {
   const [title, setTitle] = useState(image.title);
   const [caption, setCaption] = useState(image.caption);
   const [privacy, setPrivacy] = useState(image.privacy);
@@ -142,22 +143,25 @@ const Image = () => {
 
       <div className='edit-actions'>
         { canEdit && (
-          <ToggleButton
-            toggled={editing}
-            setToggled={setEditing}
-          >
-            <FaEdit  />
-          </ToggleButton>
+          <ToolTip tooltipText={!editing ? 'edit' : 'cancel'}>
+            <ToggleButton
+              toggled={editing}
+              setToggled={setEditing}
+            >
+              <FaEdit  />
+            </ToggleButton>
+          </ToolTip>
         )}
 
         { editing && (
-          <IconButton
-            className='action-button'
-            onClick={ () => handleRemove(image) }
-            size={SIZE_SMALL}
-          >
-            <FaTrash />
-          </IconButton>
+          <ToolTip tooltipText='delete'>
+            <IconButton
+              className='action-button'
+              onClick={ () => handleRemove(image) }
+            >
+              <FaTrash />
+            </IconButton>
+          </ToolTip>
         )}
       </div>
 
@@ -166,7 +170,6 @@ const Image = () => {
       { 
         editing
         ? <ImageEditing
-            user={user}
             image={image}
             handleEdit={handleEdit}
           />
