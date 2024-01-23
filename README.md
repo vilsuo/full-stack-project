@@ -15,6 +15,9 @@ You can view all of the database tables [here](https://dbdocs.io/vilsuo1/Fullsta
 User login session is cookie based. The Cookie contains only the session id and the session user information is then loaded from a **Redis** key-value database hosted on [Redis-Cloud](https://redis.com/).
 
 ## Testing
+Currently tests are written only to the backend. Tests are written with [Jest](https://jestjs.io/) and [SuperTest](https://www.npmjs.com/package/supertest). In the test environment the **Postgres** and **Redis** are run in a **Docker** container to allow for greater execution speed. See the backend tests [here](https://github.com/vilsuo/full-stack-project/tree/main/backend/tests).
+
+![test results]([https://github.com/[username]/[reponame]/blob/[branch]/image.jpg](https://github.com/vilsuo/full-stack-project/blob/main/readme-images/test-images/all.PNG?raw=true)
 
 ## Todo
 <ul>
@@ -62,7 +65,7 @@ User login session is cookie based. The Cookie contains only the session id and 
 ### Backend
 <ul>
 	<li>
-		The image and potrait files are saved on the system where the backend is hosted => deploying <b>does not</b> transfer theses files
+		The image and potrait files are saved on the system where the backend is hosted => Deploying <b>does not</b> transfer these files.
 	</li>
 	<li>
 		If validation fails when posting an image, the image file is already saved to the filesystem. Multipart form data requests are handled by <a href="https://www.npmjs.com/package/multer">Multer</a> and there seems not to be a way to validate the text fields of the form before saving the file. This causes extra work since file has to be removed if the validation fails.
