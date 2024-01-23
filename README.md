@@ -25,10 +25,10 @@ User login session is cookie based. The Cookie contains only the session id and 
 		Backend testing
 		<ul>
 			<li>
-				Unit test [view permission middlewares](https://github.com/vilsuo/full-stack-project/blob/main/backend/src/util/middleware/auth.js)
+				Unit test <a href="https://github.com/vilsuo/full-stack-project/blob/main/backend/src/util/middleware/auth.js">view permission middlewares</a>
 			</li>
 			<li>
-				Test user relations **GET**-routes
+				Test user relations <b>GET</b>-routes
 			</li>
 	</ul>
 </li>
@@ -47,7 +47,7 @@ User login session is cookie based. The Cookie contains only the session id and 
 		Do not include blocked users when searching for users
 	</li>
 	<li>
-		Change [image model](https://github.com/vilsuo/full-stack-project/blob/main/backend/src/models/image.js) for more general post model with optional file (currently file is mandatory).
+		Change <a href="https://github.com/vilsuo/full-stack-project/blob/main/backend/src/models/image.js">image model</a> for more general post model with optional file (currently file is mandatory)
 	</li>
 </ul>
 
@@ -62,6 +62,6 @@ User login session is cookie based. The Cookie contains only the session id and 
 ### Backend
 <ul>
 	<li>
-		The image and potrait files are saved on the system where the backend is hosted => deploying **does not** transfer theses files
+		The image and potrait files are saved on the system where the backend is hosted => deploying <b>does not</b> transfer theses files
 	</li>
 </ul>
