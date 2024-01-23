@@ -355,6 +355,19 @@ table {
         }
       }
     }
+    & .text-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      & span {
+        color: black;
+      }
+
+      & svg {
+        fill: var(--btn-bg);
+      }
+    }
 
     &.title {
       width: auto;
