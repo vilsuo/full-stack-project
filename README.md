@@ -45,7 +45,7 @@ You can view the results of individual test suites [here](https://github.com/vil
 				Show latest activity of each user on their own page
 			</li>
 			<li>
-				Show latest activity of user friends on home page
+				Show latest activity of users friends on the home page
 			</li>
 		</ul>
 	</li>
