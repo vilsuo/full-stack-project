@@ -3,15 +3,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import { logout } from '../reducers/auth';
 
-const Potrait = ({ user, onClick }) => {
+const UserOptions = ({ user, onClick }) => {
   const { username }  = user;
 
   return (
-    <button className='potrait-btn' onClick={onClick}>
+    <button className='user-options' onClick={onClick}>
       <span>{username}</span>
-      <img className='avatar' 
-        src='https://www.wikipedia.org/static/apple-touch/wikipedia.png'
-      />
     </button>
   );
 };
@@ -29,7 +26,7 @@ const LoggedInMenu = ({ user }) => {
 
   return (
     <Dropdown
-      trigger={<Potrait user={user} />}
+      trigger={<UserOptions user={user} />}
       menu={[
         <button onClick={() => navigate(`/users/${username}`)}>Profile</button>,
         <button onClick={() => navigate(`/users/${username}/settings`)}>Settings</button>,

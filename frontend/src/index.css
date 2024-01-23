@@ -79,16 +79,11 @@ nav {
   }
 }
 
-/* potrait */
-.potrait-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.user-options {
   padding: 0 10px;
 
   & span {
     font-size: 150%;
-    border-bottom: 2px solid var(--primary);
   }
 }
 .avatar {
