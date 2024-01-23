@@ -4,8 +4,9 @@ The App is built from **React** frontend with **React-Router-DOM** navigation an
 
 The App is hosted on [Render](https://render.com/) and can see it live [here](https://fullstack-project-kamw.onrender.com).
 
-## Features
+See saved screenshots from the App [here](https://github.com/vilsuo/full-stack-project/tree/main/readme-images/app-images).
 
+## Features
 
 ## Database
 All Entities are stored in a relational **PostgreSQL** database hosted on [ElephantSQL](https://www.elephantsql.com/).  The project uses **Sequelize** Object-Relational-Mapper.
@@ -18,6 +19,8 @@ User login session is cookie based. The Cookie contains only the session id and 
 Currently tests are written only to the backend. Tests are written with [Jest](https://jestjs.io/) and [SuperTest](https://www.npmjs.com/package/supertest). In the test environment the **Postgres** and **Redis** are run in a **Docker** container to allow for greater execution speed. See the backend tests [here](https://github.com/vilsuo/full-stack-project/tree/main/backend/tests).
 
 ![test results](https://github.com/vilsuo/full-stack-project/blob/main/readme-images/test-images/all.PNG?raw=true)
+
+You can view the results of individual test suites [here](https://github.com/vilsuo/full-stack-project/tree/main/readme-images/test-images).
 
 ## Todo
 <ul>
