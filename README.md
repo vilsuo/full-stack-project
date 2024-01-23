@@ -17,7 +17,7 @@ User login session is cookie based. The Cookie contains only the session id and 
 ## Testing
 Currently tests are written only to the backend. Tests are written with [Jest](https://jestjs.io/) and [SuperTest](https://www.npmjs.com/package/supertest). In the test environment the **Postgres** and **Redis** are run in a **Docker** container to allow for greater execution speed. See the backend tests [here](https://github.com/vilsuo/full-stack-project/tree/main/backend/tests).
 
-![test results]([https://github.com/[username]/[reponame]/blob/[branch]/image.jpg](https://github.com/vilsuo/full-stack-project/blob/main/readme-images/test-images/all.PNG?raw=true)
+![test results](https://github.com/vilsuo/full-stack-project/blob/main/readme-images/test-images/all.PNG?raw=true)
 
 ## Todo
 <ul>
