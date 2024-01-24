@@ -6,7 +6,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node src/index.js",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
-    "start:test": "npm run test-pg:up && cross-env NODE_ENV=test nodemon src/index.js",
+    "start:test": "cross-env NODE_ENV=test node src/index.js",
     "test": "cross-env NODE_ENV=test jest --verbose --runInBand",
     "test-pg:up": "docker compose -f docker-compose.test.yaml up -d",
     "test-pg:down": "docker compose -f docker-compose.test.yaml down --volumes",
