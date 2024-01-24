@@ -105,6 +105,7 @@ nav {
   padding: 0;
   border: var(--border);
   border-radius: var(--border-radius);
+  z-index: 1000;
 }
 .menu-item {
   margin: 0;
