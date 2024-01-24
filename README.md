@@ -36,8 +36,11 @@ You can view the results of individual test suites [here](https://github.com/vil
 			<li>
 				Test user relations <b>GET</b>-routes
 			</li>
-	</ul>
-</li>
+		</ul>
+	</li>
+	<li>
+		Show spinners when loading data or processing user actions
+	</li>
 	<li>
 		Activity tracking:
 		<ul>
@@ -49,6 +52,14 @@ You can view the results of individual test suites [here](https://github.com/vil
 			</li>
 		</ul>
 	</li>
+	<li>
+		Create admin users that can disable users. Currently there is no way to disable user, but disabled users can not login
+		<ul>
+			<li>
+				Change session id prefix to user.id so admin could also disable user sessions
+			</li>
+		</ul>
+  	</li>
 	<li>
 		Do not include blocked users when searching for users
 	</li>
