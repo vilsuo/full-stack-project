@@ -7,6 +7,8 @@ const SettingsPotrait = () => {
   const potrait = useSelector(state => state.auth.potrait);
   const dispatch = useDispatch();
 
+  const [loading, setLoading] = useState(false);
+
   // alert
   const [alert, setAlert] = useState({});
   const clearAlert = () => setAlert({});
@@ -27,6 +29,9 @@ const SettingsPotrait = () => {
   };
 
   const handleFileUpload  = async () => {
+    if (loading) return null;
+    setLoading(true);
+
     try {
       const formData = new FormData();
       formData.append('image', file, file.name);
@@ -44,9 +49,14 @@ const SettingsPotrait = () => {
         details: rejectedValueError,
       });
     }
+
+    setLoading(false);
   };
 
   const handlePotraitRemove  = async () => {
+    if (loading) return null;
+    setLoading(true);
+
     try {
       await dispatch(removePotrait()).unwrap();
       setAlert({
@@ -60,6 +70,8 @@ const SettingsPotrait = () => {
         details: rejectedValueError,
       });
     }
+
+    setLoading(false);
   };
 
   return (

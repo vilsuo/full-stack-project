@@ -5,6 +5,7 @@ import Alert from '../components/Alert';
 import { createErrorMessage } from '../util/error';
 
 const Register = () => {
+  const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({});
 
   const [name, setName] = useState('');
@@ -18,6 +19,10 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (loading) return null;
+    setLoading(true);
+
     clearAlert();
 
     if (password !== password2) {
@@ -28,6 +33,8 @@ const Register = () => {
       });
       setPassword('');
       setPassword2('');
+      
+      setLoading(false);
       return;
     }
 
@@ -42,6 +49,8 @@ const Register = () => {
         details: createErrorMessage(error),
       });
     }
+
+    setLoading(false);
   };
 
   return (

@@ -6,6 +6,7 @@ import Alert from '../Alert';
 import RadioGroup from '../RadioGroup';
 
 const ImageUploadForm = ({ user, addImage }) => {
+  const [loading, setLoading] = useState(false);
 
   // alert
   const [alert, setAlert] = useState({});
@@ -40,6 +41,10 @@ const ImageUploadForm = ({ user, addImage }) => {
 
   const handleSubmit  = async (event) => {
     event.preventDefault();
+
+    if (loading) return null;
+    setLoading(true);
+
     const { username } = user;
 
     try {
@@ -59,13 +64,14 @@ const ImageUploadForm = ({ user, addImage }) => {
       handleFormReset();
 
     } catch (error) {
-      console.log('error uploading', error)
       setAlert({
         type: 'error',
         prefix: 'Image upload failed',
         details: createErrorMessage(error),
       });
     }
+
+    setLoading(false);
   };
 
   return (

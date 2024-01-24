@@ -91,6 +91,7 @@ const Image = () => {
   const [image, setImage] = useState(loadedImage);
   const [imageUrl, setImageUrl] = useState();
 
+  const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const [alert, setAlert] = useState({});
@@ -107,6 +108,9 @@ const Image = () => {
   const canEdit = authenticatedUser && (authenticatedUser.id === image.userId);
 
   const handleRemove = async (image) => {
+    if (loading) return null;
+    setLoading(true);
+
     if (confirm('Are you sure you want to delete the image?')) {
       try {
         await imagesService.deleteImage(user.username, image.id);
@@ -120,9 +124,14 @@ const Image = () => {
         });
       }
     }
+
+    setLoading(false);
   };
 
   const handleEdit = async (values) => {
+    if (loading) return null;
+    setLoading(true);
+
     try {
       const editedImage = await imagesService.editImage(user.username, image.id, values);
       setEditing(false);
@@ -140,6 +149,8 @@ const Image = () => {
         details: createErrorMessage(error),
       });
     }
+
+    setLoading(false);
   };
 
   return (

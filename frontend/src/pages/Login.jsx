@@ -6,6 +6,8 @@ import { login } from '../reducers/auth';
 import Alert from '../components/Alert';
 
 const Login = () => {
+  const [loading, setLoading] = useState(false);
+
   const [alert, setAlert] = useState({});
 
   const [username, setUsername] = useState('');
@@ -19,6 +21,9 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (loading) return null;
+    setLoading(true);
     
     clearAlert();
     dispatch(login({ username, password }))
@@ -37,7 +42,9 @@ const Login = () => {
           details: rejectedValueError,
         });
         setPassword('');
+        setLoading(false);
       });
+
   };
 
   return (
