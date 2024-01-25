@@ -32,3 +32,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   </Provider>,
 );
+
+// expose store when run in Cypress
+if (window.Cypress) {
+  window.store = store;
+}
