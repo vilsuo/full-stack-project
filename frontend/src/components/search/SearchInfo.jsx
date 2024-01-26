@@ -1,10 +1,9 @@
 import React from 'react';
+import Spinner from '../Spinner';
 
 const SearchInfo = ({ query, total, time, loading }) => {
 
-  if (loading) {
-    return <span>...</span>
-  }
+  if (loading) return <Spinner />;
 
   return (
     <React.Fragment>
