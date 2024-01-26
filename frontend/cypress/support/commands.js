@@ -24,8 +24,6 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-import { login } from "../../src/reducers/auth";
-
 const BACKEND_BASE_URL = '/api';
 
 Cypress.Commands.add('resetDb', () => {
@@ -49,8 +47,12 @@ Cypress.Commands.add('getState', () => {
 
 // BYPASS UI
 
-Cypress.Commands.add('register', (credentials) => {
-  cy.request('POST', `${BACKEND_BASE_URL}/auth/register`, credentials);
+Cypress.Commands.add('register', (credentials, options = {}) => {
+  if (options.disabled) {
+    cy.request('POST', `${BACKEND_BASE_URL}/testing/disabled`, credentials);
+  } else {
+    cy.request('POST', `${BACKEND_BASE_URL}/auth/register`, credentials);
+  }
 });
 
 // GET COMPONENTS

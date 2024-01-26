@@ -1,6 +1,7 @@
 import { URLS, COOKIE_KEY } from '../support/constants';
 
 const credentials = { name: 'ville', username: 'ville123', password: 'qwerty123' };
+const otherCredentials = { name: 'matti', username: 'matti123', password: 'fghjkl789' };
 
 const submitLogin = function (username, password) {
   // fill the form inputs
@@ -71,6 +72,18 @@ describe('when in login page', function () {
   
     it('login fails with wrong password', function () {
       submitLogin(credentials.username, 'wrongpassword');
+
+      // error alert is displayed
+      cy.expectAlert(/^Login failed/);
+
+      // still in login page
+      cy.expectUrl(URLS.LOGIN_URL);
+    });
+
+    it('disabled user can not login', function () {
+      cy.register(otherCredentials, { disabled: true });
+
+      submitLogin(otherCredentials.username, otherCredentials.password);
 
       // error alert is displayed
       cy.expectAlert(/^Login failed/);
