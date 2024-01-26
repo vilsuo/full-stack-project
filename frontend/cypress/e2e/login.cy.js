@@ -12,22 +12,13 @@ const submitLogin = function (username, password) {
     .click();
 };
 
-const loginAndSaveSession = function (username, password) {
-  //cy.session(username, () => {
-    cy.visit(URLS.LOGIN_URL);
-
-    submitLogin(username, password);
-
-    cy.expectUrl(URLS.HOME_URL);
-  //});
-
-  //cy.visit(URLS.HOME_URL);
+const login = function (username, password) {
+  submitLogin(username, password);
+  cy.expectUrl(URLS.HOME_URL);
 };
 
 describe('when in login page', function () {
   beforeEach(function() {
-    cy.resetDb();
-
     cy.visit(URLS.LOGIN_URL);
   });
 
@@ -44,12 +35,17 @@ describe('when in login page', function () {
 
   describe('after registering', function () {
     beforeEach(function() {
+      cy.resetDb();
       cy.register(credentials);
     });
   
     describe('on successfull login', function () {
       beforeEach(function () {
-        loginAndSaveSession(credentials.username, credentials.password);
+        login(credentials.username, credentials.password);
+      });
+
+      it('login redirects to the home page', function () {
+        cy.expectUrl(URLS.HOME_URL);
       });
     
       it('user is dispatched to the redux state', function () {
@@ -67,7 +63,7 @@ describe('when in login page', function () {
       });
 
       it('username is displayed in the navigation bar', function () {
-        cy.get('header nav .user-options').then(function (userOptions) {
+        cy.getNavBarUser().then(function (userOptions) {
           expect(userOptions.text()).to.eq(credentials.username);
         });
       });
@@ -76,11 +72,11 @@ describe('when in login page', function () {
     it('login fails with wrong password', function () {
       submitLogin(credentials.username, 'wrongpassword');
 
-      // still in login page
-      cy.expectUrl(URLS.LOGIN_URL);
-
       // error alert is displayed
       cy.expectAlert(/^Login failed/);
+
+      // still in login page
+      cy.expectUrl(URLS.LOGIN_URL);
     });
   });
 });

@@ -53,12 +53,11 @@ Cypress.Commands.add('register', (credentials) => {
   cy.request('POST', `${BACKEND_BASE_URL}/auth/register`, credentials);
 });
 
-// how to handle?
-Cypress.Commands.add('login', (credentials) => {
-  cy.dispatch(login, credentials);
-});
-
 // GET COMPONENTS
+
+Cypress.Commands.add('getNavBarUser', (pattern) => {
+  return cy.get('header nav .user-options');
+});
 
 Cypress.Commands.add('expectAlert', (pattern) => {
   return cy.get('.alert.error p').then(function (p) {
