@@ -11,13 +11,13 @@ describe('', function () {
     });
 
     [
-      { name: 'Search', url: URLS.SEARCH_URL },
-      { name: 'About', url: URLS.ABOUT_URL },
-      { name: 'Login', url: URLS.LOGIN_URL },
-    ].forEach(function ({ name, url }) {
-      it(`can navigate to ${name} page`, function () {
+      { label: 'Search', url: URLS.SEARCH_URL },
+      { label: 'About', url: URLS.ABOUT_URL },
+      { label: 'Login', url: URLS.LOGIN_URL },
+    ].forEach(function ({ label, url }) {
+      it(`can navigate to ${label} page`, function () {
         cy.getNavBar()
-          .find(`a:contains(${name})`)
+          .find(`a:contains(${label})`)
           .click();
 
         cy.expectUrl(url);

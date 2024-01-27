@@ -273,6 +273,12 @@ textarea {
   border-radius: var(--border-radius);
 }
 
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /* auth layout */
 .login, 
 .register {

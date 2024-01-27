@@ -24,6 +24,8 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+import { URLS } from "./constants";
+
 const BACKEND_BASE_URL = '/api';
 
 Cypress.Commands.add('resetDb', () => {
@@ -65,9 +67,21 @@ Cypress.Commands.add('getNavBarUser', () => {
   return cy.getNavBar().find('.user-options');
 });
 
+// ALERTS
+
 Cypress.Commands.add('expectAlert', (pattern) => {
   return cy.get('.alert.error p').then(function (p) {
     expect(p.text()).to.match(new RegExp(pattern));
+  });
+});
+
+Cypress.Commands.add('getErrorElement', function () {
+  return cy.get('.error-element');
+});
+
+Cypress.Commands.add('expectErrorElement', (pattern) => {
+  return cy.getErrorElement().find('p').then(function (p) {
+    expect(p.text()).to.match(new RegExp(pattern, 'i'));
   });
 });
 
@@ -78,10 +92,29 @@ Cypress.Commands.add('expectUrl', (url) => {
     .should('eq', Cypress.config().baseUrl + url);
 });
 
+// WAITING
+
 Cypress.Commands.add('waitForResponse', (alias) => {
   // wait for get request
-  cy.wait(`@${alias}`);alias
+  cy.wait(`@${alias}`);
 
   // wait for loading spinner to disappear
   cy.get('.spinner').should('not.exist');
+});
+
+// waits for autologin to return and checks that no spinners are present
+Cypress.Commands.add('home', () => {
+  cy.intercept('GET', '/api/auth/auto-login').as('getAutoLogin');
+
+  cy.visit(URLS.HOME_URL);
+
+  cy.waitForResponse('getAutoLogin');
+});
+
+Cypress.Commands.add('visitUser', (username) => {
+  cy.intercept('GET', `/api/users/${username}`).as('getUser');
+
+  cy.visit(URLS.getUserUrl(username));
+
+  cy.waitForResponse('getUser');
 });

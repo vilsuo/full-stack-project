@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
+
 import NavBar from '../components/NavBar';
+import Spinner from '../components/Spinner';
 
 import { autoLogin } from '../reducers/auth';
 
@@ -19,6 +21,7 @@ const RootLayout = () => {
       } catch (error) {
         console.log('error in auto-loading', error);
       }
+
       setLoading(false);
     };
     
@@ -27,7 +30,13 @@ const RootLayout = () => {
   }, []);
 
   if (loading) {
-    return <h1>Loading...</h1>
+    return (
+      <div className='root-layout'>
+        <div className='spinner-container'>
+          <Spinner size={64} />
+        </div>
+      </div>
+    );
   }
 
   return (
