@@ -16,16 +16,31 @@ You can view all of the database tables [here](https://dbdocs.io/vilsuo1/Fullsta
 User login session is cookie based. The Cookie contains only the session id and the session user information is then loaded from a **Redis** key-value database hosted on [Redis-Cloud](https://redis.com/).
 
 ## Testing
-Currently tests are written only to the backend. Tests are written with [Jest](https://jestjs.io/) and [SuperTest](https://www.npmjs.com/package/supertest). In the test environment the **Postgres** and **Redis** are run in a **Docker** container to allow for greater execution speed. See the backend tests [here](https://github.com/vilsuo/full-stack-project/tree/main/backend/tests).
+### Backend
+Tests are written with [Jest](https://jestjs.io/) and [SuperTest](https://www.npmjs.com/package/supertest). In the test environment the **Postgres** and **Redis** are run in a **Docker** container to allow for greater execution speed. See the backend tests [here](https://github.com/vilsuo/full-stack-project/tree/main/backend/tests).
 
 ![test results](https://github.com/vilsuo/full-stack-project/blob/main/readme-images/test-images/all.PNG?raw=true)
 
 You can view the results of individual test suites [here](https://github.com/vilsuo/full-stack-project/tree/main/readme-images/test-images).
 
+### End-to-end
+For End-to-end (E2E) tests, the project uses [Cypress](https://www.cypress.io/). See the E2E test [here](https://github.com/vilsuo/full-stack-project/tree/main/frontend/cypress/e2e).
+
 ## Todo
 <ul>
 	<li>
+		End-to-end testing
+		<ul>
+			<li>Posting, editing, deleting and viewing images</li>
+			<li>Posting and deleting potraits</li>
+			<li>Deleting users</li>
+		</ul>
+	</li>
+	<li>
 		Frontend testing
+		<ul>
+			<li>Test Redux store</li>
+		</ul>
 	</li>
 	<li>
 		Backend testing
