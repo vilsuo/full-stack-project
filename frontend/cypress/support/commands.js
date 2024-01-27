@@ -57,8 +57,12 @@ Cypress.Commands.add('register', (credentials, options = {}) => {
 
 // GET COMPONENTS
 
-Cypress.Commands.add('getNavBarUser', (pattern) => {
-  return cy.get('header nav .user-options');
+Cypress.Commands.add('getNavBar', () => {
+  return cy.get('header nav');
+});
+
+Cypress.Commands.add('getNavBarUser', () => {
+  return cy.getNavBar().find('.user-options');
 });
 
 Cypress.Commands.add('expectAlert', (pattern) => {

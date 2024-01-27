@@ -36,6 +36,13 @@ describe('when in register page', function () {
     cy.get('.register form');
   });
 
+  it('can navigate to register page', function () {
+    cy.get('.register p a')
+      .click();
+
+    cy.expectUrl(URLS.LOGIN_URL);
+  });
+
   it('registering successfully redirects to login page', function () {
     submitFormRegister(credentials);
 
