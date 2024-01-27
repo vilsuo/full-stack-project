@@ -9,7 +9,8 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "jest",
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "cypress:record": "cypress run -- --record --spec"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.0.1",
