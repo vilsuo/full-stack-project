@@ -28,9 +28,9 @@ For End-to-end (E2E) tests, the project uses [Cypress](https://www.cypress.io/).
 
 ![test results](https://github.com/vilsuo/full-stack-project/blob/main/readme-images/test-images/e2e/summary.PNG?raw=true)
 
-https://github.com/vilsuo/full-stack-project/blob/main/frontend/cypress/videos/register.cy.js.mp4
+https://github.com/vilsuo/full-stack-project/assets/48446604/db043e05-1adc-4ebc-b365-07756cac76d3
 
-See rest of the test videos [here](https://github.com/vilsuo/full-stack-project/tree/main/frontend/cypress/videos).
+The rest of the test videos [here](https://github.com/vilsuo/full-stack-project/tree/main/frontend/cypress/videos).
 
 ## Todo
 <ul>
