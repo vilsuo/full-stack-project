@@ -8,9 +8,13 @@ const submitLogin = function (username, password) {
   cy.get(".login form input[type='text']:first").type(username);
   cy.get(".login form input[type='password']:first").type(password);
 
+  cy.intercept('POST', '/api/auth/login').as('postLogin')
+
   // submit the form
   cy.get('.login form button')
     .click();
+
+  cy.waitForResponse('postLogin');
 };
 
 const login = function (username, password) {
@@ -57,9 +61,6 @@ describe('when in login page', function () {
       });
   
       it(`session cookie '${COOKIE_KEY}' is set`, function () {
-        // cy.getCookies().then((cookies) => { console.log(cookies) });
-        // cy.getAllCookies().then((cookies) => { console.log(cookies) });
-
         cy.getCookie(COOKIE_KEY).should('exist');
       });
 

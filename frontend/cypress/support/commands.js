@@ -73,3 +73,11 @@ Cypress.Commands.add('expectUrl', (url) => {
   cy.url()
     .should('eq', Cypress.config().baseUrl + url);
 });
+
+Cypress.Commands.add('waitForResponse', (alias) => {
+  // wait for get request
+  cy.wait(`@${alias}`);alias
+
+  // wait for loading spinner to disappear
+  cy.get('.spinner').should('not.exist');
+});

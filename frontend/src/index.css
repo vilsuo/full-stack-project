@@ -47,6 +47,11 @@ button {
     display: flex;
     justify-content: center;
   }
+
+  &.loading-button {
+    min-width: 100px;
+    min-height: 40px;
+  }
 }
 
 /* page content */

@@ -32,7 +32,7 @@ describe('', function () {
 
   describe('after loggin out', function () {
     beforeEach(function () {
-      cy.getCookies().then((cookies) => { console.log(cookies) });
+      cy.getCookie(COOKIE_KEY).should('exist');
       logout();
     });
 

@@ -17,14 +17,6 @@ const PAGE_SIZES = [
   { value: '25', size: 25 },
 ];
 
-const waitForResponse = function () {
-  // wait for get request
-  cy.wait('@getUsers');
-
-  // wait for loading spinner to disappear
-  cy.get('.search-results .spinner').should('not.exist');
-};
-
 const selectPageSize = function (size) {
   cy.get(".radio-group input[type='radio']")
     .check(size);
@@ -52,7 +44,7 @@ const search = function (value) {
   // click search button
   cy.get(".search-form button[type='submit']").click();
 
-  waitForResponse();
+  cy.waitForResponse('getUsers');
 };
 
 const getSearchResultsTable = function () {
@@ -250,7 +242,7 @@ const clickPaginationPageButton = function (nth) {
 
   getPaginationPageButton(nth).click();
 
-  waitForResponse();
+  cy.waitForResponse('getUsers');
 };
 
 describe('search table pagination', function () {

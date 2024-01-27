@@ -1,12 +1,12 @@
 import { RotatingLines } from 'react-loader-spinner'
 
-const Spinner = () => {
+const Spinner = ({ size = '24' }) => {
   return (
     <div className='spinner'>
       <RotatingLines
         visible={true}
-        height='24'
-        width='24'
+        height={size}
+        width={size}
         strokeColor='white'
         strokeWidth='4'
       />

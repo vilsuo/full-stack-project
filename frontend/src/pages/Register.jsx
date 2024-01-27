@@ -3,6 +3,7 @@ import authService from '../services/auth';
 import { useState } from 'react';
 import Alert from '../components/Alert';
 import { createErrorMessage } from '../util/error';
+import LoadingButton from '../components/LoadingButton';
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,7 @@ const Register = () => {
       });
     }
 
-    setLoading(false);
+    setLoading(false);  
   };
 
   return (
@@ -103,7 +104,8 @@ const Register = () => {
             required
           />
         </label>
-        <button>Register</button>
+
+        <LoadingButton text={'Register'} loading={loading} type='submit' />
       </form>
 
       <p>Already have a user? Login <Link to='/login'>here</Link>.</p>

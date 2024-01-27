@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { login } from '../reducers/auth';
 import Alert from '../components/Alert';
+import LoadingButton from '../components/LoadingButton';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -24,8 +25,8 @@ const Login = () => {
 
     if (loading) return null;
     setLoading(true);
-    
     clearAlert();
+    
     dispatch(login({ username, password }))
       .unwrap()
       .then(() => {
@@ -76,7 +77,8 @@ const Login = () => {
             required
           />
         </label>
-        <button>Login</button>
+
+        <LoadingButton text={'Login'} loading={loading} type='submit' />
       </form>
 
       <p>Do not have a user? Register <Link to='/register'>here</Link>.</p>

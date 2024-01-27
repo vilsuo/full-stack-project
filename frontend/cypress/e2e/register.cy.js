@@ -19,6 +19,9 @@ const submitFormRegister = function (credentials) {
       credentials.password2 ? credentials.password2 : credentials.password
     );
 
+  cy.intercept('POST', '/api/auth/register').as('postRegister');
+
+  // post register
   cy.get('.register form button')
     .click();
 };
@@ -36,6 +39,9 @@ describe('when in register page', function () {
   it('registering successfully redirects to login page', function () {
     submitFormRegister(credentials);
 
+    // wait for register response
+    cy.waitForResponse('postRegister');
+
     cy.expectUrl(URLS.LOGIN_URL);
   });
 
@@ -46,21 +52,26 @@ describe('when in register page', function () {
   
       submitFormRegister(credentials);
 
-      // redirect does not take place
-      cy.expectUrl(URLS.REGISTER_URL);
-  
+      // wait for register response
+      cy.waitForResponse('postRegister');
+
       // register error alert is shown
       cy.expectAlert(/^Registering failed/);
+
+      // redirect does not take place
+      cy.expectUrl(URLS.REGISTER_URL);
     });
   
     it('mismatch passwords', function () {
       submitFormRegister({ ...credentials, password2: 'asdfgh456' });
 
-      // redirect does not take place
-      cy.expectUrl(URLS.REGISTER_URL);
-  
+      // no need to wait: response is not sent
+
       // register error alert is shown
       cy.expectAlert(/^Registering failed/);
+
+      // redirect does not take place
+      cy.expectUrl(URLS.REGISTER_URL);
     });
   });
 });
