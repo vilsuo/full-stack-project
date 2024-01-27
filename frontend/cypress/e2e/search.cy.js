@@ -10,6 +10,24 @@ const credentials = { name: 'ville', username: 'ville123', password: 'qwerty123'
 const otherCredentials = { name: 'matti', username: 'matti123', password: 'fghjkl789' };
 const disabledCredentials = { name: 'katti', username: 'katti123', password: 'asdjkl123' };
 
+
+const PAGE_SIZES = [
+  { value: '5', size: 5 },
+  { value: '10', size: 10 },
+  { value: '25', size: 25 },
+];
+
+
+const selectPageSize = function (size) {
+  cy.get(".radio-group input[type='radio']")
+    .check(size);
+};
+
+const getSelectedPageSizeWithValue = function (value) {
+  return cy.get(".radio-group input[type='radio']:checked")
+    .should('have.attr', 'value', value);
+};
+
 const getResetButton = function () {
   return cy.get(".search-form button[type='button']");
 };
@@ -22,11 +40,13 @@ const search = function (value) {
   // type text into search input
   if (value) getSearchInput().type(value);
 
+  cy.intercept('/api/users?*').as('getUsers');
+
   // click search button
   cy.get(".search-form button[type='submit']").click();
 
-  // wait for loading spinner to disappear
-  cy.get('.search-results .spinner').should('not.exist');
+  // wait for get request
+  cy.wait('@getUsers');
 };
 
 const getSearchResultsTable = function () {
@@ -37,70 +57,112 @@ const getSearchResultsTableRows = function () {
   return getSearchResultsTable().find('tbody').children();
 };
 
-describe('on search page', function () {
-  beforeEach(function () {
-    cy.resetDb();
-    cy.visit(URLS.SEARCH_URL);
+// #########################
+// #         TESTS         #
+// #########################
+
+// before hook is equivalent to beforeAll
+before(function () {
+  cy.resetDb();
+});
+
+beforeEach(function () {
+  cy.visit(URLS.SEARCH_URL);
+});
+
+describe('search form and search info', function () {
+  it('search form is present', function () {
+    cy.get('.search-form');
   });
 
-  describe('before searching', function () {
-    it('search form is present', function () {
-      cy.get('.search-form');
-    });
+  it('search results table is not present', function () {
+    cy.get('.search-form');
 
-    it('search results table is not present', function () {
-      cy.get('.search-form');
-      getSearchResultsTable().should('not.exist');
-    });
+    getSearchResultsTable().should('not.exist');
+  });
 
-    it('can reset search input', function () {
-      // search input is empty => reset button is disabled
-      getResetButton().should('be.disabled');
+  it('can reset the search input when the input is not empty', function () {
+    const string = 'cat';
 
-      const string = 'cat';
-      getSearchInput().type(string);
-      getSearchInput().should('have.value', string);
+    // without a search input the reset button is disabled
+    getResetButton().should('be.disabled');
 
-      getResetButton().click();
+    getSearchInput().type(string);
+    getSearchInput().should('have.value', string);
 
-      getSearchInput().should('have.value', '');
+    getResetButton().click();
+
+    // search input should be resetted
+    getSearchInput().should('have.value', '');
+  });
+
+  describe('selecting page sizes', function () {
+    PAGE_SIZES.forEach(function ({ value, size }) {
+      it(`can select page size ${size}`, function () {
+        selectPageSize(value);
+  
+        getSelectedPageSizeWithValue(value);
+      });
     });
   });
 
   describe('after searching', function () {
-    it('the given search query is displayed', function () {
-      const query = 'cat';
+    const query = 'Hello from Cypress!';
+
+    beforeEach(function () {
+      search(query);
+    });
+
+    it('the results table is displayed', function () {
+      getSearchResultsTable();
+    });
+
+    it('the pagination navigation is displayed', function () {
+      getPaginationNav();
+    });
+
+    describe('the search info', function () {
+      it('displays the search query', function () {
+        cy.get('.search-results').should('contain', query);
+      });
+  
+      it('displays the search time', function () {
+        cy.get('.search-results > span:last-of-type')
+          .then(function (span) {
+            const text = span.text();
+            expect(text).to.match(/Time \d+ ms.$/);
+          });
+      });
+    });
+  });
+});
+
+describe('search table', function () {
+  describe('without any registed users', function () {
+    it('without a query, users table is empty', function () {
+      search();
+
+      getSearchResultsTableRows()
+        .should('have.length', 0);
+    });
+
+    it('with a query, users table is empty', function () {
+      const query = 'Hello from Cypress!';
       search(query);
 
-      cy.get('.search-results').should('contain', query);
+      getSearchResultsTableRows()
+        .should('have.length', 0);
+    });
+  });
+
+  describe('with registered users', function () {
+    before(function () {
+      cy.register(credentials);
+      cy.register(otherCredentials);
+      cy.register(disabledCredentials, { disabled: true });
     });
 
-    describe('without any registed users', function () {
-      it('without a query, users table is empty', function () {
-        search();
-
-        getSearchResultsTableRows()
-          .should('have.length', 0);
-      });
-
-      it('with a query, users table is empty', function () {
-        const query = 'cat';
-        search(query);
-
-        getSearchResultsTableRows()
-          .should('have.length', 0);
-      });
-    });
-  
-    describe('with registered users', function () {
-      
-      beforeEach(function () {
-        cy.register(credentials);
-        cy.register(otherCredentials);
-        cy.register(disabledCredentials, { disabled: true });
-      });
-
-      it('without a query table displays only non-disabled users', function () {
+    it('without a query table displays only non-disabled users', function () {
         search();
 
         getSearchResultsTableRows()
@@ -108,42 +170,146 @@ describe('on search page', function () {
           .should('contain', credentials.username)
           .should('contain', otherCredentials.username)
           .should('not.contain', disabledCredentials.username);
-      });
+    });
 
-      it('with a query of user username, the table displays the user', function () {
+    it('with a query of user username, the table displays the user', function () {
         const username = credentials.username;
         search(username);
 
         getSearchResultsTableRows()
           .should('have.length', 1)
           .should('contain', username);
-      });
+    });
 
-      it('with a query of disabled user username, the table does not display the user', function () {
+    it('with a query of disabled user username, the table does not display the user', function () {
         const username = disabledCredentials.username;
         search(username);
 
-        getSearchResultsTableRows()
-          .should('have.length', 0);
-      });
+        // no results
+        getSearchResultsTableRows().should('have.length', 0);
+    });
 
-      it('searching with a bad query, the table is empty', function () {
+    it('searching with a bad query, the table is empty', function () {
         const badQuery = 'asdiasfhafphafph';
         search(badQuery);
 
-        getSearchResultsTableRows()
-          .should('have.length', 0);
-      });
+        // no results
+        getSearchResultsTableRows().should('have.length', 0);
+    });
 
+    describe('navigation', function () {
       it('can navigate to users page from the table', function () {
-        const username = credentials.username;
-        search(username);
+          const username = credentials.username;
+          search(username);
 
-        getSearchResultsTableRows()
-          .should('contain', username).click();
+          getSearchResultsTableRows()
+            .should('contain', username).click();
 
-        cy.expectUrl(URLS.getUserUrl(username));
+          cy.expectUrl(URLS.getUserUrl(username));
       });
+    });
+  });
+});
+
+const getPaginationNav = function () {
+  return cy.get('.search-results .pagination-nav');
+};
+
+const expectCurrentPageToBe = function (page) {
+  getPaginationNav()
+    .find('span')
+    .then(function($span) {
+      const text = $span.text();
+
+      expect(text).to.match(new RegExp(`^${page}\/\\d+$`));
+    });
+};
+
+const expectLastPageToBe = function (page) {
+  getPaginationNav()
+    .find('span')
+    .then(function($span) {
+      const text = $span.text();
+
+      expect(text).to.match(new RegExp(`^\\d+\/${page}$`));
+    });
+};
+
+const getPaginationPageButton = function (nth) {
+  return getPaginationNav().find(`> button:nth-of-type(${nth})`);
+};
+
+const clickPaginationPageButton = function (nth) {
+  cy.intercept('/api/users?*').as('getUsers');
+
+  getPaginationPageButton(nth).click();
+
+  // wait for request
+  cy.wait('@getUsers');
+};
+
+describe('search table pagination', function () {
+  // when searching with the 'prefix', there are 'total' matches
+  const total = 11;
+  const prefix = 'test';
+
+  before(function () {
+    // create many users
+    [ ...Array(total).keys() ].forEach(function (n) {
+      cy.register({
+        name:     `${prefix}_name_${n}`, 
+        username: `${prefix}_username_${n}`, 
+        password: 'random123'
+      });
+    });
+  });
+
+  describe('searching when', function () {
+    const initialPage = 1;
+
+    describe('page size is 5', function () {
+      const { value, size } = PAGE_SIZES[0];
+      const lastPage = Math.ceil(total / size);
+  
+      beforeEach(function () {
+        selectPageSize(value);
+
+        search(prefix);
+      });
+
+      describe(`page ${initialPage}`, function () {
+
+        it('is default', function () {
+          expectCurrentPageToBe(initialPage);
+        });
+
+        it(`there are ${lastPage} pages`, function () {
+          expectLastPageToBe(lastPage);
+        });
+
+        it(`contains ${size} rows`, function () {
+          getSearchResultsTableRows()
+            .should('have.length', size);
+        });
+
+        it('can not navigate to previous pages', function () {
+          getPaginationPageButton(1).should('be.disabled');
+          getPaginationPageButton(2).should('be.disabled');
+        });
+
+        it('can navigate to next page', function () {
+          clickPaginationPageButton(3);
+
+          expectCurrentPageToBe(initialPage + 1);
+        });
+
+        it('can navigate to the last page', function () {
+          clickPaginationPageButton(4);
+
+          expectCurrentPageToBe(lastPage);
+        });
+      });
+
     });
   });
 });
