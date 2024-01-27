@@ -269,174 +269,163 @@ describe('search table pagination', function () {
     });
   });
 
-  describe('searching when', function () {
+  describe(`searching when there are ${total} total results`, function () {
     const initialPage = 1;
 
-    describe('page size is 5', function () {
-      const { value, size } = PAGE_SIZES[0];
+    [
+      PAGE_SIZES[0], 
+      PAGE_SIZES[1]
+    ].forEach(function ({ value, size }) {
       const lastPage = Math.ceil(total / size);
+
+      describe(`when page size is ${size}`, function () {
+        beforeEach(function () {
+          selectPageSize(value);
   
-      beforeEach(function () {
-        selectPageSize(value);
-
-        search(prefix);
-      });
-
-      describe(`on page ${initialPage}`, function () {
-        it('this is default page', function () {
-          expectCurrentPageToBe(initialPage);
+          search(prefix);
         });
 
-        it(`there are ${lastPage} pages`, function () {
-          expectLastPageToBe(lastPage);
-        });
+        describe('on first page', function () {
+          const page = initialPage;
+          const rows = Math.min(total, size);
 
-        it(`contains ${size} rows`, function () {
-          getSearchResultsTableRows()
-            .should('have.length', size);
-        });
-
-        [ 'first', 'previous' ].forEach(function (description, index) {
-          it(`can not navigate to ${description} page`, function () {
-            getPaginationPageButton(index + 1).should('be.disabled');
-          });
-        });
-
-        [
-          { description: 'next', page: initialPage + 1 }, 
-          { description: 'last', page: lastPage }
-        ].forEach(function ({ description, page }, index) {
-          it(`can navigate to ${description} page`, function () {
-            clickPaginationPageButton(index + 3);
-
+          it(`the page number is ${page}`, function () {
             expectCurrentPageToBe(page);
           });
+  
+          it(`there are ${lastPage} pages`, function () {
+            expectLastPageToBe(lastPage);
+          });
+  
+          it(`contains ${rows} rows`, function () {
+            getSearchResultsTableRows()
+              .should('have.length', rows);
+          });
+  
+          [ 'first', 'previous' ].forEach(function (description, index) {
+            it(`can not navigate to ${description} page`, function () {
+              getPaginationPageButton(index + 1).should('be.disabled');
+            });
+          });
+  
+          [
+            { description: 'next', targetPage: page + 1 }, 
+            { description: 'last', targetPage: lastPage }
+          ].forEach(function ({ description, targetPage }, index) {
+            it(`can navigate to ${description} page`, function () {
+              clickPaginationPageButton(index + 3);
+  
+              expectCurrentPageToBe(targetPage);
+            });
+          });
         });
-      });
 
-      describe(`on page ${initialPage + 1}`, function () {
-        const page = initialPage + 1;
-        const rows = Math.min(total - size, size);
-
-        beforeEach(function () {
-          clickPaginationPageButton(3);
-        });
-
-        it(`the page number is ${page}`, function () {
-          expectCurrentPageToBe(page);
-        });
-
-        it(`there are ${lastPage} pages`, function () {
-          expectLastPageToBe(lastPage);
-        });
-
-        it(`contains ${rows} rows`, function () {
-          getSearchResultsTableRows()
-            .should('have.length', rows);
-        });
-
-        [
-          { description: 'first',     page: initialPage }, 
-          { description: 'previuous', page: page - 1 }, 
-          { description: 'next',      page: page + 1 }, 
-          { description: 'last',      page: lastPage }
-        ].forEach(function ({ description, page }, index) {
-          it(`can navigate to ${description} page`, function () {
-            clickPaginationPageButton(index + 1);
-
+        describe('on next page', function () {
+          const page = initialPage + 1;
+          const rows = Math.min(total - size, size);
+  
+          beforeEach(function () {
+            clickPaginationPageButton(3);
+          });
+  
+          it(`the page number is ${page}`, function () {
             expectCurrentPageToBe(page);
           });
+  
+          it(`there are ${lastPage} pages`, function () {
+            expectLastPageToBe(lastPage);
+          });
+  
+          it(`contains ${rows} rows`, function () {
+            getSearchResultsTableRows()
+              .should('have.length', rows);
+          });
+  
+          [
+            { description: 'first',    page: initialPage }, 
+            { description: 'previous', page: page - 1 }, 
+          ].forEach(function ({ description, page }, index) {
+            it(`can navigate to ${description} page`, function () {
+              clickPaginationPageButton(index + 1);
+  
+              expectCurrentPageToBe(page);
+            });
+          });
+
+          [
+            { description: 'next', targetPage: page + 1 }, 
+            { description: 'last', targetPage: lastPage }
+          ].forEach(function ({ description, targetPage }, index) {
+            if (size === PAGE_SIZES[0].size) {
+              it(`can navigate to ${description} page`, function () {
+                clickPaginationPageButton(index + 3);
+    
+                expectCurrentPageToBe(targetPage);
+              });
+
+            } else { 
+              it(`can not navigate to ${description} page`, function () {
+                getPaginationPageButton(index + 3).should('be.disabled');
+              });
+            }
+          });
         });
-      });
 
-      describe('on last page', function () {
-        const rows = Math.min(total - 2 * size, size);
-
-        beforeEach(function () {
-          clickPaginationPageButton(4);
-        });
-
-        it(`the page number is ${lastPage}`, function () {
-          expectCurrentPageToBe(lastPage);
-        });
-
-        it(`there are ${lastPage} pages`, function () {
-          expectLastPageToBe(lastPage);
-        });
-
-        it(`contains ${rows} rows`, function () {
-          getSearchResultsTableRows()
-            .should('have.length', rows);
-        });
-
-        [
-          { description: 'first',     page: initialPage }, 
-          { description: 'previuous', page: lastPage - 1 }, 
-        ].forEach(function ({ description, page }, index) {
-          it(`can navigate to ${description} page`, function () {
-            clickPaginationPageButton(index + 1);
-
+        describe('on last page', function () {
+          const page = lastPage;
+          const rows = total - (lastPage - 1) * size;
+  
+          beforeEach(function () {
+            clickPaginationPageButton(4);
+          });
+  
+          it(`the page number is ${page}`, function () {
             expectCurrentPageToBe(page);
           });
-        });
-        
-        [ 'next', 'last' ].forEach(function (description, index) {
-          it(`can not navigate to ${description} page`, function () {
-            getPaginationPageButton(index + 3).should('be.disabled');
+  
+          it(`there are ${lastPage} pages`, function () {
+            expectLastPageToBe(lastPage);
+          });
+  
+          it(`contains ${rows} rows`, function () {
+            getSearchResultsTableRows()
+              .should('have.length', rows);
+          });
+  
+          [
+            { description: 'first',    targetPage: initialPage }, 
+            { description: 'previous', targetPage: page - 1 }, 
+          ].forEach(function ({ description, targetPage }, index) {
+            it(`can navigate to ${description} page`, function () {
+              clickPaginationPageButton(index + 1);
+  
+              expectCurrentPageToBe(targetPage);
+            });
+          });
+          
+          [ 'next', 'last' ].forEach(function (description, index) {
+            it(`can not navigate to ${description} page`, function () {
+              getPaginationPageButton(index + 3).should('be.disabled');
+            });
           });
         });
       });
+
     });
 
-    describe('when page size is 10', function () {
-      const { value, size } = PAGE_SIZES[1];
+    describe(`when page size is ${PAGE_SIZES[2].value}`, function () {
+      const { value, size } = PAGE_SIZES[2];
       const lastPage = Math.ceil(total / size);
-  
+
       beforeEach(function () {
         selectPageSize(value);
 
         search(prefix);
       });
 
-      describe(`on page ${initialPage}`, function () {
-        it('this is default page', function () {
-          expectCurrentPageToBe(initialPage);
-        });
-
-        it(`there are ${lastPage} pages`, function () {
-          expectLastPageToBe(lastPage);
-        });
-
-        it(`contains ${size} rows`, function () {
-          getSearchResultsTableRows()
-            .should('have.length', size);
-        });
-
-        [ 'first', 'previous' ].forEach(function (description, index) {
-          it(`can not navigate to ${description} page`, function () {
-            getPaginationPageButton(index + 1).should('be.disabled');
-          });
-        });
-
-        [
-          { description: 'next', page: initialPage + 1 }, 
-          { description: 'last', page: lastPage }
-        ].forEach(function ({ description, page }, index) {
-          it(`can navigate to ${description} page`, function () {
-            clickPaginationPageButton(index + 3);
-
-            expectCurrentPageToBe(page);
-          });
-        });
-      });
-
-      describe(`on page ${initialPage + 1}`, function () {
-        const page = initialPage + 1;
-        const rows = Math.min(total - size, size);
-
-        beforeEach(function () {
-          clickPaginationPageButton(3);
-        });
+      describe('on first page', function () {
+        const page = initialPage;
+        const rows = Math.min(total, size);
 
         it(`the page number is ${page}`, function () {
           expectCurrentPageToBe(page);
@@ -451,58 +440,9 @@ describe('search table pagination', function () {
             .should('have.length', rows);
         });
 
-        [
-          { description: 'first',     page: initialPage }, 
-          { description: 'previuous', page: page - 1 }, 
-        ].forEach(function ({ description, page }, index) {
-          it(`can navigate to ${description} page`, function () {
-            clickPaginationPageButton(index + 1);
-
-            expectCurrentPageToBe(page);
-          });
-        });
-
-        [ 'next', 'last' ].forEach(function (description, index) {
+        [ 'first', 'previous', 'next', 'last' ].forEach(function (description, index) {
           it(`can not navigate to ${description} page`, function () {
-            getPaginationPageButton(index + 3).should('be.disabled');
-          });
-        });
-      });
-
-      describe('on last page', function () {
-        const rows = Math.min(total - (lastPage - 1) * size, size);
-
-        beforeEach(function () {
-          clickPaginationPageButton(4);
-        });
-
-        it(`the page number is ${lastPage}`, function () {
-          expectCurrentPageToBe(lastPage);
-        });
-
-        it(`there are ${lastPage} pages`, function () {
-          expectLastPageToBe(lastPage);
-        });
-
-        it(`contains ${rows} rows`, function () {
-          getSearchResultsTableRows()
-            .should('have.length', rows);
-        });
-
-        [
-          { description: 'first',     page: initialPage }, 
-          { description: 'previuous', page: lastPage - 1 }, 
-        ].forEach(function ({ description, page }, index) {
-          it(`can navigate to ${description} page`, function () {
-            clickPaginationPageButton(index + 1);
-
-            expectCurrentPageToBe(page);
-          });
-        });
-        
-        [ 'next', 'last' ].forEach(function (description, index) {
-          it(`can not navigate to ${description} page`, function () {
-            getPaginationPageButton(index + 3).should('be.disabled');
+            getPaginationPageButton(index + 1).should('be.disabled');
           });
         });
       });
