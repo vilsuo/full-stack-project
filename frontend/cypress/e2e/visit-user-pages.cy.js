@@ -55,7 +55,7 @@ describe('visiting user pages', function () {
     });
   });
 
-  describe.only('logged in', function () {
+  describe('logged in', function () {
     const username = credentials.username;
     const otherUsername = otherCredentials.username;
 

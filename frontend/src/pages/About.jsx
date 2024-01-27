@@ -92,6 +92,11 @@ const technologies = {
       title: 'Docker',
       description: 'Postgres and Redis in Docker container.'
     },
+    {
+      href: 'https://www.cypress.io/',
+      title: 'Cypress',
+      description: 'End-to-end testing.'
+    },
   ],
 };
 
