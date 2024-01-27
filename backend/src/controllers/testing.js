@@ -1,5 +1,5 @@
 const testingRouter  = require('express').Router();
-const { User } = require('../models');
+const { User, Relation } = require('../models');
 const { sequelize } = require('../util/db');
 const { getNonSensitiveUser } = require('../util/dto');
 
@@ -27,6 +27,13 @@ testingRouter.post('/disabled', async (req, res) => {
   });
 
   return res.status(201).send(getNonSensitiveUser(user));
+});
+
+// delete all relations
+testingRouter.delete('/relations', async (req, res) => {
+  await Relation.sync({ force: true });
+
+  return res.status(204).send();
 });
 
 module.exports = testingRouter;
