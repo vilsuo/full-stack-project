@@ -31,7 +31,8 @@ testingRouter.post('/disabled', async (req, res) => {
 
 // delete all relations
 testingRouter.delete('/relations', async (req, res) => {
-  await Relation.sync({ force: true });
+  // will delete all rows in a table
+  await Relation.truncate();
 
   return res.status(204).send();
 });
