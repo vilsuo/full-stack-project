@@ -15,6 +15,7 @@ const submitLogin = function (username, password) {
     .click();
 
   cy.waitForResponse('postLogin');
+  cy.waitForSpinners();
 };
 
 const login = function (username, password) {
@@ -54,7 +55,7 @@ describe('when in login page', function () {
       });
     
       it('user is dispatched to the redux state', function () {
-        cy.getState()
+        cy.getStore()
           .should('nested.include', {
             'auth.user.username': credentials.username
           });
