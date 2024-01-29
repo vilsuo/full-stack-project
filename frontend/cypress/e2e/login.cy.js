@@ -1,7 +1,7 @@
-import { URLS, COOKIE_KEY } from '../support/constants';
+import { URLS, COOKIE_KEY, CREDENTIALS } from '../support/constants';
 
-const credentials = { name: 'ville', username: 'ville123', password: 'qwerty123' };
-const otherCredentials = { name: 'matti', username: 'matti123', password: 'fghjkl789' };
+const userCredentials = CREDENTIALS.USER;
+const disabledUserCredentials = CREDENTIALS.DISABLED_USER;
 
 const submitLogin = function (username, password) {
   // fill the form inputs
@@ -18,10 +18,12 @@ const submitLogin = function (username, password) {
   cy.waitForSpinners();
 };
 
-const login = function (username, password) {
-  submitLogin(username, password);
-  cy.expectUrl(URLS.HOME_URL);
-};
+before(function () {
+  cy.resetDb();
+
+  cy.register(userCredentials);
+  cy.register(disabledUserCredentials, { disabled: true });
+});
 
 describe('when in login page', function () {
   beforeEach(function() {
@@ -39,15 +41,10 @@ describe('when in login page', function () {
     cy.expectUrl(URLS.REGISTER_URL);
   });
 
-  describe('after registering', function () {
-    beforeEach(function() {
-      cy.resetDb();
-      cy.register(credentials);
-    });
-  
+  describe('when registered', function () {
     describe('on successfull login', function () {
       beforeEach(function () {
-        login(credentials.username, credentials.password);
+        submitLogin(userCredentials.username, userCredentials.password);
       });
 
       it('login redirects to the home page', function () {
@@ -57,7 +54,7 @@ describe('when in login page', function () {
       it('user is dispatched to the redux state', function () {
         cy.getStore()
           .should('nested.include', {
-            'auth.user.username': credentials.username
+            'auth.user.username': userCredentials.username
           });
       });
   
@@ -66,14 +63,14 @@ describe('when in login page', function () {
       });
 
       it('username is displayed in the navigation bar', function () {
-        cy.getNavBarUser().then(function (userOptions) {
-          expect(userOptions.text()).to.eq(credentials.username);
+        cy.getNavBarUserButton().then(function (userOptions) {
+          expect(userOptions.text()).to.eq(userCredentials.username);
         });
       });
     });
   
     it('login fails with wrong password', function () {
-      submitLogin(credentials.username, 'wrongpassword');
+      submitLogin(userCredentials.username, 'wrongpassword');
 
       // error alert is displayed
       cy.expectAlert(/^Login failed/);
@@ -83,9 +80,7 @@ describe('when in login page', function () {
     });
 
     it('disabled user can not login', function () {
-      cy.register(otherCredentials, { disabled: true });
-
-      submitLogin(otherCredentials.username, otherCredentials.password);
+      submitLogin(disabledUserCredentials.username, disabledUserCredentials.password);
 
       // error alert is displayed
       cy.expectAlert(/^Login failed/);

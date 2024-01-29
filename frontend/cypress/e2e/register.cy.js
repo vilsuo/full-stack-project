@@ -1,7 +1,8 @@
-import { URLS } from '../support/constants';
+import { URLS, CREDENTIALS } from '../support/constants';
 
-const credentials = { name: 'ville', username: 'ville123', password: 'qwerty123' };
+const userCredentials = CREDENTIALS.USER;
 
+// does not wait for response!
 const submitFormRegister = function (credentials) {
   cy.get(".register form input[type='text']:first")
     .type(credentials.name);
@@ -44,7 +45,7 @@ describe('when in register page', function () {
   });
 
   it('registering successfully redirects to login page', function () {
-    submitFormRegister(credentials);
+    submitFormRegister(userCredentials);
 
     // wait for register response
     cy.waitForResponse('postRegister');
@@ -55,9 +56,9 @@ describe('when in register page', function () {
   describe('registering fails with', function () {
     it('taken username', function () {
       // register for the first time so the username is taken
-      cy.register(credentials);
+      cy.register(userCredentials);
   
-      submitFormRegister(credentials);
+      submitFormRegister(userCredentials);
 
       // wait for register response
       cy.waitForResponse('postRegister');
@@ -70,7 +71,7 @@ describe('when in register page', function () {
     });
   
     it('mismatch passwords', function () {
-      submitFormRegister({ ...credentials, password2: 'asdfgh456' });
+      submitFormRegister({ ...userCredentials, password2: 'asdfgh456' });
 
       // no need to wait: response is not sent
 

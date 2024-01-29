@@ -1,62 +1,51 @@
-import { login } from '../../src/reducers/auth';
-import { COOKIE_KEY, URLS } from '../support/constants';
+import { COOKIE_KEY, URLS, CREDENTIALS } from '../support/constants';
 
-const credentials = { name: 'ville', username: 'ville123', password: 'qwerty123' };
+const userCredentials = CREDENTIALS.USER;
 
 const logout = function () {
-  cy.getNavBarUser()
+  cy.getNavBarUserButton()
     .click();
 
-  cy.get('.dropdown')
-    .contains('Logout')
+  cy.getNavBarUserDropDownMenuOption('Logout')
     .click();
 };
 
-describe('', function () {
+before(function () {
+  cy.resetDb();
+  cy.register(userCredentials);
+});
 
+beforeEach(function () {
+  cy.visit(URLS.HOME_URL);
+
+  cy.dispatchLogin(userCredentials);
+});
+
+describe('after loggin out', function () {
   beforeEach(function () {
-    cy.resetDb();
-    cy.visit(URLS.HOME_URL);
-
-    cy.register(credentials);
-    cy.dispatch(login, credentials);
+    logout();
   });
 
-  it('navigation bar contains logout option', function () {
-    // open navigation bar user menu
-    cy.getNavBarUser()
-      .click();
-
-    cy.get('.dropdown').contains('Logout');
+  it('loggin out redirects to login page', function () {
+    cy.expectUrl(URLS.LOGIN_URL);
   });
 
-  describe('after loggin out', function () {
-    beforeEach(function () {
-      cy.getCookie(COOKIE_KEY).should('exist');
-      logout();
-    });
+  it('user is not displayed in the navigation bar', function () {
+    cy.getNavBarUserButton().should('not.exist');
+  });
+  
+  it('user does not exist in the redux store', function () {
+    cy.getStore()
+      .should('deep.equal', {
+        auth: {
+          user: null,
+          potrait: null,
+          relations: [],
+        }
+      });
+  });
 
-    it('loggin out redirects to login page', function () {
-      cy.expectUrl(URLS.LOGIN_URL);
-    });
-
-    it('user is not displayed in the navigation bar', function () {
-      cy.getNavBarUser().should('not.exist');
-    });
-
-    it('user does not exist in the redux store', function () {
-      cy.getState()
-        .should('deep.equal', {
-          auth: {
-            user: null,
-            potrait: null,
-            relations: [],
-          }
-        });
-    });
-
-    it(`session cookie '${COOKIE_KEY}' is not set`, function () {
-      cy.getCookie(COOKIE_KEY).should('not.exist');
-    });
+  it(`session cookie '${COOKIE_KEY}' is not set`, function () {
+    cy.getCookie(COOKIE_KEY).should('not.exist');
   });
 });
