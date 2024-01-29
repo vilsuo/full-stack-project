@@ -2,7 +2,7 @@
 
 The App is built from **React** frontend with **React-Router-DOM** navigation and **Redux-Toolkit** state container. The backend is **NodeJS** with **Express** web application framework.
 
-The App is hosted on [Render](https://render.com/) and can see it live [here](https://fullstack-project-kamw.onrender.com).
+The App is hosted on a free instance of [Render](https://render.com/) and it may spin down with inactivity. You can see the App live [here](https://fullstack-project-kamw.onrender.com).
 
 See saved screenshots from the App [here](https://github.com/vilsuo/full-stack-project/tree/main/readme-images/app-images).
 
