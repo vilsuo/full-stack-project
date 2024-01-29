@@ -25,7 +25,7 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 import { login } from '../../src/reducers/auth';
-import { URLS } from './constants';
+import { COOKIE_KEY, URLS } from './constants';
 
 const BACKEND_BASE_URL = '/api';
 
@@ -59,32 +59,10 @@ Cypress.Commands.add('getStore', () => {
  * For dispatching successfull login only!
  */
 Cypress.Commands.add('dispatchLogin', (credentials) => {
-  /*
-  cy.intercept('POST', `${BACKEND_BASE_URL}/auth/login`)
-    .as('postLogin');
-
-  cy.intercept('GET', `${BACKEND_BASE_URL}/users/${credentials.username}/potrait`)
-    .as('getPotrait');
-
-  cy.intercept('GET', `${BACKEND_BASE_URL}/users/${credentials.username}/relations`)
-    .as('getRelations');
-  */
-
   cy.dispatch(login, credentials);
 
-  /*
-  cy.waitForResponse('postLogin')
-    .its('response.statusCode')
-    .should('eq', 200);
-
-  cy.waitForResponse('getPotrait')
-    .its('response.statusCode')
-    .should('be.oneOf', [200, 404]);
-
-  cy.waitForResponse('getRelations')
-    .its('response.statusCode')
-    .should('eq', 200);
-  */
+  // wait for authentication cookie to exist
+  cy.getCookie(COOKIE_KEY).should('exist');
 
   // wait for user to be saved in the redux store
   cy.getStore()
@@ -115,8 +93,21 @@ Cypress.Commands.add('getNavBar', () => {
   return cy.get('header nav');
 });
 
-Cypress.Commands.add('getNavBarUser', () => {
-  return cy.getNavBar().find('.user-options');
+Cypress.Commands.add('getNavBarLink', (label) => {
+  return cy.getNavBar()
+    .find(`a:contains(${label})`);
+});
+
+Cypress.Commands.add('getNavBarUserButton', () => {
+  return cy.getNavBar().find('button.user-options');
+});
+
+Cypress.Commands.add('getNavBarUserDropDownMenu', () => {
+  return cy.getNavBar().find('.dropdown .menu');
+});
+
+Cypress.Commands.add('getNavBarUserDropDownMenuOption', (label) => {
+  return cy.getNavBarUserDropDownMenu().find(`li button:contains(${label})`);
 });
 
 // side bar

@@ -14,4 +14,10 @@ export const URLS = {
   },
 };
 
+export const CREDENTIALS = {
+  USER: { name: 'ville', username: 'ville123', password: 'qwerty123' },
+  //OTHER_USER: ,
+  DISABLED_USER: { name: 'matti', username: 'matti123', password: 'fghjkl789' },
+};
+
 export const COOKIE_KEY = 'connect.sid';
