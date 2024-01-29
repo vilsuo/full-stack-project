@@ -12,6 +12,8 @@ export const URLS = {
   getUserUrl : function (username) { 
     return `${FRONTEND_BASE_URL}/users/${username}`; 
   },
+
+  FALLBACK_URL: `${FRONTEND_BASE_URL}/`,
 };
 
 export const CREDENTIALS = {
