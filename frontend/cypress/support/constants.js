@@ -18,8 +18,8 @@ export const URLS = {
 
 export const CREDENTIALS = {
   USER: { name: 'ville', username: 'ville123', password: 'qwerty123' },
-  //OTHER_USER: ,
-  DISABLED_USER: { name: 'matti', username: 'matti123', password: 'fghjkl789' },
+  OTHER_USER: { name: 'matti', username: 'matti123', password: 'fghjkl789' },
+  DISABLED_USER: { name: 'sampsa', username: 'samp', password: 'qweyu456' },
 };
 
 export const COOKIE_KEY = 'connect.sid';

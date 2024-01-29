@@ -56,14 +56,9 @@ Cypress.Commands.add('getStore', () => {
     .invoke('getState');
 });
 
-/**
- * For dispatching successfull login only!
- */
+// for dispatching successfull login only!
 Cypress.Commands.add('dispatchLogin', (credentials) => {
   cy.dispatch(login, credentials);
-
-  // wait for authentication cookie to exist
-  //cy.getCookie(COOKIE_KEY).should('exist');
 
   // wait until authentication cookie is set
   cy.waitForSessionCookie();
@@ -87,12 +82,14 @@ Cypress.Commands.add('register', (credentials, options = {}) => {
   }
 });
 
+// does NOT dispatch the relation!
 Cypress.Commands.add('addRelation', (body) => {
   cy.request('POST', `${BACKEND_TESTING_BASE_URL}/relations`, body);
 });
 
 // GET COMPONENTS
 
+// nav bar
 Cypress.Commands.add('getNavBar', () => {
   return cy.get('header nav');
 });
@@ -119,11 +116,6 @@ Cypress.Commands.add('getSideBar', () => {
   return cy.get('.sidebar');
 });
 
-Cypress.Commands.add('getSideBarNavigationAction', (label) => {
-  return cy.getSideBar()
-    .find(`ul li a:contains(${label})`);
-});
-
 // ALERTS & ERRORS
 
 Cypress.Commands.add('expectAlert', (pattern) => {
@@ -147,16 +139,6 @@ Cypress.Commands.add('expectErrorElement', (pattern) => {
 Cypress.Commands.add('expectUrl', (url) => {
   cy.url()
     .should('eq', Cypress.config().baseUrl + url);
-});
-
-Cypress.Commands.add('expectUserPageVisible', () => {
-  cy.getSideBar();
-  cy.getErrorElement().should('not.exist');
-});
-
-Cypress.Commands.add('expectUserPageHidden', (pattern) => {
-  cy.getSideBar().should('not.exist');
-  cy.expectErrorElement(pattern);
 });
 
 // WAITING

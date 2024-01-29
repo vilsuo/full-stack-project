@@ -1,4 +1,4 @@
-import { URLS } from '../../support/constants';
+import { CREDENTIALS, URLS } from '../../support/constants';
 
 /*
 TODO
@@ -6,10 +6,9 @@ TODO
 - test results per page
 */
 
-const credentials = { name: 'ville', username: 'ville123', password: 'qwerty123' };
-const otherCredentials = { name: 'matti', username: 'matti123', password: 'fghjkl789' };
-const disabledCredentials = { name: 'katti', username: 'katti123', password: 'asdjkl123' };
-
+const credentials = CREDENTIALS.USER;
+const otherCredentials = CREDENTIALS.OTHER_USER;
+const disabledCredentials = CREDENTIALS.DISABLED_USER;
 
 const PAGE_SIZES = [
   { value: '5', size: 5 },

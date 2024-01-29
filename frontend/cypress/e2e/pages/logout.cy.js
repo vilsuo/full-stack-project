@@ -2,7 +2,7 @@ import { COOKIE_KEY, URLS, CREDENTIALS } from '../../support/constants';
 
 const userCredentials = CREDENTIALS.USER;
 
-const logout = function () {
+const clickNavBarLogout = function () {
   cy.getNavBarUserButton()
     .click();
 
@@ -23,7 +23,7 @@ beforeEach(function () {
 
 describe('after loggin out', function () {
   beforeEach(function () {
-    logout();
+    clickNavBarLogout();
   });
 
   it('loggin out redirects to login page', function () {
