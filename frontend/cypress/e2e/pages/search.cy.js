@@ -1,4 +1,4 @@
-import { URLS } from '../support/constants';
+import { URLS } from '../../support/constants';
 
 /*
 TODO

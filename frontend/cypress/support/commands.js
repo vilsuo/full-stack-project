@@ -24,11 +24,12 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+import 'cypress-wait-until';
+
 import { login } from '../../src/reducers/auth';
 import { COOKIE_KEY, URLS } from './constants';
 
 const BACKEND_BASE_URL = '/api';
-
 const BACKEND_TESTING_BASE_URL = '/api/testing';
 
 // TESTING ONLY ROUTES
@@ -62,7 +63,10 @@ Cypress.Commands.add('dispatchLogin', (credentials) => {
   cy.dispatch(login, credentials);
 
   // wait for authentication cookie to exist
-  cy.getCookie(COOKIE_KEY).should('exist');
+  //cy.getCookie(COOKIE_KEY).should('exist');
+
+  // wait until authentication cookie is set
+  cy.waitForSessionCookie();
 
   // wait for user to be saved in the redux store
   cy.getStore()
@@ -165,6 +169,13 @@ Cypress.Commands.add('waitForResponse', (alias) => {
 Cypress.Commands.add('waitForSpinners', () => {
   // wait for loading spinner to disappear
   cy.get('.spinner').should('not.exist');
+});
+
+Cypress.Commands.add('waitForSessionCookie', () => {
+  // wait until authentication cookie is set
+  cy.waitUntil(() => cy.getCookie(COOKIE_KEY).then(
+    cookie => Boolean(cookie && cookie.value)
+  ));
 });
 
 // VISITING

@@ -1,4 +1,4 @@
-import { URLS, COOKIE_KEY, CREDENTIALS } from '../support/constants';
+import { URLS, COOKIE_KEY, CREDENTIALS } from '../../support/constants';
 
 const userCredentials = CREDENTIALS.USER;
 const disabledUserCredentials = CREDENTIALS.DISABLED_USER;
@@ -59,6 +59,7 @@ describe('when in login page', function () {
       });
   
       it(`session cookie '${COOKIE_KEY}' is set`, function () {
+        // does NOT retry!
         cy.getCookie(COOKIE_KEY).should('exist');
       });
 

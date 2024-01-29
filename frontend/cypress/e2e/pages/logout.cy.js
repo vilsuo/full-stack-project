@@ -1,4 +1,4 @@
-import { COOKIE_KEY, URLS, CREDENTIALS } from '../support/constants';
+import { COOKIE_KEY, URLS, CREDENTIALS } from '../../support/constants';
 
 const userCredentials = CREDENTIALS.USER;
 

@@ -1,5 +1,5 @@
-import { RELATION_BLOCK, RELATION_FOLLOW } from '../../src/constants';
-import { URLS } from '../support/constants';
+import { RELATION_BLOCK, RELATION_FOLLOW } from '../../../../src/constants';
+import { URLS } from '../../../support/constants';
 
 /*
 TODO

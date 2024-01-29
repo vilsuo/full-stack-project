@@ -1,4 +1,4 @@
-import { URLS, CREDENTIALS } from '../support/constants';
+import { URLS, CREDENTIALS } from '../../support/constants';
 
 const userCredentials = CREDENTIALS.USER;
 
