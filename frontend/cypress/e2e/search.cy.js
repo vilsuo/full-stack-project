@@ -45,6 +45,7 @@ const search = function (value) {
   cy.get(".search-form button[type='submit']").click();
 
   cy.waitForResponse('getUsers');
+  cy.waitForSpinners();
 };
 
 const getSearchResultsTable = function () {
@@ -161,49 +162,49 @@ describe('search table', function () {
     });
 
     it('without a query table displays only non-disabled users', function () {
-        search();
+      search();
 
-        getSearchResultsTableRows()
-          .should('have.length', 2)
-          .should('contain', credentials.username)
-          .should('contain', otherCredentials.username)
-          .should('not.contain', disabledCredentials.username);
+      getSearchResultsTableRows()
+        .should('have.length', 2)
+        .should('contain', credentials.username)
+        .should('contain', otherCredentials.username)
+        .should('not.contain', disabledCredentials.username);
     });
 
     it('with a query of user username, the table displays the user', function () {
-        const username = credentials.username;
-        search(username);
+      const username = credentials.username;
+      search(username);
 
-        getSearchResultsTableRows()
-          .should('have.length', 1)
-          .should('contain', username);
+      getSearchResultsTableRows()
+        .should('have.length', 1)
+        .should('contain', username);
     });
 
     it('with a query of disabled user username, the table does not display the user', function () {
-        const username = disabledCredentials.username;
-        search(username);
+      const username = disabledCredentials.username;
+      search(username);
 
-        // no results
-        getSearchResultsTableRows().should('have.length', 0);
+      // no results
+      getSearchResultsTableRows().should('have.length', 0);
     });
 
     it('searching with a bad query, the table is empty', function () {
-        const badQuery = 'asdiasfhafphafph';
-        search(badQuery);
+      const badQuery = 'asdiasfhafphafph';
+      search(badQuery);
 
-        // no results
-        getSearchResultsTableRows().should('have.length', 0);
+      // no results
+      getSearchResultsTableRows().should('have.length', 0);
     });
 
     describe('navigation', function () {
       it('can navigate to users page from the table', function () {
-          const username = credentials.username;
-          search(username);
+        const username = credentials.username;
+        search(username);
 
-          getSearchResultsTableRows()
-            .should('contain', username).click();
+        getSearchResultsTableRows()
+          .should('contain', username).click();
 
-          cy.expectUrl(URLS.getUserUrl(username));
+        cy.expectUrl(URLS.getUserUrl(username));
       });
     });
   });
@@ -233,16 +234,27 @@ const expectLastPageToBe = function (page) {
     });
 };
 
-const getPaginationPageButton = function (nth) {
-  return getPaginationNav().find(`> button:nth-of-type(${nth})`);
+const NAVIGATION_BUTTONS = {
+  FIRST: { description: 'first', index: 1 },
+  PREVIOUS: { description: 'previous', index: 2 },
+  NEXT: { description: 'next', index: 3 },
+  LAST:{ description: 'last', index: 4 },
 };
 
-const clickPaginationPageButton = function (nth) {
-  cy.intercept('/api/users?*').as('getUsers');
+const getPaginationPageButton = function (index) {
+  return getPaginationNav()
+    .find(`> button:nth-of-type(${index})`);
+};
 
-  getPaginationPageButton(nth).click();
+const clickPaginationPageButton = function (index) {
+  cy.intercept('/api/users?*')
+    .as('getUsers');
+
+  getPaginationPageButton(index)
+    .click();
 
   cy.waitForResponse('getUsers');
+  cy.waitForSpinners();
 };
 
 describe('search table pagination', function () {
@@ -294,18 +306,21 @@ describe('search table pagination', function () {
               .should('have.length', rows);
           });
   
-          [ 'first', 'previous' ].forEach(function (description, index) {
+          [ 
+            NAVIGATION_BUTTONS.FIRST, 
+            NAVIGATION_BUTTONS.PREVIOUS 
+          ].forEach(function ({ description, index }) {
             it(`can not navigate to ${description} page`, function () {
-              getPaginationPageButton(index + 1).should('be.disabled');
+              getPaginationPageButton(index).should('be.disabled');
             });
           });
   
           [
-            { description: 'next', targetPage: page + 1 }, 
-            { description: 'last', targetPage: lastPage }
-          ].forEach(function ({ description, targetPage }, index) {
+            { targetButton: NAVIGATION_BUTTONS.NEXT, targetPage: page + 1 }, 
+            { targetButton: NAVIGATION_BUTTONS.LAST, targetPage: lastPage }
+          ].forEach(function ({ targetButton: { description, index }, targetPage }) {
             it(`can navigate to ${description} page`, function () {
-              clickPaginationPageButton(index + 3);
+              clickPaginationPageButton(index);
   
               expectCurrentPageToBe(targetPage);
             });
@@ -317,7 +332,7 @@ describe('search table pagination', function () {
           const rows = Math.min(total - size, size);
   
           beforeEach(function () {
-            clickPaginationPageButton(3);
+            clickPaginationPageButton(NAVIGATION_BUTTONS.NEXT.index);
           });
   
           it(`the page number is ${page}`, function () {
@@ -334,30 +349,30 @@ describe('search table pagination', function () {
           });
   
           [
-            { description: 'first',    page: initialPage }, 
-            { description: 'previous', page: page - 1 }, 
-          ].forEach(function ({ description, page }, index) {
+            { targetButton: NAVIGATION_BUTTONS.FIRST,    targetPage: initialPage }, 
+            { targetButton: NAVIGATION_BUTTONS.PREVIOUS, targetPage: page - 1 }, 
+          ].forEach(function ({ targetButton: { description, index }, targetPage }) {
             it(`can navigate to ${description} page`, function () {
-              clickPaginationPageButton(index + 1);
+              clickPaginationPageButton(index);
   
-              expectCurrentPageToBe(page);
+              expectCurrentPageToBe(targetPage);
             });
           });
 
           [
-            { description: 'next', targetPage: page + 1 }, 
-            { description: 'last', targetPage: lastPage }
-          ].forEach(function ({ description, targetPage }, index) {
+            { targetButton: NAVIGATION_BUTTONS.NEXT, targetPage: page + 1 }, 
+            { targetButton: NAVIGATION_BUTTONS.LAST, targetPage: lastPage }
+          ].forEach(function ({ targetButton: { description, index }, targetPage }) {
             if (size === PAGE_SIZES[0].size) {
               it(`can navigate to ${description} page`, function () {
-                clickPaginationPageButton(index + 3);
+                clickPaginationPageButton(index);
     
                 expectCurrentPageToBe(targetPage);
               });
 
             } else { 
               it(`can not navigate to ${description} page`, function () {
-                getPaginationPageButton(index + 3).should('be.disabled');
+                getPaginationPageButton(index).should('be.disabled');
               });
             }
           });
@@ -368,7 +383,7 @@ describe('search table pagination', function () {
           const rows = total - (lastPage - 1) * size;
   
           beforeEach(function () {
-            clickPaginationPageButton(4);
+            clickPaginationPageButton(NAVIGATION_BUTTONS.LAST.index);
           });
   
           it(`the page number is ${page}`, function () {
@@ -385,24 +400,26 @@ describe('search table pagination', function () {
           });
   
           [
-            { description: 'first',    targetPage: initialPage }, 
-            { description: 'previous', targetPage: page - 1 }, 
-          ].forEach(function ({ description, targetPage }, index) {
+            { targetButton: NAVIGATION_BUTTONS.FIRST,    targetPage: initialPage }, 
+            { targetButton: NAVIGATION_BUTTONS.PREVIOUS, targetPage: page - 1 }, 
+          ].forEach(function ({ targetButton: { description, index }, targetPage }) {
             it(`can navigate to ${description} page`, function () {
-              clickPaginationPageButton(index + 1);
+              clickPaginationPageButton(index);
   
               expectCurrentPageToBe(targetPage);
             });
           });
           
-          [ 'next', 'last' ].forEach(function (description, index) {
+          [ 
+            NAVIGATION_BUTTONS.NEXT, 
+            NAVIGATION_BUTTONS.LAST 
+          ].forEach(function ({ description, index }) {
             it(`can not navigate to ${description} page`, function () {
-              getPaginationPageButton(index + 3).should('be.disabled');
+              getPaginationPageButton(index).should('be.disabled');
             });
           });
         });
       });
-
     });
 
     describe(`when page size is ${PAGE_SIZES[2].value}`, function () {
@@ -432,9 +449,12 @@ describe('search table pagination', function () {
             .should('have.length', rows);
         });
 
-        [ 'first', 'previous', 'next', 'last' ].forEach(function (description, index) {
+        Object.keys(NAVIGATION_BUTTONS).forEach(function (key) {
+          const description = NAVIGATION_BUTTONS[key].description;
+          const index = NAVIGATION_BUTTONS[key].index;
+          
           it(`can not navigate to ${description} page`, function () {
-            getPaginationPageButton(index + 1).should('be.disabled');
+            getPaginationPageButton(index).should('be.disabled');
           });
         });
       });
