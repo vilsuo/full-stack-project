@@ -2,6 +2,7 @@ const testingRouter  = require('express').Router();
 const { User, Relation } = require('../models');
 const { sequelize } = require('../util/db');
 const { getNonSensitiveUser } = require('../util/dto');
+const parser = require('../util/parser');
 
 testingRouter.post('/reset', async (req, res) => {
   // create the tables, dropping them first if they already existed
@@ -35,6 +36,27 @@ testingRouter.delete('/relations', async (req, res) => {
   await Relation.truncate();
 
   return res.status(204).send();
+});
+
+// create a relation with source and target user usernames
+testingRouter.post('/relations', async (req, res) => {
+  const type = parser.parseRelationType(req.body.type);
+
+  const sourceUser = await User.findOne({ 
+    where: { username: req.body.sourceUserUsername } 
+  });
+
+  const targetUser = await User.findOne({ 
+    where: { username: req.body.targetUserUsername } 
+  });
+
+  const relation = await Relation.create({
+    sourceUserId: sourceUser.id,
+    targetUserId: targetUser.id,
+    type,
+  });
+
+  return res.status(201).send(relation);
 });
 
 module.exports = testingRouter;
