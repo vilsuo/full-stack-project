@@ -1,5 +1,13 @@
 import { URLS, CREDENTIALS } from '../support/constants';
 
+const userCredentials = CREDENTIALS.USER;
+
+before(function () {
+  cy.resetDb();
+
+  cy.register(userCredentials);
+});
+
 describe('', function () {
   it('can visit Home page', function () {
     cy.visit(URLS.HOME_URL);
@@ -28,7 +36,6 @@ describe('', function () {
     });
 
     describe('when logged in', function () {
-      const userCredentials = CREDENTIALS.USER;
 
       beforeEach(function () {
         cy.dispatchLogin(userCredentials);
