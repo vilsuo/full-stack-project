@@ -24,6 +24,8 @@ const visitUserSettings = function (username) {
 
   cy.waitForResponse('getUser');
   cy.waitForResponse('getPotraitContent');
+
+  cy.waitForLoadingSkeletons();
 };
 
 const getSettingsUrl = function (username) {
@@ -48,12 +50,32 @@ const getFileInputReset = function () {
   return cy.get('.settings-potrait-page .file-input button.close-btn');
 };
 
+const expectEmptyFileInput = function () {
+  getFileInput()
+    .should('have.value', fileInputInitialValue)
+    .then(($input) => {
+      const files = $input[0].files;
+      expect(files).to.have.lengthOf(0);
+    });
+};
+
 const getUploadButton = function () {
   return cy.get(".settings-potrait-page button:contains('Upload')");
 };
 
 const getDeleteButton = function () {
   return cy.get(".settings-potrait-page button:contains('Remove')");
+};
+
+const uploadPotrait = function (username, filename) {
+  cy.stubUsersPotraitContent(username, filename);
+
+  // upload the second potrait
+  getFileInput().attachFile(filename);
+  getUploadButton().click();
+
+  cy.waitForUserPotraitContent(username);
+  cy.waitForLoadingSkeletons();
 };
 
 before(function () {
@@ -118,10 +140,12 @@ describe('visiting user settings page', function () {
   });
 });
 
-describe.only('on users own settings page', function () {
+describe('on users own settings page', function () {
   const username = credentials.username;
 
   beforeEach(function () {
+    cy.resetPotraits();
+
     cy.dispatchLogin(credentials);
     visitUserSettings(username);
   });
@@ -152,12 +176,7 @@ describe.only('on users own settings page', function () {
     describe('change potrait', function () {
       describe('when file is not selected', function () {
         it('file input has initial value', function () {
-          getFileInput()
-            .should('have.value', fileInputInitialValue)
-            .then(($input) => {
-              const files = $input[0].files;
-              expect(files).to.have.lengthOf(0);
-            });
+          expectEmptyFileInput();
         });
 
         it('can not reset file input', function () {
@@ -188,26 +207,96 @@ describe.only('on users own settings page', function () {
         it('can reset the file input', function () {
           getFileInputReset().click();
 
-          getFileInput()
-            .should('have.value', fileInputInitialValue)
-            .then(($input) => {
-              const files = $input[0].files;
-              expect(files).to.have.lengthOf(0);
-            });
+          expectEmptyFileInput();
         });
 
         it('upload button is not disabled', function () {
           getUploadButton().should('not.be.disabled');
         });
 
-        // TODO test upload
+        describe('after uploading first potrait', function () {
+          beforeEach(function () {
+            uploadPotrait(username, filename);
+          });
+
+          it('upload success message is displayed', function () {
+            cy.expectAlertSuccess(/^Potrait uploaded/);
+          });
+
+          it('file input is resetted', function () {
+            expectEmptyFileInput();
+          });
+
+          it('file is added to redux store', function () {
+            cy.getStore()
+              .its('auth.potrait')
+              .should('not.eq', null);
+          });
+
+          describe('after uploading second potrait', function () {
+            const secondFilename = filename;
+
+            beforeEach(function () {
+              // remember old potrait to be compared for later
+              cy.getStore()
+                .its('auth.potrait')
+                .as('oldPotrait');
+
+              uploadPotrait(username, secondFilename);
+            });
+
+            it('upload success message is displayed', function () {
+              cy.expectAlertSuccess(/^Potrait uploaded/);
+            });
+
+            it('potrait is replaced in the redux store', function () {
+              cy.getStore()
+                .its('auth.potrait')
+                .should('not.eq', null)
+                .should('not.eq', this.oldPotrait);
+            });
+          });
+        });
       });
     });
 
     describe('delete potrait', function () {
-      it('is not visible when user does not have a potrait', function () {
-        getDeleteButton()
-          .should('not.exist');
+      describe('when user does not have a potrait', function () {
+        it('delete button is not visible', function () {
+          getDeleteButton()
+            .should('not.exist');
+        });
+      });
+
+      describe('when user has a potrait', function () {
+        beforeEach(function () {
+          uploadPotrait(username, filename);
+        });
+
+        it('delete button is visible', function () {
+          getDeleteButton();
+        });
+
+        describe('after deleting potrait', function () {
+          beforeEach(function () {
+            getDeleteButton().click();
+          });
+
+          it('delete success message is displayed', function () {
+            cy.expectAlertSuccess(/^Potrait removed/);
+          });
+
+          it('delete button is not visible', function () {
+            getDeleteButton()
+              .should('not.exist');
+          });
+
+          it('potrait is removed from redux store', function () {
+            cy.getStore()
+              .its('auth.potrait')
+              .should('eq', null);
+          });
+        });
       });
     });
   });
