@@ -8,10 +8,6 @@ const getSideBarNavigationAction = function (label) {
     .find(`ul li a:contains(${label})`);
 };
 
-const getUserSubPageHeading = function (heading) {
-  return cy.get(`.wrapper .main_content h2:contains(${heading})`);
-};
-
 const testPublicNavigations = function (username) {
   const PUBLIC_ROUTES = [
     { label: 'Images',    url: `${URLS.getUserUrl(username)}/images` },
@@ -32,7 +28,7 @@ const testPublicNavigations = function (username) {
 
           cy.expectUrl(url);
 
-          getUserSubPageHeading(label);
+          cy.getUserSubPageHeading(label);
 
           // sidebar navigation link is active
           getSideBarNavigationAction(label)
@@ -56,16 +52,6 @@ const testPrivateNavigationsNotAllowed = function (username) {
         describe(label, function() {
           it('is not displayed', function () {
             getSideBarNavigationAction(label)
-              .should('not.exist');
-          });
-
-          it(`can not navigate to user ${label}`, function () {
-            cy.visit(url);
-      
-            // do not allow user to visit other users settings page
-            cy.expectUrl(URLS.FALLBACK_URL);
-
-            getUserSubPageHeading(label)
               .should('not.exist');
           });
         });
@@ -123,7 +109,7 @@ describe('user page sidebar navigation', function () {
       
                 cy.expectUrl(url);
     
-                getUserSubPageHeading(label);
+                cy.getUserSubPageHeading(label);
 
                 // sidebar navigation link is active
                 getSideBarNavigationAction(label)

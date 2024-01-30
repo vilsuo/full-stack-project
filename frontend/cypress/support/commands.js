@@ -116,6 +116,11 @@ Cypress.Commands.add('getSideBar', () => {
   return cy.get('.sidebar');
 });
 
+// user subpages
+Cypress.Commands.add('getUserSubPageHeading', (heading) => {
+  return cy.get(`.wrapper .main_content h2:contains(${heading})`);
+});
+
 // ALERTS & ERRORS
 
 Cypress.Commands.add('expectAlert', (pattern) => {
@@ -163,6 +168,7 @@ Cypress.Commands.add('waitForSessionCookie', () => {
 // VISITING
 
 // waits for autologin to return and checks that no spinners are present
+// if autologin succeeds, does NOT wait for login dispatch!
 Cypress.Commands.add('home', () => {
   cy.intercept('GET', `${BACKEND_BASE_URL}/auth/auto-login`).as('getAutoLogin');
 
