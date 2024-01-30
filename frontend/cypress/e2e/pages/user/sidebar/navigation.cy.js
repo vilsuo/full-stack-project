@@ -1,19 +1,76 @@
 import { URLS, CREDENTIALS } from '../../../../support/constants';
 
-/*
-TODO
-- test visiting links from the sidebar:
-  - images
-  - relations
-  - details
-*/
-
 const credentials = CREDENTIALS.USER;
 const otherCredentials = CREDENTIALS.OTHER_USER;
 
 const getSideBarNavigationAction = function (label) {
   return cy.getSideBar()
     .find(`ul li a:contains(${label})`);
+};
+
+const getUserSubPageHeading = function (heading) {
+  return cy.get(`.wrapper .main_content h2:contains(${heading})`);
+};
+
+const testPublicNavigations = function (username) {
+  const PUBLIC_ROUTES = [
+    { label: 'Images',    url: `${URLS.getUserUrl(username)}/images` },
+    { label: 'Relations', url: `${URLS.getUserUrl(username)}/relations` },
+    { label: 'Details',   url: `${URLS.getUserUrl(username)}/details` },
+  ];
+
+  describe('public navigations', function () {
+    PUBLIC_ROUTES.forEach(function ({ label, url }) {
+      describe(label, function() {
+        it('is displayed', function () {
+          getSideBarNavigationAction(label);
+        });
+
+        it(`can navigate to user ${label}`, function () {
+          getSideBarNavigationAction(label)
+            .click();
+
+          cy.expectUrl(url);
+
+          getUserSubPageHeading(label);
+
+          // sidebar navigation link is active
+          getSideBarNavigationAction(label)
+            .should('have.class', 'active');
+        });
+      });
+    });
+  });
+};
+
+const getPrivateRoutes = function (username) {
+  return [
+    { label: 'Settings', url: `${URLS.getUserUrl(username)}/settings` },
+  ];
+};
+
+const testPrivateNavigationsNotAllowed = function (username) {
+  describe('private navigations', function () {
+    getPrivateRoutes(username)
+      .forEach(function ({ label, url }) {
+        describe(label, function() {
+          it('is not displayed', function () {
+            getSideBarNavigationAction(label)
+              .should('not.exist');
+          });
+
+          it(`can not navigate to user ${label}`, function () {
+            cy.visit(url);
+      
+            // do not allow user to visit other users settings page
+            cy.expectUrl(URLS.FALLBACK_URL);
+
+            getUserSubPageHeading(label)
+              .should('not.exist');
+          });
+        });
+      });
+  });
 };
 
 before(function () {
@@ -28,13 +85,21 @@ beforeEach(function () {
 });
 
 describe('user page sidebar navigation', function () {
-  
-  describe('logged in', function () {
-    const username = credentials.username;
-    const otherUsername = otherCredentials.username;
+  const username = credentials.username;
+  const otherUsername = otherCredentials.username;
 
+  describe('not logged in', function () {
     beforeEach(function () {
-      // login
+      cy.visitUser(username);
+    });
+
+    testPublicNavigations(username);
+
+    testPrivateNavigationsNotAllowed(username);
+  });
+
+  describe('logged in', function () {
+    beforeEach(function () {
       cy.dispatchLogin(credentials);
     });
 
@@ -43,16 +108,29 @@ describe('user page sidebar navigation', function () {
         cy.visitUser(username);
       });
 
-      describe('settings', function () {
-        it('is displayed', function () {
-          getSideBarNavigationAction('Settings');
-        });
+      testPublicNavigations(username);
 
-        it('can navigate to user settings', function () {
-          getSideBarNavigationAction('Settings').click();
+      describe('private navigations', function () {
+        getPrivateRoutes(username)
+          .forEach(function ({ label, url }) {
+            describe(label, function() {
+              it('is displayed', function () {
+                getSideBarNavigationAction(label);
+              });
+      
+              it(`can navigate to user ${label}`, function () {
+                getSideBarNavigationAction(label).click();
+      
+                cy.expectUrl(url);
+    
+                getUserSubPageHeading(label);
 
-          cy.expectUrl(`${URLS.getUserUrl(username)}/settings`);
-        });
+                // sidebar navigation link is active
+                getSideBarNavigationAction(label)
+                  .should('have.class', 'active');
+              });
+            });
+          });
       });
     });
 
@@ -61,18 +139,9 @@ describe('user page sidebar navigation', function () {
         cy.visitUser(otherUsername);
       });
 
-      describe('settings', function () {
-        it('is not displayed', function () {
-          getSideBarNavigationAction('Settings').should('not.exist');
-        });
-    
-        it('can not navigate to user settings', function () {
-          cy.visit(`${URLS.getUserUrl(otherUsername)}/settings`);
-    
-          // do not allow user to visit other users settings page
-          cy.expectUrl(URLS.FALLBACK_URL);
-        });
-      });
+      testPublicNavigations(otherUsername);
+
+      testPrivateNavigationsNotAllowed(otherUsername);
     });
   });
 });
