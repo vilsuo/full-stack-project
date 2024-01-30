@@ -1,12 +1,14 @@
 const testingRouter  = require('express').Router();
-const { User, Relation } = require('../models');
+const { User, Relation, Potrait } = require('../models');
 const { sequelize } = require('../util/db');
 const { getNonSensitiveUser } = require('../util/dto');
 const parser = require('../util/parser');
 
 testingRouter.post('/reset', async (req, res) => {
   // create the tables, dropping them first if they already existed
-  await sequelize.sync({ force: true });
+  //await sequelize.sync({ force: true });
+
+  await sequelize.truncate({ cascade: true, restartIdentity: true })
 
   return res.status(204).end();
 });
@@ -28,6 +30,14 @@ testingRouter.post('/disabled', async (req, res) => {
   });
 
   return res.status(201).send(getNonSensitiveUser(user));
+});
+
+// delete all potraits
+testingRouter.delete('/potraits', async (req, res) => {
+  // will delete all rows in a table
+  await Potrait.truncate();
+
+  return res.status(204).send();
 });
 
 // delete all relations
