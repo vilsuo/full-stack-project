@@ -42,6 +42,11 @@ const upload = multer({
 });
 
 const removeFile = filepath => {
+  if (process.env.NODE_ENV === 'test') {
+    // files are not saved on testing environment
+    return;
+  }
+
   const fullfilepath = getImageFilePath(filepath);
 
   fs.unlink(fullfilepath, (error) => {
@@ -69,6 +74,11 @@ const removeUserFiles = async (userId) => {
 };
 
 const getImageFilePath = filepath => {
+  if (process.env.NODE_ENV === 'test') {
+    // files are not saved on testing environment
+    return;
+  }
+
   const dirname = path.resolve();
   const fullfilepath = path.join(dirname, filepath);
 
