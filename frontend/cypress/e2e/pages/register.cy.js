@@ -64,7 +64,7 @@ describe('when in register page', function () {
       cy.waitForResponse('postRegister');
 
       // register error alert is shown
-      cy.expectAlert(/^Registering failed/);
+      cy.expectAlertError(/^Registering failed/);
 
       // redirect does not take place
       cy.expectUrl(URLS.REGISTER_URL);
@@ -76,7 +76,7 @@ describe('when in register page', function () {
       // no need to wait: response is not sent
 
       // register error alert is shown
-      cy.expectAlert(/^Registering failed/);
+      cy.expectAlertError(/^Registering failed/);
 
       // redirect does not take place
       cy.expectUrl(URLS.REGISTER_URL);

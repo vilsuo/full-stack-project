@@ -74,7 +74,7 @@ describe('when in login page', function () {
       submitLogin(userCredentials.username, 'wrongpassword');
 
       // error alert is displayed
-      cy.expectAlert(/^Login failed/);
+      cy.expectAlertError(/^Login failed/);
 
       // still in login page
       cy.expectUrl(URLS.LOGIN_URL);
@@ -84,7 +84,7 @@ describe('when in login page', function () {
       submitLogin(disabledUserCredentials.username, disabledUserCredentials.password);
 
       // error alert is displayed
-      cy.expectAlert(/^Login failed/);
+      cy.expectAlertError(/^Login failed/);
 
       // still in login page
       cy.expectUrl(URLS.LOGIN_URL);

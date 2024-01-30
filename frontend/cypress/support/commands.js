@@ -43,6 +43,23 @@ Cypress.Commands.add('resetRelations', () => {
   cy.request('DELETE', `${BACKEND_TESTING_BASE_URL}/relations`);
 });
 
+Cypress.Commands.add('resetPotraits', () => {
+  cy.request('DELETE', `${BACKEND_TESTING_BASE_URL}/potraits`);
+});
+
+// "MOCKING"
+
+Cypress.Commands.add('stubUsersPotraitContent', (username, filename) => {
+  // we set the response to be a fixture
+  cy.intercept('GET', `${BACKEND_BASE_URL}/users/${username}/potrait/content`, { 
+    statusCode: 200, 
+    // Stub response with a fixture that is read as a Buffer:
+    // https://docs.cypress.io/api/commands/intercept#With-a-StaticResponse-object
+    fixture: `${filename},null`
+  })
+    .as(`${username}GetPotraitContent`);
+});
+
 // REDUX
 
 Cypress.Commands.add('dispatch', (fn, value) => {
@@ -124,8 +141,14 @@ Cypress.Commands.add('getUserSubPageHeading', (heading) => {
 
 // ALERTS & ERRORS
 
-Cypress.Commands.add('expectAlert', (pattern) => {
+Cypress.Commands.add('expectAlertError', (pattern) => {
   return cy.get('.alert.error p').then(function (p) {
+    expect(p.text()).to.match(new RegExp(pattern));
+  });
+});
+
+Cypress.Commands.add('expectAlertSuccess', (pattern) => {
+  return cy.get('.alert.success p').then(function (p) {
     expect(p.text()).to.match(new RegExp(pattern));
   });
 });
@@ -159,11 +182,21 @@ Cypress.Commands.add('waitForSpinners', () => {
   cy.get('.spinner').should('not.exist');
 });
 
+Cypress.Commands.add('waitForLoadingSkeletons', () => {
+// wait for loading skeleons to disappear
+cy.get('.react-loading-skeleton').should('not.exist');
+});
+
 Cypress.Commands.add('waitForSessionCookie', () => {
   // wait until authentication cookie is set
   cy.waitUntil(() => cy.getCookie(COOKIE_KEY).then(
     cookie => Boolean(cookie && cookie.value)
   ));
+});
+
+Cypress.Commands.add('waitForUserPotraitContent', (username) => {
+  // wait until authentication cookie is set
+  cy.waitForResponse(`${username}GetPotraitContent`);
 });
 
 // VISITING
