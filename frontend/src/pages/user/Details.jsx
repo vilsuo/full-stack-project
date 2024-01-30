@@ -8,7 +8,7 @@ const Details = () => {
   const { name, username, createdAt } = user;
 
   return (
-    <div className='container'>
+    <div className='details-page container'>
       <h2>Details</h2>
       
       <p className='text'>Name: {name}</p>

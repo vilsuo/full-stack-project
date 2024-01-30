@@ -112,7 +112,7 @@ const Relations = () => {
   const showEdit = editing && isUsersRelations;
 
   return (
-    <div className='container'>
+    <div className='relations-page container'>
       <h2>Relations</h2>
 
       <RadioGroup

@@ -25,7 +25,7 @@ const SettingsOther = () => {
   };
 
   return (
-    <div className='container'>
+    <div className='settings-other-page container'>
       <h3>Delete User</h3>
       <p>
         Deleting a user will also delete the potrait and all images of the user.

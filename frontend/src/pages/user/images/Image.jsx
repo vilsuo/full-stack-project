@@ -25,15 +25,15 @@ const ImageViewing = ({ user, image, imageUrl }) => {
   const { title, caption, views } = image;
 
   return (
-    <div className='image'>
+    <div className='image-view'>
       <h2>{title}</h2>
 
       <img src={imageUrl}/>
 
-      <div className='image-info'>
+      <div className='info'>
         <ImageChips user={user} image={image} />
 
-        <span className='image-views'>{views} views</span>
+        <span className='views'>{views} views</span>
       </div>
 
       <p className='text'>{caption}</p>
@@ -49,7 +49,7 @@ const ImageEditing = ({ image, handleEdit }) => {
   const [changeMade, setChangeMade] = useState(false);
 
   return (
-    <div>
+    <div className='image-edit'>
       <label>
         <span>Title:</span>
         <input
@@ -154,7 +154,7 @@ const Image = () => {
   };
 
   return (
-    <div className='container'>
+    <div className='image-page container'>
 
       <div className='edit-actions'>
         { canEdit && (

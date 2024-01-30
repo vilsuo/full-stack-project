@@ -25,7 +25,7 @@ const Images = () => {
   const isOwnPage = authenticatedUser && (authenticatedUser.id === user.id);
 
   return (
-    <div>
+    <div className='images-page'>
       <ImageList
         user={user}
         images={images}

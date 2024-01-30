@@ -75,7 +75,7 @@ const SettingsPotrait = () => {
   };
 
   return (
-    <div>
+    <div className='settings-potrait-page'>
       <Alert alert={alert} clearAlert={clearAlert} />
 
       {/* uploading the potrait */}

@@ -522,8 +522,8 @@ table {
   }
 }
 
-/* image */
-.image {
+/* image view*/
+.image-view {
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
@@ -533,14 +533,14 @@ table {
     border: 2px solid black;
   }
 }
-.image .image-info {
+.image-view .info {
   width: 100%;
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
-  margin: 10px;
+  margin: 10px 0;
 }
-.image .image-info .image-views {
+.image-view .views {
   padding: 0 10px;
 }
 
