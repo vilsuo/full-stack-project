@@ -25,6 +25,7 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 import 'cypress-wait-until';
+import 'cypress-file-upload';
 
 import { login } from '../../src/reducers/auth';
 import { COOKIE_KEY, URLS } from './constants';
