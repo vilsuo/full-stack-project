@@ -2,12 +2,13 @@ import { useRef, useState } from 'react';
 import { changePotrait, removePotrait } from '../../../reducers/auth';
 import { useDispatch, useSelector } from 'react-redux';
 import Alert from '../../../components/Alert';
+import LoadingButton from '../../../components/LoadingButton';
 
 const SettingsPotrait = () => {
   const potrait = useSelector(state => state.auth.potrait);
   const dispatch = useDispatch();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({ upload: false, remove: false });
 
   // alert
   const [alert, setAlert] = useState({});
@@ -29,8 +30,7 @@ const SettingsPotrait = () => {
   };
 
   const handleFileUpload  = async () => {
-    if (loading) return null;
-    setLoading(true);
+    setLoading({ ...loading, upload: true });
 
     try {
       const formData = new FormData();
@@ -50,12 +50,11 @@ const SettingsPotrait = () => {
       });
     }
 
-    setLoading(false);
+    setLoading({ ...loading, upload: false });
   };
 
   const handlePotraitRemove  = async () => {
-    if (loading) return null;
-    setLoading(true);
+    setLoading({ ...loading, remove: true });
 
     try {
       await dispatch(removePotrait()).unwrap();
@@ -71,8 +70,10 @@ const SettingsPotrait = () => {
       });
     }
 
-    setLoading(false);
+    setLoading({ ...loading, remove: false });
   };
+
+  const isLoading = (loading.upload || loading.remove);
 
   return (
     <div className='settings-potrait-page'>
@@ -97,7 +98,12 @@ const SettingsPotrait = () => {
             </div>
           </div>
 
-          <button disabled={!file} onClick={handleFileUpload}>Upload</button>
+          <LoadingButton 
+            text='Upload'
+            disabled={!file || isLoading} 
+            loading={loading.upload} 
+            onClick={handleFileUpload}
+          />
         </div>
       </div>
 
@@ -105,7 +111,13 @@ const SettingsPotrait = () => {
       { potrait && <div className='container'>
         <h3>Remove Potrait</h3>
         <p>The potrait will be deleted <strong>permanently!</strong></p>
-        <button onClick={handlePotraitRemove}>Remove</button>
+
+        <LoadingButton 
+          text='Remove'
+          disabled={!potrait || isLoading} 
+          loading={loading.remove} 
+          onClick={handlePotraitRemove}
+        />
       </div>}
     </div>
   );
