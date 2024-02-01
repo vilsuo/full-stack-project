@@ -12,6 +12,7 @@ import IconButton from '../../../components/IconButton';
 
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import ToolTip from '../../../components/ToolTip';
+import Spinner from '../../../components/Spinner';
 
 export const imageContentLoader = async ({ params }) => {
   const { username, imageId } = params;
@@ -178,6 +179,8 @@ const Image = () => {
             </IconButton>
           </ToolTip>
         )}
+
+        { loading && <Spinner /> }
       </div>
 
       <Alert alert={alert} clearAlert={clearAlert} />

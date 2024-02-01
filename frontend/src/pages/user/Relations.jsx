@@ -8,6 +8,7 @@ import { OPTION_NONE, RELATION_BLOCK, RELATION_FOLLOW, RELATION_TYPES } from '..
 import { removeRelation } from '../../reducers/auth';
 import ToggleButton from '../../components/ToggleButton';
 import IconButton from '../../components/IconButton';
+import Spinner from '../../components/Spinner';
 
 /*
 Todo
@@ -140,6 +141,8 @@ const Relations = () => {
               <FaEdit  />
             </ToggleButton>
           </ToolTip>
+
+          { loading && <Spinner /> }
         </div>
       )}
 

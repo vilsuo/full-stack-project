@@ -548,8 +548,12 @@ table {
   width: 100%;
   display: flex;
   flex-flow: row-reverse nowrap;
-  justify-content: end;
+  align-items: center;
   gap: 4px;
+  margin-bottom: 10px;
+}
+.edit-actions .spinner-container {
+  margin-inline-end: auto;
 }
 
 .chips {

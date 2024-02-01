@@ -13,9 +13,7 @@ const ErrorElement = ({ header }) => {
     
       <p className='italic'>{ message }</p>
 
-      <div className='edit-actions'>
-        <button onClick={ () => navigate('/') }>Home</button>
-      </div>
+      <button onClick={ () => navigate('/') }>Home</button>
     </div>
   );
 };
