@@ -56,8 +56,7 @@ Cypress.Commands.add('stubUsersPotraitContent', (username, filename) => {
     // Stub response with a fixture that is read as a Buffer:
     // https://docs.cypress.io/api/commands/intercept#With-a-StaticResponse-object
     fixture: `${filename},null`
-  })
-    .as(`${username}GetPotraitContent`);
+  });
 });
 
 // REDUX
@@ -86,8 +85,6 @@ Cypress.Commands.add('dispatchLogin', (credentials) => {
     .should('nested.include', {
       'auth.user.username': credentials.username
     });
-
-  cy.waitForSpinners();
 });
 
 // BYPASS UI
@@ -179,7 +176,7 @@ Cypress.Commands.add('waitForResponse', (alias) => {
 
 Cypress.Commands.add('waitForSpinners', () => {
   // wait for loading spinner to disappear
-  cy.get('.spinner').should('not.exist');
+  cy.get('.spinner-container').should('not.exist');
 });
 
 Cypress.Commands.add('waitForLoadingSkeletons', () => {
@@ -192,11 +189,6 @@ Cypress.Commands.add('waitForSessionCookie', () => {
   cy.waitUntil(() => cy.getCookie(COOKIE_KEY).then(
     cookie => Boolean(cookie && cookie.value)
   ));
-});
-
-Cypress.Commands.add('waitForUserPotraitContent', (username) => {
-  // wait until authentication cookie is set
-  cy.waitForResponse(`${username}GetPotraitContent`);
 });
 
 // VISITING

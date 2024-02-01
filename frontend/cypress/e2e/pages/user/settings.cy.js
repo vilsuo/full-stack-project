@@ -2,12 +2,7 @@ import { URLS, CREDENTIALS } from '../../../support/constants';
 
 /*
 TODO
-- test upload
-  - success:
-    - input is resetted
-    - potrait is dispatched
-- test remove
-  - potrait is dispatched
+- removing user on other settings
 */
 
 const credentials = CREDENTIALS.USER;
@@ -15,18 +10,6 @@ const otherCredentials = CREDENTIALS.OTHER_USER;
 
 const filename = 'test.PNG';
 const fileInputInitialValue = '';
-
-const visitUserSettings = function (username) {
-  cy.intercept('GET', `/api/users/${username}`).as('getUser');
-  cy.intercept('GET', `/api/users/${username}/potrait/content`).as('getPotraitContent');
-
-  cy.visit(getSettingsUrl(username));
-
-  cy.waitForResponse('getUser');
-  cy.waitForResponse('getPotraitContent');
-
-  cy.waitForLoadingSkeletons();
-};
 
 const getSettingsUrl = function (username) {
   return `${URLS.getUserUrl(username)}/settings`;
@@ -73,9 +56,6 @@ const uploadPotrait = function (username, filename) {
   // upload the second potrait
   getFileInput().attachFile(filename);
   getUploadButton().click();
-
-  cy.waitForUserPotraitContent(username);
-  cy.waitForLoadingSkeletons();
 };
 
 before(function () {
@@ -95,7 +75,7 @@ describe('visiting user settings page', function () {
 
   describe('not logged in', function () {
     beforeEach(function () {
-      visitUserSettings(username);
+      cy.visit(getSettingsUrl(username));
     });
 
     it('can not visit the page', function () {
@@ -114,7 +94,7 @@ describe('visiting user settings page', function () {
 
     describe('own settings page', function () {
       beforeEach(function () {
-        visitUserSettings(username);
+        cy.visit(getSettingsUrl(username));
       });
 
       it('can visit the page', function () {
@@ -126,7 +106,7 @@ describe('visiting user settings page', function () {
 
     describe('other user settings page', function () {
       beforeEach(function () {
-        visitUserSettings(otherUsername);
+        cy.visit(getSettingsUrl(otherUsername));
       });
 
       it('can not visit the page', function () {
@@ -147,30 +127,35 @@ describe('on users own settings page', function () {
     cy.resetPotraits();
 
     cy.dispatchLogin(credentials);
-    visitUserSettings(username);
   });
 
-  it('Settings header is present', function () {
-    cy.getUserSubPageHeading('Settings');
-  });
-
-  it('can navigate to potrait settings', function () {
-    clickOptionsNavigationAction('Potrait');
-
-    cy.expectUrl(getSettingsSubUrl(username, 'potrait'));
-    cy.get('.settings-potrait-page').should('exist');
-  });
-
-  it('can navigate to other settings', function () {
-    clickOptionsNavigationAction('Other');
-
-    cy.expectUrl(getSettingsSubUrl(username, 'other'));
-    cy.get('.settings-other-page').should('exist');
+  describe('on settings page', function () {
+    beforeEach(function () {
+      cy.visit(getSettingsUrl(username));
+    });
+  
+    it('Settings header is present', function () {
+      cy.getUserSubPageHeading('Settings');
+    });
+  
+    it('can navigate to potrait settings', function () {
+      clickOptionsNavigationAction('Potrait');
+  
+      cy.expectUrl(getSettingsSubUrl(username, 'potrait'));
+      cy.get('.settings-potrait-page').should('exist');
+    });
+  
+    it('can navigate to other settings', function () {
+      clickOptionsNavigationAction('Other');
+  
+      cy.expectUrl(getSettingsSubUrl(username, 'other'));
+      cy.get('.settings-other-page').should('exist');
+    });
   });
 
   describe('on potrait settings page', function () {
     beforeEach(function () {
-      cy.visit(getSettingsSubUrl(username, 'potrait'))
+      cy.visit(getSettingsSubUrl(username, 'potrait'));
     });
 
     describe('change potrait', function () {
@@ -263,6 +248,9 @@ describe('on users own settings page', function () {
     describe('delete potrait', function () {
       describe('when user does not have a potrait', function () {
         it('delete button is not visible', function () {
+          // wait for page to be loaded
+          cy.getUserSubPageHeading('Settings');
+
           getDeleteButton()
             .should('not.exist');
         });

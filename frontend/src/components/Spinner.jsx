@@ -2,7 +2,7 @@ import { RotatingLines } from 'react-loader-spinner'
 
 const Spinner = ({ size = '24' }) => {
   return (
-    <div className='spinner-container '>
+    <div className='spinner-container'>
       <RotatingLines
         visible={true}
         height={size}

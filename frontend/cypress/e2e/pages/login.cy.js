@@ -64,9 +64,8 @@ describe('when in login page', function () {
       });
 
       it('username is displayed in the navigation bar', function () {
-        cy.getNavBarUserButton().then(function (userOptions) {
-          expect(userOptions.text()).to.eq(userCredentials.username);
-        });
+        cy.getNavBarUserButton()
+          .should('contain', userCredentials.username);
       });
     });
   

@@ -32,9 +32,7 @@ const RootLayout = () => {
   if (loading) {
     return (
       <div className='root-layout'>
-        <div className='spinner-container'>
-          <Spinner size={64} />
-        </div>
+        <Spinner size={64} />
       </div>
     );
   }
