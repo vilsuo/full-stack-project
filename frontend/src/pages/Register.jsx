@@ -105,7 +105,7 @@ const Register = () => {
           />
         </label>
 
-        <LoadingButton text={'Register'} loading={loading} type='submit' />
+        <LoadingButton text={'Register'} disabled={loading} loading={loading} type='submit' />
       </form>
 
       <p>Already have a user? Login <Link to='/login'>here</Link>.</p>

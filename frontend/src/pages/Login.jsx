@@ -78,7 +78,7 @@ const Login = () => {
           />
         </label>
 
-        <LoadingButton text={'Login'} loading={loading} type='submit' />
+        <LoadingButton text={'Login'} disabled={loading} loading={loading} type='submit' />
       </form>
 
       <p>Do not have a user? Register <Link to='/register'>here</Link>.</p>
