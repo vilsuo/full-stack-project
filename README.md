@@ -38,7 +38,7 @@ The rest of the test videos [here](https://github.com/vilsuo/full-stack-project/
 		End-to-end testing
 		<ul>
 			<li>Posting, editing, deleting and viewing images</li>
-			<li>Posting and deleting potraits</li>
+      <li>Viewing and removing relations in user relations page</li>
 			<li>Deleting users</li>
 		</ul>
 	</li>
@@ -58,9 +58,6 @@ The rest of the test videos [here](https://github.com/vilsuo/full-stack-project/
 				Test user relations <b>GET</b>-routes
 			</li>
 		</ul>
-	</li>
-	<li>
-		Show spinners when loading data or processing user actions
 	</li>
 	<li>
 		Activity tracking:
