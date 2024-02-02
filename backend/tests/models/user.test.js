@@ -9,7 +9,7 @@ const { password, ...rest } = nonExistingUserValues;
 const userCreationValues = { ...rest, passwordHash: password };
 
 describe('creating user with valid properties', () => {
-  describe('password property', () => {
+  describe('password', () => {
     test('created user does not have password property', async () => {
       const user = await User.create(userCreationValues);
     
@@ -39,7 +39,7 @@ describe('creating user with valid properties', () => {
     });
   });
 
-  describe('disabled property', () => {
+  describe('disabled', () => {
     test('disablity is not specified, non-disabled user is created', async () => {
       expect(userCreationValues).not.toHaveProperty('disabled');
 
@@ -52,6 +52,22 @@ describe('creating user with valid properties', () => {
 
       const user = await User.create(disabledUserCreationValues);
       expect(user.disabled).toBe(true);
+    });
+  });
+
+  describe('admin', () => {
+    test('if admin value is not specified, non-admin user is created', async () => {
+      expect(userCreationValues).not.toHaveProperty('admin');
+
+      const user = await User.create(userCreationValues);
+      expect(user.admin).toBe(false);
+    });
+
+    test('can create a user with positive admin status', async () => {
+      const disabledUserCreationValues = { ...userCreationValues, admin: true };
+
+      const user = await User.create(disabledUserCreationValues);
+      expect(user.admin).toBe(true);
     });
   });
 });

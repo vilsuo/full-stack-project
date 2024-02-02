@@ -14,10 +14,10 @@ User.init({
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      notNull: { msg: 'name can not be null' },
+      notNull: { msg: 'Name can not be null' },
       len: {
         args: [2, 30],
-        msg: 'name must be 2-30 characters long'
+        msg: 'Name must be 2-30 characters long'
       }
     },
   },
@@ -26,13 +26,13 @@ User.init({
     allowNull: false,
     unique: {
       args: true,
-      msg: 'username has already been taken',
+      msg: 'Username has already been taken',
     },
     validate: {
-      notNull: { msg: 'username can not be null' },
+      notNull: { msg: 'Username can not be null' },
       len: {
         args: [2, 30],
-        msg: 'username must be 2-30 characters long'
+        msg: 'Username must be 2-30 characters long'
       }
     },
   },
@@ -40,10 +40,10 @@ User.init({
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      notNull: { msg: 'password can not be null' },
+      notNull: { msg: 'Password can not be null' },
       len: {
         args: [8, 30],
-        msg: 'password must be 8-30 characters long'
+        msg: 'Password must be 8-30 characters long'
       }
     },
   },
@@ -51,6 +51,10 @@ User.init({
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  admin: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  }
 }, {
   hooks: {
     beforeCreate: async (user) => {

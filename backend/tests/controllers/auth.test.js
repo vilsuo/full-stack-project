@@ -71,6 +71,18 @@ describe('registering', () => {
     expect(userCountAfter).toBe(userCountBefore + 1);
   });
 
+  test('registered user is not an admin', async () => {
+    const responseBody = await register(nonExistingUserValues, 201);
+
+    expect(responseBody.admin).toBe(false);
+  });
+
+  test('can not register an admin user', async () => {
+    const responseBody = await register({ ...nonExistingUserValues, admin: true }, 201);
+
+    expect(responseBody.admin).toBe(false);
+  });
+
   test('hashed password is not returned', async () => {
     const responseBody = await register(nonExistingUserValues, 201);
   
@@ -113,13 +125,13 @@ describe('registering', () => {
       const responseBody1 = await register(omit(nonExistingUserValues, ['name']), 400);
 
       const errorMessages1 = responseBody1.message;
-      expect(errorMessages1).toContain('name can not be null');
+      expect(errorMessages1).toContain('Parameter name is required');
 
       // empty name
       const responseBody2 = await register({ ...nonExistingUserValues, name: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
-      expect(errorMessages2).toContain('name must be 2-30 characters long');
+      expect(errorMessages2).toContain('Name must be 2-30 characters long');
     });
 
     test('missing/empty username', async () => {
@@ -127,13 +139,13 @@ describe('registering', () => {
       const responseBody1 = await register(omit(nonExistingUserValues, ['username']), 400);
 
       const errorMessages1 = responseBody1.message;
-      expect(errorMessages1).toContain('username can not be null');
+      expect(errorMessages1).toContain('Parameter username is required');
 
       // empty username
       const responseBody2 = await register({ ...nonExistingUserValues, username: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
-      expect(errorMessages2).toContain('username must be 2-30 characters long');
+      expect(errorMessages2).toContain('Username must be 2-30 characters long');
     });
 
     test('missing/empty password', async () => {
@@ -141,13 +153,13 @@ describe('registering', () => {
       const responseBody1 = await register(omit(nonExistingUserValues, ['password']), 400);
 
       const errorMessages1 = responseBody1.message;
-      expect(errorMessages1).toContain('password can not be null');
+      expect(errorMessages1).toContain('Parameter password is required');
 
       // empty password
       const responseBody2 = await register({ ...nonExistingUserValues, password: '' }, 400);
 
       const errorMessages2 = responseBody2.message;
-      expect(errorMessages2).toContain('password must be 8-30 characters long');
+      expect(errorMessages2).toContain('Password must be 8-30 characters long');
     });
 
     test('taken username', async () => {
@@ -159,7 +171,7 @@ describe('registering', () => {
       const responseBody = await register(withTakenUsernameValue, 400);
       
       const errorMessages = responseBody.message;
-      expect(errorMessages).toContain('username has already been taken');
+      expect(errorMessages).toContain('Username has already been taken');
     });
   
     test('disabled users username', async () => {
@@ -171,7 +183,7 @@ describe('registering', () => {
       const responseBody = await register(withDisabledUsernameValue, 400);
       
       const errorMessages = responseBody.message;
-      expect(errorMessages).toContain('username has already been taken');
+      expect(errorMessages).toContain('Username has already been taken');
     });
   });
 });
@@ -215,7 +227,7 @@ describe('loggin in', () => {
 
       const response = await loginWithResponse(wrongCredentials, 401);
 
-      expect(response.body.message).toBe('invalid username or password');
+      expect(response.body.message).toBe('Invalid username or password');
 
       // authentication cookie is not set
       expect(() => get_SetCookie(response)).toThrow();
@@ -225,14 +237,14 @@ describe('loggin in', () => {
       const disabledCredentials = getCredentials(disabledExistingUserValues);
   
       const response = await loginWithResponse(disabledCredentials, 401);
-      expect(response.body.message).toBe('user has been disabled');
+      expect(response.body.message).toBe('User has been disabled');
     });
   
     test('can not log in with user that does not exist', async () => {
       const nonExistingCredentials = getCredentials(nonExistingUserValues);
   
       const response = await loginWithResponse(nonExistingCredentials, 401);
-      expect(response.body.message).toBe('invalid username or password');
+      expect(response.body.message).toBe('Invalid username or password');
     });
   });
 });
