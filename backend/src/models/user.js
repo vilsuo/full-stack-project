@@ -2,7 +2,11 @@ const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../util/db');
 const passwordService = require('../util/password');
 
-class User extends Model {}
+class User extends Model {
+  static async findByUsername (username) {
+    return await User.findOne({ where: { username }});
+  }
+}
 
 User.init({
   id: {

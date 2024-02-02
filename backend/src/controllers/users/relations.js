@@ -92,7 +92,7 @@ router.post('/', privateExtractor, async (req, res) => {
 
   // parse request body
   const type = parser.parseRelationType(req.body.type);
-  const targetUserId = parser.parseId(req.body.targetUserId);
+  const targetUserId = parser.parseId(req.body.targetUserId, 'target user id');
 
   // target user must exist
   const targetUser = await User.findByPk(targetUserId);

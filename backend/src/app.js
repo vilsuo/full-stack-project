@@ -3,7 +3,7 @@ require('express-async-errors');
 
 // middleware
 const cors = require('./util/middleware/cors');
-const session = require('./util/middleware/session');
+const { session } = require('./util/middleware/session');
 const { requestLogger, errorHandler, unknownEndpoint } = require('./util/middleware/common');
 const { adminExtractor } = require('./util/middleware/auth');
 

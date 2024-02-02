@@ -1,45 +1,9 @@
-const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE, RELATION_BLOCK } = require('../../constants');
-const { User, Relation } = require('../../models');
+const { IMAGE_PUBLIC, IMAGE_PRIVATE, RELATION_BLOCK } = require('../../constants');
+const { Relation } = require('../../models');
 const { IllegalStateError } = require('../error');
 const { userFinder, imageFinder } = require('./finder');
-
+const session = require('./session');
 const { Op } = require('sequelize');
-
-/**
- * Extracts the authenticated User from request session to request.user.
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- * 
- * @returns response with status
- * - '401' if authentication is not present
- * - '404' if authenticated user does not exist
- */
-const sessionExtractor = async (req, res, next) => {
-  const session = req.session;
-  if (!session.user) {
-    // there is no session or session is invalid/expired
-    return res
-      .clearCookie(SESSION_ID)
-      .status(401).send({ message: 'Authentication required' });
-  }
-
-  const user = await User.findByPk(session.user.id);
-  if (!user) {
-    // session exists, but the user does not
-    return session.destroy((error) => {
-      if (error) return next(error);
-  
-      return res
-        .clearCookie(SESSION_ID)
-        .status(404).send({ message: 'Session user does not exist' });
-    });
-  }
-
-  req.user = user;
-  next();
-};
 
 /**
  * Viewing is allowed if viewer is not authenticated or is authenticated but there
@@ -60,7 +24,7 @@ const isAllowedToViewUser = async (req, res, next) => {
   const { foundUser } = req;
 
   if (req.session.user) {
-    return await sessionExtractor(req, res, async () => {
+    return await session.sessionExtractor(req, res, async () => {
       const { user } = req;
 
       if (user.id !== foundUser.id) {
@@ -77,7 +41,15 @@ const isAllowedToViewUser = async (req, res, next) => {
 
         // empty array is NOT falsy!
         if (blocksBetween.length > 0) {
-          return res.status(401).send({ message: 'block exists' });
+          const sessionUserRelation = blocksBetween.find(relation => {
+            return relation.sourceUserId === user.id
+          });
+
+          if (sessionUserRelation) {
+            return res.status(401).send({ message: 'You have blocked the user' });
+          } else {
+            return res.status(401).send({ message: 'You have been blocked by the user' });
+          }
         }
       }
 
@@ -138,8 +110,13 @@ const isAllowedToViewImage = async (req, res, next) => {
  * - '401' if the authenticated user is not the current user route owner
  */
 const privateExtractor = async (req, res, next) => {
-  await sessionExtractor(req, res, () => {
-    const { user: sessionUser, foundUser } = req;
+  const { foundUser } = req;
+  if (foundUser === undefined) {
+    throw new IllegalStateError('User to be compared against is not set');
+  }
+
+  return await session.sessionExtractor(req, res, () => {
+    const { user: sessionUser } = req;
 
     if (foundUser.id !== sessionUser.id) {
       return res.status(401).send({ message: 'Private access' });
@@ -149,8 +126,18 @@ const privateExtractor = async (req, res, next) => {
   });
 };
 
+/**
+ * Checks if session user is admin
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ * 
+ * @returns response with status
+ * - '401' if the authenticated does not have admin role
+ */
 const adminExtractor = async (req, res, next) => {
-  await sessionExtractor(req, res, () => {
+  return await session.sessionExtractor(req, res, () => {
     const { user: sessionUser } = req;
 
     if (!sessionUser.admin) {
@@ -162,7 +149,6 @@ const adminExtractor = async (req, res, next) => {
 };
 
 module.exports = {
-  sessionExtractor,
   isAllowedToViewUser,
   isAllowedToViewImage,
   privateExtractor,

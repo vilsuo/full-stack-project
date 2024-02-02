@@ -3,7 +3,7 @@ const { SESSION_ID } = require('../constants');
 const { User } = require('../models');
 const { comparePassword } = require('../util/password');
 const { getNonSensitiveUser } = require('../util/dto');
-const { sessionExtractor } = require('../util/middleware/auth');
+const { sessionExtractor } = require('../util/middleware/session');
 const parser = require('../util/parser');
 
 router.post('/register', async (req, res) => {

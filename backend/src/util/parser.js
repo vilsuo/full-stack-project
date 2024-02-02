@@ -35,8 +35,8 @@ const parsePositiveInteger = (value, parameterName) => {
  * @param {*} value 
  * @returns the parsed value as a number
  */
-const parseId = (value) => {
-  return parseNonNegativeInteger(value, 'id');
+const parseId = (value, parameterName = 'id') => {
+  return parseNonNegativeInteger(value, parameterName);
 };
 
 const parseType = (value, type, parameterName = 'param') => {
