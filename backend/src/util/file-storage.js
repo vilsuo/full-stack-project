@@ -4,7 +4,7 @@ const fs = require('fs');
 const logger = require('./logger');
 const { FiletypeError } = require('./error');
 const { Image, Potrait } = require('../models');
-const { FILE_SIZE_LIMIT } = require('../constants');
+const { FILE_SIZE_LIMIT, FILE_TYPES } = require('../constants');
 
 const options = {};
 if (process.env.NODE_ENV === 'test') {
@@ -20,18 +20,18 @@ const limits = {
   fileSize: FILE_SIZE_LIMIT,
 };
 
-const filetypes = /jpeg|jpg|png/;
+const regex = new RegExp(FILE_TYPES.join('|'));
 
 const fileFilter = (req, file, cb) => {
-  const mimetype = filetypes.test(file.mimetype);
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = regex.test(file.mimetype);
+  const extname = regex.test(path.extname(file.originalname).toLowerCase());
 
   if (mimetype && extname) {
     return cb(null, true);
   }
 
   cb(new FiletypeError(
-    `file upload only supports the following filetypes -  ${filetypes}`
+    `File upload only supports the filetypes [${FILE_TYPES.join('|')}]`
   ));
 };
 

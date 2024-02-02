@@ -3,6 +3,7 @@ const SESSION_ID = 'connect.sid';
 
 // file upload
 const FILE_SIZE_LIMIT = 2097152; // = 2 Mb, 1048576 = 1 Mb
+const FILE_TYPES = ['jpeg', 'jpg', 'png'];
 
 // pagination
 const DEFAULT_PAGE_NUMBER = 0;
@@ -24,6 +25,7 @@ module.exports = {
   SESSION_ID,
   
   FILE_SIZE_LIMIT,
+  FILE_TYPES,
 
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
