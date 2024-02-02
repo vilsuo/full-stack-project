@@ -43,16 +43,16 @@ const rollbackMigration = async () => {
 const connectToDatabases = async () => {
   try {
     await sequelize.authenticate();
-    logger.info('connected to the Postgre database');
+    logger.info('Connected to the Postgre database');
 
     await redisClient.connect();
-    logger.info('connected to the Redis database');
+    logger.info('Connected to the Redis database');
 
     await runMigrations();
     
   } catch (err) {
-    logger.error('error', err);
-    logger.error('failed to connect to the database');
+    logger.error('Error', err);
+    logger.error('Failed to connect to the database');
     return process.exit(1);
   }
 

@@ -175,14 +175,14 @@ describe('get users', () => {
       const username = disabledExistingUserValues.username;
       const responseBody = await getOne(username, 400);
 
-      expect(responseBody.message).toBe('user is disabled');
+      expect(responseBody.message).toBe('User is disabled');
     });
 
     test('can not access nonexisting user', async () => {
       const username = nonExistingUserValues.username;
       const responseBody = await getOne(username, 404);
 
-      expect(responseBody.message).toBe('user does not exist');
+      expect(responseBody.message).toBe('User does not exist');
     });
 
     test('password hashes are not returned', async () => {

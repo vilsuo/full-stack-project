@@ -22,7 +22,7 @@ const sessionExtractor = async (req, res, next) => {
     // there is no session or session is invalid/expired
     return res
       .clearCookie(SESSION_ID)
-      .status(401).send({ message: 'authentication required' });
+      .status(401).send({ message: 'Authentication required' });
   }
 
   const user = await User.findByPk(session.user.id);
@@ -33,7 +33,7 @@ const sessionExtractor = async (req, res, next) => {
   
       return res
         .clearCookie(SESSION_ID)
-        .status(404).send({ message: 'session user does not exist' });
+        .status(404).send({ message: 'Session user does not exist' });
     });
   }
 
@@ -114,13 +114,13 @@ const isAllowedToViewImage = async (req, res, next) => {
       // only authenticated user can view the image, if the authenticated
       // user is the owner of the image.
       if (!user || (user.id !== image.userId)) {
-        return res.status(401).send({ message: `image is ${IMAGE_PRIVATE}` });
+        return res.status(401).send({ message: `Image is ${IMAGE_PRIVATE}` });
       }
 
       return next();
     
     default: 
-      throw new IllegalStateError(`unhandled privacy '${image.privacy}`);
+      throw new IllegalStateError(`Unhandled privacy '${image.privacy}`);
   }
 };
 
@@ -137,14 +137,24 @@ const isAllowedToViewImage = async (req, res, next) => {
  * @returns response with status
  * - '401' if the authenticated user is not the current user route owner
  */
-const isSessionUser = async (req, res, next) => {
+const privateExtractor = async (req, res, next) => {
   await sessionExtractor(req, res, () => {
     const { user: sessionUser, foundUser } = req;
 
     if (foundUser.id !== sessionUser.id) {
-      return res.status(401).send({
-        message: 'session user is not the owner'
-      });
+      return res.status(401).send({ message: 'Private access' });
+    }
+  
+    next();
+  });
+};
+
+const adminExtractor = async (req, res, next) => {
+  await sessionExtractor(req, res, () => {
+    const { user: sessionUser } = req;
+
+    if (!sessionUser.admin) {
+      return res.status(401).send({ message: 'Admin privilege required' });
     }
   
     next();
@@ -155,5 +165,6 @@ module.exports = {
   sessionExtractor,
   isAllowedToViewUser,
   isAllowedToViewImage,
-  isSessionUser,
+  privateExtractor,
+  adminExtractor,
 };

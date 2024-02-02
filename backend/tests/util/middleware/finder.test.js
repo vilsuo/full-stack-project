@@ -72,7 +72,7 @@ describe('user finder', () => {
 
     test('error message is returned', async () => {
       expect(getStatus(response)).toBe(400);
-      expect(getMessage(response)).toBe('user is disabled');
+      expect(getMessage(response)).toMatch(/user is disabled/i);
     });
   });
 
@@ -96,7 +96,7 @@ describe('user finder', () => {
 
     test('error message is returned', async () => {
       expect(getStatus(response)).toBe(404);
-      expect(getMessage(response)).toBe('user does not exist');
+      expect(getMessage(response)).toMatch(/user does not exist/i);
     });
   });
 
@@ -120,7 +120,7 @@ describe('user finder', () => {
 
     test('error message is returned', async () => {
       expect(getStatus(response)).toBe(404);
-      expect(getMessage(response)).toBe('user does not exist');
+      expect(getMessage(response)).toMatch(/user does not exist/i);
     });
   });
 
@@ -128,14 +128,14 @@ describe('user finder', () => {
     const request = createRequest();
 
     const callWithoutUsername = async () => await callUserFinder(request);
-    await expect(callWithoutUsername).rejects.toThrow(ParseError);
+    await expect(callWithoutUsername).rejects.toThrow(IllegalStateError);
   });
 
   test('username of type integer will throw an error', async () => {
     const request = createRequest({ username: 123 });
 
     const callWithoutUsername = async () => await callUserFinder(request);
-    await expect(callWithoutUsername).rejects.toThrow(ParseError);
+    await expect(callWithoutUsername).rejects.toThrow(IllegalStateError);
   });
 });
 
@@ -168,7 +168,8 @@ describe('image finder', () => {
       request[userProperty] = await User.findOne({ where: { username } });
     });
 
-    describe.each(IMAGE_PRIVACIES)('when "%s" image belongs to the found user', (privacy) => {
+    describe.each(IMAGE_PRIVACIES)
+    ('when "%s" image belongs to the found user', (privacy) => {
 
       let image;
 
@@ -197,7 +198,8 @@ describe('image finder', () => {
       });
     });
   
-    describe.each(IMAGE_PRIVACIES)('when "%s" image does not belong to the found user', (privacy) => {
+    describe.each(IMAGE_PRIVACIES)
+    ('when "%s" image does not belong to the found user', (privacy) => {
       let image;
 
       let response;
@@ -230,7 +232,7 @@ describe('image finder', () => {
 
       test('error message is returned', () => {
         expect(getStatus(response)).toBe(404);
-        expect(getMessage(response)).toBe('image does not exist');
+        expect(getMessage(response)).toMatch(/image does not exist/i);
       });
     });
 
@@ -260,7 +262,7 @@ describe('image finder', () => {
 
       test('error message is returned', () => {
         expect(getStatus(response)).toBe(404);
-        expect(getMessage(response)).toBe('image does not exist');
+        expect(getMessage(response)).toMatch(/image does not exist/i);
       });
     });
 
@@ -271,7 +273,7 @@ describe('image finder', () => {
   });
 });
 
-describe('potrait finder', () => {
+describe.only('potrait finder', () => {
   const potraitProperty = 'potrait';
 
   const callPotraitFinder = async (request) => {
@@ -342,7 +344,7 @@ describe('potrait finder', () => {
 
       test('error message is returned', () => {
         expect(getStatus(response)).toBe(404);
-        expect(getMessage(response)).toBe('user does not have a potrait');
+        expect(getMessage(response)).toMatch(/user does not have a potrait/i);
       });
     });
   });

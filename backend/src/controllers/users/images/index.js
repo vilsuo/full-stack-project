@@ -1,7 +1,7 @@
 const router = require('express').Router({ mergeParams: true });
 const imageRouter = require('./image');
 const { Image, User } = require('../../../models');
-const { isSessionUser, isAllowedToViewUser } = require('../../../util/middleware/auth');
+const { privateExtractor, isAllowedToViewUser } = require('../../../util/middleware/auth');
 const { getNonSensitiveImage } = require('../../../util/dto');
 const logger = require('../../../util/logger');
 const fileStorage = require('../../../util/file-storage');
@@ -51,7 +51,7 @@ router.get('/', isAllowedToViewUser, async (req, res) => {
   return res.send(images.map(image => getNonSensitiveImage(image)));
 });
 
-router.post('/', isSessionUser, async (req, res, next) => {
+router.post('/', privateExtractor, async (req, res, next) => {
   fileUpload(req, res, async (error) => {
     if (error) return next(error);
 
@@ -61,7 +61,7 @@ router.post('/', isSessionUser, async (req, res, next) => {
     logger.info('Image fields:  ', fields);
 
     if (!file) {
-      return res.status(400).send({ message: 'file is missing' });
+      return res.status(400).send({ message: 'Image file is missing' });
     }
 
     // The full path to the uploaded file (DiskStorage only)

@@ -46,7 +46,7 @@ describe('deleting relations', () => {
       username, relations[type].id, {}, 401
     );
 
-    expect(responseBody.message).toBe('authentication required');
+    expect(responseBody.message).toBe('Authentication required');
   });
 
   describe('with authentication', () => {
@@ -127,7 +127,7 @@ describe('deleting relations', () => {
       });
 
       const responseBody = await deleteRelation(username, relation.id, authHeader, 404);
-      expect(responseBody.message).toBe('relation does not exist');
+      expect(responseBody.message).toBe('Relation does not exist');
     });
 
     test('can not delete relation if it does not exist', async () => {
@@ -136,7 +136,7 @@ describe('deleting relations', () => {
         username, nonExistingRelationId, authHeader, 404
       );
 
-      expect(responseBody.message).toBe('relation does not exist');
+      expect(responseBody.message).toBe('Relation does not exist');
     });
   });
 });

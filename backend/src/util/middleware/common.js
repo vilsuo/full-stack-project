@@ -18,7 +18,7 @@ const requestLogger = (req, res, next) => {
 };
 
 const unknownEndpoint = (req, res) => {
-  return res.status(404).send({ message : 'unknown endpoint' });
+  return res.status(404).send({ message : 'Unknown endpoint' });
 };
 
 const errorHandler = (error, req, res, next) => {
@@ -27,7 +27,7 @@ const errorHandler = (error, req, res, next) => {
     case error instanceof multer.MulterError: {
       if (error.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).send({
-          message: `maximum file size is ${FILE_SIZE_LIMIT} bytes`
+          message: `Maximum file size is ${FILE_SIZE_LIMIT} bytes`
         });
       } else {
         // return the multer default
@@ -62,7 +62,7 @@ const errorHandler = (error, req, res, next) => {
     // DEFAULT
     default: {
       logger.error('Unhandled error', error);
-      return res.status(500).send({ message: 'unknown error happened' });
+      return res.status(500).send({ message: 'Unknown error happened' });
     }
   }
 };

@@ -38,14 +38,14 @@ describe('find users potrait', () => {
     const username = nonExistingUserValues.username;
     const responseBody = await getPotrait(username, 404)
 
-    expect(responseBody.message).toBe('user does not exist');
+    expect(responseBody.message).toBe('User does not exist');
   });
 
   test('can not get disabled users potrait', async () => {
     const username = disabledExistingUserValues.username;
     const responseBody = await getPotrait(username, 400)
 
-    expect(responseBody.message).toBe('user is disabled');
+    expect(responseBody.message).toBe('User is disabled');
   });
 
   test('getting potrait of a user that does not have one is bad request', async () => {
@@ -54,7 +54,7 @@ describe('find users potrait', () => {
 
     const responseBody = await getPotrait(newUser.username, 404);
   
-    expect(responseBody.message).toBe('user does not have a potrait');
+    expect(responseBody.message).toBe('User does not have a potrait');
   });
 
   test('can not view users potrait content when user does not have a potrait', async () => {
@@ -62,7 +62,7 @@ describe('find users potrait', () => {
 
     const response = await getPotraitContent(newUser.username, 404);
   
-    expect(response.body.message).toBe('user does not have a potrait');
+    expect(response.body.message).toBe('User does not have a potrait');
   });
 
   describe('when potraits have been created', () => {

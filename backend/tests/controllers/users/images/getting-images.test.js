@@ -63,14 +63,14 @@ describe('find users images', () => {
     const username = nonExistingUserValues.username;
 
     const responseBody = await getImages(username, {}, 404)
-    expect(responseBody.message).toBe('user does not exist');
+    expect(responseBody.message).toBe('User does not exist');
   });
 
   test('can not view disabled users images', async () => {
     const username = disabledExistingUserValues.username;
 
     const responseBody = await getImages(username, {}, 400)
-    expect(responseBody.message).toBe('user is disabled');
+    expect(responseBody.message).toBe('User is disabled');
   });
 
   test('if user does not have any images an empty array is returned', async () => {
@@ -87,7 +87,7 @@ describe('find users images', () => {
 
     const responseBody = await getImage(username, nonExistingImageId, {}, 404);
 
-    expect(responseBody.message).toBe('image does not exist');
+    expect(responseBody.message).toBe('Image does not exist');
   });
 
   describe('when images have been created', () => {
@@ -162,13 +162,13 @@ describe('find users images', () => {
           disabledUsername, disabledImage.id, {}, 400
         );
       
-        expect(responseBody.message).toBe('user is disabled');
+        expect(responseBody.message).toBe('User is disabled');
       });
 
       test(`can not access a ${IMAGE_PRIVATE} image`, async () => {
         const responseBody = await getImage(username, userImages[IMAGE_PRIVATE].id, {}, 401);
 
-        expect(responseBody.message).toBe(`image is ${IMAGE_PRIVATE}`);
+        expect(responseBody.message).toBe(`Image is ${IMAGE_PRIVATE}`);
       });
 
       test(`accessing a ${IMAGE_PRIVATE} image does not increments the view count`, async () => {
@@ -185,7 +185,7 @@ describe('find users images', () => {
       test(`can not view ${IMAGE_PRIVATE} image content`, async () => {
         const response = await getImageContent(username, userImages[IMAGE_PRIVATE].id, {}, 401);
 
-        expect(response.body.message).toBe(`image is ${IMAGE_PRIVATE}`);
+        expect(response.body.message).toBe(`Image is ${IMAGE_PRIVATE}`);
 
         expect(getImageFilePathSpy).not.toHaveBeenCalled();
       });
@@ -301,7 +301,7 @@ describe('find users images', () => {
               otherUsername, otherUserImages[IMAGE_PRIVATE].id, authHeader, 401
             );
   
-            expect(responseBody.message).toBe('image is private');
+            expect(responseBody.message).toBe('Image is private');
           });
 
           test(`can not view a ${IMAGE_PRIVATE} image content`, async () => {
@@ -309,7 +309,7 @@ describe('find users images', () => {
               otherUsername, otherUserImages[IMAGE_PRIVATE].id, authHeader, 401
             );
     
-            expect(response.body.message).toBe('image is private');
+            expect(response.body.message).toBe('Image is private');
   
             expect(getImageFilePathSpy).not.toHaveBeenCalled();
           });

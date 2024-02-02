@@ -28,12 +28,12 @@ describe('deleting users', () => {
   describe('without authentication', () => {
     test('can not delete user', async () => {
       const response = await deleteUser(username, {}, 401);
-      expect(response.body.message).toBe('authentication required');
+      expect(response.body.message).toBe('Authentication required');
     });
 
     test('can not delete non-existing user', async () => {
       const response = await deleteUser(nonExistingUserValues.username, {}, 404);
-      expect(response.body.message).toBe('user does not exist');
+      expect(response.body.message).toBe('User does not exist');
     });
   });
 
@@ -105,7 +105,7 @@ describe('deleting users', () => {
 
     test('user can not delete other user', async () => {
       const response = await deleteUser(otherExistingUserValues.username, authHeader, 401);
-      expect(response.body.message).toBe('session user is not the owner');
+      expect(response.body.message).toBe('Private access');
 
       expect(removeUserFilesSpy).not.toHaveBeenCalled();
     });

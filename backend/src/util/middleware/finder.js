@@ -1,5 +1,5 @@
 const { User, Image, Potrait } = require('../../models');
-const { IllegalStateError, ParseError } = require('../error');
+const { IllegalStateError } = require('../error');
 const parser = require('../parser');
 
 /**
@@ -17,18 +17,18 @@ const userFinder = async (req, res, next) => {
   const { username } = req.params;
 
   if (typeof username !== 'string') {
-    throw new ParseError(
-      'request parameter username must be a string'
+    throw new IllegalStateError(
+      'Request parameter username is not a string'
     );
   }
 
   const foundUser = await User.findOne({ where: { username } });
   
   if (!foundUser) {
-    return res.status(404).send({ message: 'user does not exist' });
+    return res.status(404).send({ message: 'User does not exist' });
 
   } else if (foundUser.disabled) {
-    return res.status(400).send({ message: 'user is disabled' })
+    return res.status(400).send({ message: 'User is disabled' })
   }
 
   req.foundUser = foundUser;
@@ -45,15 +45,14 @@ const userFinder = async (req, res, next) => {
  * @param {*} next 
  * 
  * @returns response with status
- * - '404' if there is no image with id = imageId.
- * - '404' if the image owner is not the request.foundUser
+ * - '404' if the found user does not have an image with id of 'imageId'
  */
 const imageFinder = async (req, res, next) => {
   const { foundUser } = req;
   const { imageId: rawImageId } = req.params;
 
   if (!foundUser) {
-    throw new IllegalStateError('owner of the image to be found is not specified');
+    throw new IllegalStateError('User of the image to be found is not specified');
   }
 
   const imageId = parser.parseId(rawImageId);
@@ -64,7 +63,7 @@ const imageFinder = async (req, res, next) => {
     return next();
   }
 
-  return res.status(404).send({ message: 'image does not exist' });
+  return res.status(404).send({ message: 'Image does not exist' });
 };
 
 /**
@@ -77,13 +76,13 @@ const imageFinder = async (req, res, next) => {
  * @param {*} next 
  * 
  * @returns response with status
- * - '404' if the user does not have potrait
+ * - '404' if the found user does not have potrait
  */
 const potraitFinder = async (req, res, next) => {
   const foundUser = req.foundUser;
 
   if (!foundUser) {
-    throw new IllegalStateError('owner of the potrait to be found is not specified');
+    throw new IllegalStateError('User of the potrait to be found is not specified');
   }
   
   const potrait = await Potrait.findOne({ where: { userId: foundUser.id } });
@@ -92,7 +91,7 @@ const potraitFinder = async (req, res, next) => {
     return next();
   }
 
-  return res.status(404).send({ message: 'user does not have a potrait' });
+  return res.status(404).send({ message: 'User does not have a potrait' });
 };
 
 module.exports = {

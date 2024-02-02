@@ -54,7 +54,7 @@ describe('editing images', () => {
       const responseBody = await editImage(
         username, userImages[privacy].id, newImageValues, headers, 401
       );
-      expect(responseBody.message).toBe('authentication required');
+      expect(responseBody.message).toBe('Authentication required');
     });
   });
 
@@ -72,7 +72,7 @@ describe('editing images', () => {
           username, nonExistingImageId, newImageValues, authHeader, 404
         );
 
-        expect(responseBody.message).toBe('image does not exist');
+        expect(responseBody.message).toBe('Image does not exist');
       });
 
       describe.each(IMAGE_PRIVACIES)('editing a %s image', (privacy) => {
@@ -170,7 +170,7 @@ describe('editing images', () => {
           otherUsername, otherUsersImages[privacy].id, newImageValues, authHeader, 401
         );
 
-        expect(responseBody.message).toBe('session user is not the owner')
+        expect(responseBody.message).toBe('Private access')
       });
     });
   });

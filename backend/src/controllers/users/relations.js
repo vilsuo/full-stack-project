@@ -1,7 +1,7 @@
 const router = require('express').Router({ mergeParams: true });
 const { RELATION_FOLLOW } = require('../../constants');
 const { Relation, User } = require('../../models');
-const { isSessionUser, isAllowedToViewUser } = require('../../util/middleware/auth');
+const { privateExtractor, isAllowedToViewUser } = require('../../util/middleware/auth');
 const parser = require('../../util/parser');
 
 /**
@@ -25,7 +25,7 @@ router.get('/', isAllowedToViewUser, async (req, res) => {
   } else {
     if (type !== undefined) {
       return res.status(401).send({
-        message: 'query parameter type is not allowed'
+        message: 'Query parameter type is not allowed'
       });
     }
     searchFilters.type = RELATION_FOLLOW;
@@ -66,7 +66,7 @@ router.get('/reverse', isAllowedToViewUser, async (req, res) => {
 
   if (type !== undefined) {
     return res.status(401).send({
-      message: 'query parameter type is not allowed'
+      message: 'Query parameter type is not allowed'
     });
   }
 
@@ -87,7 +87,7 @@ router.get('/reverse', isAllowedToViewUser, async (req, res) => {
   return res.send(relations);
 });
 
-router.post('/', isSessionUser, async (req, res) => {
+router.post('/', privateExtractor, async (req, res) => {
   const { user: sourceUser } = req;
 
   // parse request body
@@ -97,18 +97,18 @@ router.post('/', isSessionUser, async (req, res) => {
   // target user must exist
   const targetUser = await User.findByPk(targetUserId);
   if (!targetUser) {
-    return res.status(404).send({ message: 'target user does not exist' });
+    return res.status(404).send({ message: 'Target user does not exist' });
   }
 
   // target user can not be disabled
   if (targetUser.disabled) {
-    return res.status(400).send({ message: 'target user is disabled' });
+    return res.status(400).send({ message: 'Target user is disabled' });
   }
 
   // can not create relation to self
   if (sourceUser.id === targetUser.id) {
     return res.status(400).send({
-      message: 'user can not have a relation with itself'
+      message: 'User can not have a relation with itself'
     });
   }
 
@@ -123,7 +123,7 @@ router.post('/', isSessionUser, async (req, res) => {
 
   if (relationFound) {
     return res.status(400).send({ 
-      message: `relation with type '${type}' already exists` 
+      message: 'This relation already exists'
     });
   }
 
@@ -136,7 +136,7 @@ router.post('/', isSessionUser, async (req, res) => {
   return res.status(201).send(relation);
 });
 
-router.delete('/:relationId', isSessionUser, async (req, res) => {
+router.delete('/:relationId', privateExtractor, async (req, res) => {
   const { relationId } = req.params;
   const { user: sourceUser } = req;
 
@@ -147,7 +147,7 @@ router.delete('/:relationId', isSessionUser, async (req, res) => {
   });
 
   if (!nDestroyed) {
-    return res.status(404).send({ message: 'relation does not exist' });
+    return res.status(404).send({ message: 'Relation does not exist' });
   }
 
   return res.status(204).end();

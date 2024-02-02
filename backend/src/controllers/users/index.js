@@ -7,7 +7,7 @@ const { sequelize } = require('../../util/db');
 const { User } = require('../../models');
 const { getNonSensitiveUser } = require('../../util/dto');
 const { userFinder } = require('../../util/middleware/finder');
-const { isSessionUser, isAllowedToViewUser } = require('../../util/middleware/auth');
+const { privateExtractor, isAllowedToViewUser } = require('../../util/middleware/auth');
 const { pagination } = require('../../util/middleware/query');
 const fileStorage = require('../../util/file-storage'); // importing this way makes it possible to mock 'removeFile'
 const { SESSION_ID } = require('../../constants');
@@ -67,7 +67,7 @@ router.get('/:username', userFinder, isAllowedToViewUser, async (req, res) => {
   return res.send(getNonSensitiveUser(foundUser));
 });
 
-router.delete('/:username', userFinder, isSessionUser, async (req, res, next) => {
+router.delete('/:username', userFinder, privateExtractor, async (req, res, next) => {
   const { foundUser } = req;
 
   await fileStorage.removeUserFiles(foundUser.id);

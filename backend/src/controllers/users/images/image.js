@@ -1,7 +1,7 @@
 const router = require('express').Router({ mergeParams: true });
 const fileStorage = require('../../../util/file-storage');
 const { 
-  isSessionUser, isAllowedToViewUser, isAllowedToViewImage
+  privateExtractor, isAllowedToViewUser, isAllowedToViewImage
 } = require('../../../util/middleware/auth');
 const { getNonSensitiveImage } = require('../../../util/dto');
 const parser = require('../../../util/parser');
@@ -14,7 +14,7 @@ router.get('/', isAllowedToViewUser, isAllowedToViewImage, async (req, res) => {
   return res.send(getNonSensitiveImage(viewIncrementedImage));
 });
 
-router.put('/', isSessionUser, async (req, res) => {
+router.put('/', privateExtractor, async (req, res) => {
   const { image } = req;
 
   // all parameters are optional
@@ -29,7 +29,7 @@ router.put('/', isSessionUser, async (req, res) => {
   return res.send(getNonSensitiveImage(updatedImage));
 });
 
-router.delete('/', isSessionUser, async (req, res) => {
+router.delete('/', privateExtractor, async (req, res) => {
   const { image } = req;
   
   await image.destroy();

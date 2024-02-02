@@ -58,7 +58,7 @@ describe('putting potraits', () => {
       username, headers, filepath, 401
     );
 
-    expect(responseBody.message).toBe('authentication required');
+    expect(responseBody.message).toBe('Authentication required');
   });
 
   describe('with authentication', () => {
@@ -234,7 +234,7 @@ describe('putting potraits', () => {
               );
       
               expect(responseBody.message).toMatch(
-                /^file upload only supports the following filetypes/
+                /File upload only supports the filetypes/i
               );
             });
 
@@ -268,7 +268,7 @@ describe('putting potraits', () => {
         otherUsername, authHeader, filepath, 401
       );
 
-      expect(responseBody.message).toBe('session user is not the owner');
+      expect(responseBody.message).toBe('Private access');
     });
   });
 });

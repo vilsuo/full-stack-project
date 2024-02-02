@@ -41,7 +41,7 @@ describe('deleting images', () => {
 
     test.each(IMAGE_PRIVACIES)('can not delete a %s image', async (privacy) => {
       const responseBody = await deleteImage(username, userImages[privacy].id, headers, 401);
-      expect(responseBody.message).toBe('authentication required');
+      expect(responseBody.message).toBe('Authentication required');
     });
   });
 
@@ -61,7 +61,7 @@ describe('deleting images', () => {
         const nonExistingImageId = 91727149;
         const responseBody = await deleteImage(username, nonExistingImageId, authHeader, 404);
 
-        expect(responseBody.message).toBe('image does not exist');
+        expect(responseBody.message).toBe('Image does not exist');
       });
 
       describe('after deleting an image', () => {
@@ -112,7 +112,7 @@ describe('deleting images', () => {
           otherUsername, otherUsersImages[privacy].id, authHeader, 401
         );
 
-        expect(responseBody.message).toBe('session user is not the owner');
+        expect(responseBody.message).toBe('Private access');
       });
     });
   })

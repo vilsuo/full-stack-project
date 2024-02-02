@@ -32,7 +32,7 @@ describe('deleting potraits', () => {
   test('can not delete potrait without authentication', async () => {
     const response = await deletePotrait(username, {}, 401);
 
-    expect(response.body.message).toBe('authentication required');
+    expect(response.body.message).toBe('Authentication required');
   });
 
   describe('with authentication', () => {
@@ -54,7 +54,7 @@ describe('deleting potraits', () => {
         
         const response = await deletePotrait(username, authHeader, 404);
   
-        expect(response.body.message).toBe('user does not have a potrait');
+        expect(response.body.message).toBe('User does not have a potrait');
       });
 
       describe('after deleting an potrait', () => {
@@ -82,7 +82,7 @@ describe('deleting potraits', () => {
     test('can not delete other users potrait', async () => {
       const response = await deletePotrait(otherUsername, authHeader, 401);
 
-      expect(response.body.message).toBe('session user is not the owner');
+      expect(response.body.message).toBe('Private access');
     });
   })
 });

@@ -57,7 +57,8 @@ const { filepath, originalname } = nonExistingImageValues;
 describe('posting images', () => {
   const username = existingUserValues.username;
 
-  test.each(IMAGE_PRIVACIES)('can not post a %s image without authentication', async (privacy) => {
+  test.each(IMAGE_PRIVACIES)
+  ('can not post a %s image without authentication', async (privacy) => {
     const headers = {
       // there is a bug in supertest, this seems to fix it
       // https://stackoverflow.com/questions/54936185/express-mongoose-jest-error-econnaborted
@@ -69,7 +70,7 @@ describe('posting images', () => {
       username, { ...textFields, privacy }, filepath, headers, 401
     );
 
-    expect(responseBody.message).toBe('authentication required');
+    expect(responseBody.message).toBe('Authentication required');
   });
 
   describe('with authentication', () => {
@@ -190,7 +191,7 @@ describe('posting images', () => {
               username, { title: invalidTitle }, filepath, authHeader, 400
             );
 
-            expect(responseBody).toHaveProperty('message');
+            expect(responseBody.message).toMatch(/title has a max length/i);
           });
 
           test('invalid privacy is bad request', async () => {
@@ -198,7 +199,7 @@ describe('posting images', () => {
               username, { privacy: invalidPrivacy }, filepath, authHeader, 400
             );
 
-            expect(responseBody).toHaveProperty('message');
+            expect(responseBody.message).toMatch(/privacy must be one of/i);
           });
 
           // after field value parsing error an attempt is made to remove the uploaded
@@ -219,7 +220,7 @@ describe('posting images', () => {
           );
   
           expect(responseBody.message).toMatch(
-            /^file upload only supports the following filetypes/
+            /file upload only supports the filetypes/i
           );
         });
 
@@ -228,7 +229,7 @@ describe('posting images', () => {
             username, { ...textFields, privacy }, undefined, authHeader, 400
           );
   
-          expect(responseBody.message).toBe('file is missing');
+          expect(responseBody.message).toBe('Image file is missing');
         });
       });
     });
@@ -236,12 +237,13 @@ describe('posting images', () => {
     describe('posting to other user', () => {
       const otherUsername = otherExistingUserValues.username;
 
-      test.each(IMAGE_PRIVACIES)('can not post a %s image to other user', async (privacy) => {
+      test.each(IMAGE_PRIVACIES)
+      ('can not post a %s image to other user', async (privacy) => {
         const responseBody = await postImage(
           otherUsername, { ...textFields, privacy }, filepath, authHeader, 401
         );
 
-        expect(responseBody.message).toBe('session user is not the owner');
+        expect(responseBody.message).toBe('Private access');
       });
     });
   });

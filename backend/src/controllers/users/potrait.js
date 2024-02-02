@@ -1,6 +1,6 @@
 const router = require('express').Router({ mergeParams: true });
 const { sequelize } = require('../../util/db');
-const { isSessionUser, isAllowedToViewUser } = require('../../util/middleware/auth');
+const { privateExtractor, isAllowedToViewUser } = require('../../util/middleware/auth');
 const { potraitFinder } = require('../../util/middleware/finder');
 const { getNonSensitivePotrait } = require('../../util/dto');
 const fileStorage = require('../../util/file-storage');
@@ -32,7 +32,7 @@ router.get('/', isAllowedToViewUser, potraitFinder, async (req, res) => {
  * - 201 if a new potrait was created
  * - 200 if old potrait was replace by a new potrait
  */
-router.put('/', isSessionUser, async (req, res, next) => {
+router.put('/', privateExtractor, async (req, res, next) => {
   fileUpload(req, res, async (error) => {
     if (error) return next(error);
 
@@ -41,7 +41,7 @@ router.put('/', isSessionUser, async (req, res, next) => {
     logger.info('Potrait file:', file);
 
     if (!file) {
-      return res.status(400).send({ message: 'file is missing' });
+      return res.status(400).send({ message: 'Image file is missing' });
     }
 
     // The full path to the uploaded file (DiskStorage only)
@@ -93,7 +93,7 @@ router.put('/', isSessionUser, async (req, res, next) => {
   });
 });
 
-router.delete('/', potraitFinder, isSessionUser, async (req, res) => {
+router.delete('/', potraitFinder, privateExtractor, async (req, res) => {
   const { potrait } = req;
   
   await potrait.destroy();

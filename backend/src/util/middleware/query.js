@@ -17,11 +17,11 @@ const pagination = (req, res, next) => {
   const { page, size } = req.query;
 
   req.pageNumber = (page !== undefined)
-    ? parseNonNegativeInteger(page, "query parameter 'page'")
+    ? parseNonNegativeInteger(page, "query page")
     : DEFAULT_PAGE_NUMBER;
 
   req.pageSize = (size !== undefined)
-    ? parsePositiveInteger(size, "query parameter 'size'")
+    ? parsePositiveInteger(size, "query size")
     : DEFAULT_PAGE_SIZE;
 
   next();

@@ -39,7 +39,7 @@ Image.init({
     validate: {
       isIn: {
         args: [IMAGE_PRIVACIES],
-        msg: `image privacy must be one of [${IMAGE_PRIVACIES.join('|')}]`
+        msg: `Privacy must be one of [${IMAGE_PRIVACIES.join('|')}]`
       },
     },
   },
