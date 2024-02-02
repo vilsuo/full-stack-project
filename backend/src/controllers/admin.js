@@ -1,19 +1,24 @@
 const router = require('express').Router();
 const parser = require('../util/parser');
 const { getNonSensitiveUser } = require('../util/dto');
-const { userFinder } = require('../util/middleware/finder');
+const { User } = require('../models');
 
-router.put('/users/:username', userFinder, async (req, res) => {
-  const user = req.foundUser;
-  const { disabled } = req.body;
+router.put('/users/:username', async (req, res) => {
+  const username = parser.parseStringType(req.params.username);
+  const foundUser = await User.findByUsername(username);
 
-  if (disabled !== undefined) {
-    user.disabled = parser.parseBooleanType(disabled);
+  if (!foundUser) {
+    return res.status(400).send({ message: 'User does not exist' });
   }
 
-  await user.save();
+  const { disabled } = req.body;
+  if (disabled !== undefined) {
+    foundUser.disabled = parser.parseBooleanType(disabled);
+  }
 
-  return res.send(getNonSensitiveUser(user));
+  await foundUser.save();
+
+  return res.send(getNonSensitiveUser(foundUser));
 });
 
 module.exports = router;
