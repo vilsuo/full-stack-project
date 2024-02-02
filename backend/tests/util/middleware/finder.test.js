@@ -10,7 +10,6 @@ const {
   getStatus,
   getMessage,
   createRequest,
-  addParamsToRequest,
 } = require('../../helpers/middleware');
 
 const  {
@@ -23,9 +22,12 @@ const next = jest.fn();
 
 const parseIdSpy = jest.spyOn(parser, 'parseId');
 
-const userProperty = 'foundUser';
+const userFinderProperty = 'foundUser';
+const imageFinderProperty = 'image';
+const potraitFinderProperty = 'potrait';
 
 describe('user finder', () => {
+  const createUserFinderRequest = (username) => createRequest({ params: { username } });
 
   const callUserFinder = async (request) => {
     return callMiddleware(userFinder, request, next);
@@ -36,7 +38,7 @@ describe('user finder', () => {
     let request;
 
     beforeEach(async () => {
-      request = createRequest({ username });
+      request = createUserFinderRequest(username);
       await callUserFinder(request);
     });
 
@@ -45,10 +47,10 @@ describe('user finder', () => {
     });
 
     test('user is attached to the request', async () => {
-      const user = await User.findOne({ where: { username } });
+      const user = await User.findByUsername(username);
 
-      expect(request).toHaveProperty(userProperty);
-      expect(request[userProperty]).toStrictEqual(user);
+      expect(request).toHaveProperty(userFinderProperty);
+      expect(request[userFinderProperty]).toStrictEqual(user);
     });
   });
 
@@ -58,7 +60,7 @@ describe('user finder', () => {
     let response;
 
     beforeEach(async () => {
-      request = createRequest({ username });
+      request = createUserFinderRequest(username);
       response = await callUserFinder(request);
     });
 
@@ -67,7 +69,7 @@ describe('user finder', () => {
     });
 
     test('user is not attached to request', async () => {
-      expect(request).not.toHaveProperty(userProperty);
+      expect(request).not.toHaveProperty(userFinderProperty);
     });
 
     test('error message is returned', async () => {
@@ -82,7 +84,7 @@ describe('user finder', () => {
     let response;
 
     beforeEach(async () => {
-      request = createRequest({ username });
+      request = createUserFinderRequest(username);
       response = await callUserFinder(request);
     });
 
@@ -91,7 +93,7 @@ describe('user finder', () => {
     });
 
     test('user is not attached to request', async () => {
-      expect(request).not.toHaveProperty(userProperty);
+      expect(request).not.toHaveProperty(userFinderProperty);
     });
 
     test('error message is returned', async () => {
@@ -101,12 +103,11 @@ describe('user finder', () => {
   });
 
   describe('empty username', () => {
-    const username = '';
     let request;
     let response;
 
     beforeEach(async () => {
-      request = createRequest({ username });
+      request = createUserFinderRequest('');
       response = await callUserFinder(request);
     });
 
@@ -115,7 +116,7 @@ describe('user finder', () => {
     });
 
     test('user is not attached to request', async () => {
-      expect(request).not.toHaveProperty(userProperty);
+      expect(request).not.toHaveProperty(userFinderProperty);
     });
 
     test('error message is returned', async () => {
@@ -125,14 +126,14 @@ describe('user finder', () => {
   });
 
   test('missing username will throw an error', async () => {
-    const request = createRequest();
+    const request = createUserFinderRequest();
 
     const callWithoutUsername = async () => await callUserFinder(request);
     await expect(callWithoutUsername).rejects.toThrow(IllegalStateError);
   });
 
   test('username of type integer will throw an error', async () => {
-    const request = createRequest({ username: 123 });
+    const request = createUserFinderRequest(123);
 
     const callWithoutUsername = async () => await callUserFinder(request);
     await expect(callWithoutUsername).rejects.toThrow(IllegalStateError);
@@ -140,47 +141,49 @@ describe('user finder', () => {
 });
 
 describe('image finder', () => {
-  const imageProperty = 'image';
+  const createImageFinderRequest = (user, imageId) => {
+    if (typeof imageId === 'number') {
+      imageId = imageId.toString()
+    }
+
+    return createRequest({ 
+      [userFinderProperty]: user,
+      params: { imageId }
+    });
+  };
 
   const callImageFinder = async (request) => {
     return callMiddleware(imageFinder, request, next);
   };
 
-  test('calling without finding user first will throw an error', async () => {
-    const request = createRequest();
-    expect(request).not.toHaveProperty(userProperty);
+  let user;
+
+  beforeEach(async () => {
+    const { username } = existingUserValues;
+    user = await User.findByUsername(username);
+  });
+
+  test('when user of the image to be found is not set, an error is thrown', async () => {
+    const request = createImageFinderRequest();
+    expect(request[userFinderProperty]).toBeFalsy();
 
     const callWithoutUserFinder = async () => await callImageFinder(request);
     await expect(callWithoutUserFinder).rejects.toThrow(IllegalStateError);
   });
 
-  describe('after user finder has been successfully handled', () => {
-    
-    let request;
-
-    beforeEach(async () => {
-      const { username } = existingUserValues;
-
-      // create request with parameters
-      request = createRequest({ username });
-
-      // attach found user without calling next
-      request[userProperty] = await User.findOne({ where: { username } });
-    });
-
+  describe('when user is set', () => {
     describe.each(IMAGE_PRIVACIES)
-    ('when "%s" image belongs to the found user', (privacy) => {
-
+    ('when "%s" image belongs to the user', (privacy) => {
       let image;
+
+      let request;
 
       beforeEach(async () => {
         // find users image
-        const userId = request[userProperty].id;
-        image = await Image.findOne({ where: { userId, privacy } });
+        image = await Image.findOne({ where: { userId: user.id, privacy } });
 
         // create request with parameters
-        addParamsToRequest(request, { imageId: image.id.toString() });
-
+        request = createImageFinderRequest(user, image.id);
         await callImageFinder(request);
       });
 
@@ -193,8 +196,8 @@ describe('image finder', () => {
       });
 
       test('image is attached to the request', () => {
-        expect(request).toHaveProperty(imageProperty);
-        expect(request[imageProperty]).toStrictEqual(image);
+        expect(request).toHaveProperty(imageFinderProperty);
+        expect(request[imageFinderProperty]).toStrictEqual(image);
       });
     });
   
@@ -202,19 +205,18 @@ describe('image finder', () => {
     ('when "%s" image does not belong to the found user', (privacy) => {
       let image;
 
+      let request;
       let response;
 
       beforeEach(async () => {
         // find other user
-        const { username: otherUsername } = otherExistingUserValues;
-        const otherUser = await User.findOne({ where: { username: otherUsername } });
+        const otherUser = await User.findByUsername(otherExistingUserValues.username);
 
         // find other users image
         image = await Image.findOne({ where: { userId: otherUser.id, privacy } });
 
         // create request with parameters
-        addParamsToRequest(request, { imageId: image.id.toString() });
-
+        request = createImageFinderRequest(user, image.id)
         response = await callImageFinder(request);
       });
 
@@ -227,7 +229,7 @@ describe('image finder', () => {
       });
 
       test('image is not attached to the request', () => {
-        expect(request).not.toHaveProperty(imageProperty);
+        expect(request).not.toHaveProperty(imageFinderProperty);
       });
 
       test('error message is returned', () => {
@@ -239,12 +241,12 @@ describe('image finder', () => {
     describe('non-exising image', () => {
       const nonExistingImageId = '99999';
 
+      let request;
       let response;
 
       beforeEach(async () => {
         // create request with parameters
-        addParamsToRequest(request, { imageId: nonExistingImageId });
-
+        request = createImageFinderRequest(user, nonExistingImageId);
         response = await callImageFinder(request);
       });
 
@@ -257,7 +259,7 @@ describe('image finder', () => {
       });
 
       test(`image is not attached to the request`, () => {
-        expect(request).not.toHaveProperty(imageProperty);
+        expect(request).not.toHaveProperty(imageFinderProperty);
       });
 
       test('error message is returned', () => {
@@ -267,39 +269,38 @@ describe('image finder', () => {
     });
 
     test('missing image id will throw an error', async () => {
+      const request = createImageFinderRequest(user);
+
       const callWithoutImageId = async () => await callImageFinder(request);
       await expect(callWithoutImageId).rejects.toThrow(ParseError);
     });
   });
 });
 
-describe.only('potrait finder', () => {
-  const potraitProperty = 'potrait';
+describe('potrait finder', () => {
+  const createPotraitFinderRequest = (user) => {
+    return createRequest({ [userFinderProperty]: user });
+  };
 
   const callPotraitFinder = async (request) => {
     return callMiddleware(potraitFinder, request, next);
   };
 
   test('calling without finding user first will throw an error', async () => {
-    const request = createRequest();
-    expect(request).not.toHaveProperty(userProperty);
+    const request = createPotraitFinderRequest();
+    expect(request.userFinderProperty).toBeFalsy();
 
     const callWithoutUserFinder = async () => await callPotraitFinder(request);
     await expect(callWithoutUserFinder).rejects.toThrow(IllegalStateError);
   });
 
   describe('after user finder has been successfull handled', () => {
-    describe('when the user does have a potrait', () => {
+    describe('when the user has a potrait', () => {
       let request;
 
       beforeEach(async () => {
-        const { username } = existingUserValues;
-
-        // create request with parameters
-        request = createRequest({ username });
-
-        // attach found user without calling next
-        request[userProperty] = await User.findOne({ where: { username } });
+        const user = await User.findByUsername(existingUserValues.username);
+        request = createPotraitFinderRequest(user);
 
         await callPotraitFinder(request);
       });
@@ -313,24 +314,20 @@ describe.only('potrait finder', () => {
           where: { userId: request.foundUser.id } 
         });
 
-        expect(request).toHaveProperty(potraitProperty);
-        expect(request[potraitProperty]).toStrictEqual(foundPotrait);
+        expect(request).toHaveProperty(potraitFinderProperty);
+        expect(request[potraitFinderProperty]).toStrictEqual(foundPotrait);
       });
     });
 
     describe('when the user does not have a potrait', () => {
-      let newUser;
-
       let request;
       let response;
   
       beforeEach(async () => {
         // create a new user
-        newUser = await createUser(nonExistingUserValues);
-        request = createRequest({ username: newUser.username });
+        const user = await createUser(nonExistingUserValues);
 
-        request[userProperty] = newUser;
-
+        request = createPotraitFinderRequest(user);
         response = await callPotraitFinder(request);
       });
 
@@ -339,7 +336,7 @@ describe.only('potrait finder', () => {
       });
 
       test(`potrait is not attached to the request`, () => {
-        expect(request).not.toHaveProperty(potraitProperty);
+        expect(request).not.toHaveProperty(potraitFinderProperty);
       });
 
       test('error message is returned', () => {

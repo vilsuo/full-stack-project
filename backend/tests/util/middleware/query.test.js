@@ -9,7 +9,7 @@ const next = jest.fn();
 const parsePageNumberSpy = jest.spyOn(parser, 'parseNonNegativeInteger');
 const parseSizeNumberSpy = jest.spyOn(parser, 'parsePositiveInteger');
 
-const createQueryRequest = (query = {}) => createRequest({}, query);
+const createQueryRequest = (query = {}) => createRequest({ query });
 
 describe('pagination', () => {
 

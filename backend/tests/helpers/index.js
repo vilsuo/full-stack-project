@@ -36,12 +36,13 @@ const login = async (api, credentials) => {
   return cookieHeader(cookie);
 };
 
-const createUser = async ({ name, username, password, disabled = false }) => {
+const createUser = async ({ name, username, password, disabled = false, admin = false }) => {
   return await User.create({
     name,
     username,
     passwordHash: password,
     disabled,
+    admin,
   });
 };
 

@@ -17,26 +17,23 @@ const callMiddleware = async (middleware, request, next) => {
 const getStatus = response => response.code;
 const getMessage = response => response.body.message;
 
-/**
- * 
- * @param {Object} params request parameters
- * @param {Object} query query parameters
- * @returns 
- */
-const createRequest = (params = {}, query = {}) => {
-  const request = { params, query };
-  return request;
+const createSession = user => {
+  return { user: { id: user.id, username: user.username } };
 };
 
 /**
  * 
- * @param {*} request 
- * @param {Object} newParams request parameters to be added to the request
+ * @param {Object} params request path parameters
+ * @param {Object} query request query parameters
+ * @param {Object} session session values
+ * @returns 
  */
-const addParamsToRequest = (request, newParams = {}) => {
-  const { params: oldParams } = request;
-
-  request.params = { ...oldParams, ...newParams };
+const createRequest = (values) => {
+  const params = {};
+  const query = {};
+  const body = {};
+  const request = { params, query, body, ...values };
+  return request;
 };
 
 module.exports = {
@@ -44,5 +41,5 @@ module.exports = {
   getStatus,
   getMessage,
   createRequest,
-  addParamsToRequest,
+  createSession,
 };
