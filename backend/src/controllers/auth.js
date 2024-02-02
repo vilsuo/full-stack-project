@@ -1,13 +1,15 @@
 const router = require('express').Router();
 const { SESSION_ID } = require('../constants');
 const { User } = require('../models');
-
 const { comparePassword } = require('../util/password');
 const { getNonSensitiveUser } = require('../util/dto');
 const { sessionExtractor } = require('../util/middleware/auth');
+const parser = require('../util/parser');
 
 router.post('/register', async (req, res) => {
-  const { name, username, password } = req.body;
+  const name = parser.parseStringType(req.body.name, 'name');
+  const username = parser.parseStringType(req.body.username, 'username');
+  const password = parser.parseStringType(req.body.password, 'password');
 
   const user = await User.create({
     name, username,
@@ -20,23 +22,13 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  if (username === undefined || password === undefined) {
-    return res.status(400).send({
-      message: 'username or password missing'
-    });
-  }
-
-  if (typeof username !== 'string' || typeof password !== 'string') {
-    return res.status(400).send({
-      message: 'username and password must be strings'
-    });
-  }
+  const username = parser.parseStringType(req.body.username, 'username');
+  const password = parser.parseStringType(req.body.password, 'password');
 
   const user = await User.findOne({ where: { username } });
   if (user) {
     if (user.disabled) {
-      return res.status(401).send({ message: 'user has been disabled' });
+      return res.status(401).send({ message: 'User has been disabled' });
     }
 
     const passwordMatches = await comparePassword(password, user.passwordHash);
@@ -51,7 +43,7 @@ router.post('/login', async (req, res) => {
   }
 
   return res.status(401).send({
-    message: 'invalid username or password'
+    message: 'Invalid username or password'
   });
 });
 
@@ -66,7 +58,7 @@ router.post('/logout', async (req, res, next) => {
 
     return res
       .clearCookie(SESSION_ID)
-      .send({ message: "you've been signed out" });
+      .send({ message: "You've been signed out" });
   });
 });
 
