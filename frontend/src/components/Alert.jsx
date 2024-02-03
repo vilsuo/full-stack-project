@@ -2,14 +2,12 @@
 const createMessage = (prefix, details) => {
   let message = prefix;
   if (details) {
-
     message += ': '
       + ((details.constructor === Array) 
-        ? details.join(' ') // multiple error messages
+        ? details.join(', ') // multiple error messages
         : details);          // single error message
-  } else {
-    message += '.';
   }
+  message += '.';
 
   return message;
 };

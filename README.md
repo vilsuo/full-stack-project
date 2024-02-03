@@ -71,13 +71,8 @@ The rest of the test videos [here](https://github.com/vilsuo/full-stack-project/
 		</ul>
 	</li>
 	<li>
-		Create admin users that can disable users. Currently there is no way to disable user, but disabled users can not login
-		<ul>
-			<li>
-				Change session id prefix to user.id so admin could also disable user sessions
-			</li>
-		</ul>
-  	</li>
+		Change session id prefix to user.id so admin could also disable user sessions
+  </li>
 	<li>
 		Do not include blocked users when searching for users
 	</li>

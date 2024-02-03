@@ -43,6 +43,7 @@ import {
   UserErrorElement
 } from './components/ErrorElement';
 import NotFoundPage from './pages/NotFoundPage';
+import Admin from './pages/Admin';
 
 
 /*
@@ -51,10 +52,20 @@ TODO
 - is potrait reducer needed?
 */
 
-const ProtectedRoute = () => {
+const PrivateRoute = () => {
   const { user, authenticatedUser } = useOutletContext();
 
   if (!authenticatedUser || (authenticatedUser.id !== user.id)) {
+    return <Navigate to='/' replace />;
+  }
+
+  return <Outlet context={{ user, authenticatedUser }} />;
+};
+
+const AdminRoute = () => {
+  const { user, authenticatedUser } = useOutletContext();
+
+  if (!authenticatedUser || !authenticatedUser.admin) {
     return <Navigate to='/' replace />;
   }
 
@@ -68,6 +79,10 @@ const router = createHashRouter(
 
       <Route path='search' element={<SearchLayout />}>
         <Route path='results' element={<Results />} />
+      </Route>
+
+      <Route path='/admin' element={<AdminRoute />}>
+        <Route index element={<Admin />} />
       </Route>
 
       <Route path='users'>
@@ -95,7 +110,7 @@ const router = createHashRouter(
 
           <Route path='details' element={<Details />} />
 
-          <Route element={<ProtectedRoute />}>
+          <Route element={<PrivateRoute />}>
             <Route path='settings' element={<SettingsLayout />}>
               <Route path='potrait' element={<SettingsPotrait />} />
               <Route path='other' element={<SettingsOther />} />

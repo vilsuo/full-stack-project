@@ -300,6 +300,14 @@ textarea {
   }
 }
 
+/* admin page */
+.admin-page h3 {
+  text-align: start;
+}
+.admin-page .user-lookup {
+  max-width: 200px;
+}
+
 /* results */
 .pagination-nav {
   display: flex;

@@ -128,7 +128,7 @@ describe('visiting user pages', function () {
           cy.visit(URLS.HOME_URL);
           cy.visitUser(otherUsername);
   
-          expectUserPageHidden('block exists');
+          expectUserPageHidden('You have blocked the user');
         });
       });
 
@@ -149,7 +149,7 @@ describe('visiting user pages', function () {
           cy.visit(URLS.HOME_URL);
           cy.visitUser(otherUsername);
   
-          expectUserPageHidden('block exists');
+          expectUserPageHidden('You have been blocked by the user');
         });
       });
     });

@@ -43,6 +43,10 @@ const NavBar = ({ user }) => {
         <NavLink to='/'>Home</NavLink>
         <NavLink to='search'>Search</NavLink>
         <NavLink to='about'>About</NavLink>
+        
+        { (user && user.admin) && (
+          <NavLink to='admin'>Admin</NavLink>
+        )}
 
         <div>
           { user
