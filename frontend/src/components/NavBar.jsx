@@ -28,9 +28,26 @@ const LoggedInMenu = ({ user }) => {
     <Dropdown
       trigger={<UserOptions user={user} />}
       menu={[
-        <button onClick={() => navigate(`/users/${username}`)}>Profile</button>,
-        <button onClick={() => navigate(`/users/${username}/settings`)}>Settings</button>,
-        <button onClick={handleLogout}>Logout</button>
+        <button 
+          key='profile-option' 
+          onClick={() => navigate(`/users/${username}`)}
+        >
+          Profile
+        </button>,
+
+        <button 
+          key='settings-option' 
+          onClick={() => navigate(`/users/${username}/settings`)}
+        >
+          Settings
+        </button>,
+        
+        <button 
+          key='logout-option'
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
       ]}
     />
   );

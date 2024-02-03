@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event';
 
 import Dropdown from '../../src/components/Dropdown';
 
@@ -23,8 +23,8 @@ describe('<Dropdown />', () => {
       <Dropdown
         trigger={<button>{triggerText}</button>}
         menu={[
-          <button onClick={mockHandler1}>{actionText1}</button>,
-          <button onClick={mockHandler2}>{actionText2}</button>
+          <button key={actionText1} onClick={mockHandler1}>{actionText1}</button>,
+          <button key={actionText2} onClick={mockHandler2}>{actionText2}</button>
         ]}
       />
     );
