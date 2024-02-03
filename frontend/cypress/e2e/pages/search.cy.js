@@ -219,7 +219,7 @@ const expectCurrentPageToBe = function (page) {
     .then(function($span) {
       const text = $span.text();
 
-      expect(text).to.match(new RegExp(`^${page}\/\\d+$`));
+      expect(text).to.match(new RegExp(`^${page}/\\d+$`));
     });
 };
 
@@ -229,7 +229,7 @@ const expectLastPageToBe = function (page) {
     .then(function($span) {
       const text = $span.text();
 
-      expect(text).to.match(new RegExp(`^\\d+\/${page}$`));
+      expect(text).to.match(new RegExp(`^\\d+/${page}$`));
     });
 };
 

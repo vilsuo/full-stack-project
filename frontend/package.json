@@ -37,6 +37,7 @@
     "cypress-file-upload": "^5.0.8",
     "cypress-wait-until": "^3.0.1",
     "eslint": "^8.55.0",
+    "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-jest": "^27.6.3",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",

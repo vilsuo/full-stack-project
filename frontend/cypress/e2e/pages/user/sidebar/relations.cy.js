@@ -107,7 +107,7 @@ describe('user page sidebar relations', function () {
               beforeEach(function () {
                 // follow the other user
                 cy.intercept(`/api/users/${username}/relations`)
-                 .as('follow');
+                  .as('follow');
     
                 getFollowButton().click();
     
