@@ -27,7 +27,9 @@ const RootLayout = () => {
     
     checkIfAlreadyLoggedIn();
     
-  }, []);
+    // Safe to add dispatch to the dependencies array:
+    // https://react-redux.js.org/api/hooks#usedispatch
+  }, [dispatch]);
 
   if (loading) {
     return (

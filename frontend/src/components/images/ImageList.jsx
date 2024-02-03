@@ -17,14 +17,14 @@ const SORT_ORDERS = { ASC: 'asc', DESC: 'desc' };
 const SortIcon = ({ field, sortedField, sortedOrder }) => {
   if (field !== sortedField) return null;
 
-  return (sortedOrder == SORT_ORDERS.ASC)
+  return (sortedOrder === SORT_ORDERS.ASC)
     ? <FaSortDown />
-    : <FaSortUp />
+    : <FaSortUp />;
 };
 
 const ImageTableHead = ({ 
-    showExtra, sortField, setSortField, sortOrder, setSortOrder
-  }) => {
+  showExtra, sortField, setSortField, sortOrder, setSortOrder
+}) => {
 
   const handleSortingChange = (columnName) => {
     const order = ((columnName === sortField) && (sortOrder === SORT_ORDERS.DESC))
