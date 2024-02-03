@@ -17,7 +17,7 @@ describe('<Alert />', () => {
   });
 
   test('renders array of messages in a single alert', () => {
-    const otherAlert = { ...alert, details: messages }
+    const otherAlert = { ...alert, details: messages };
     render(<Alert alert={otherAlert} />);
 
     const element1 = screen.getByText(new RegExp(otherAlert.details[0]));
@@ -32,9 +32,9 @@ describe('<Alert />', () => {
 
     render(<Alert alert={alert} clearAlert={mockHandler} />);
 
-    const user = userEvent.setup()
+    const user = userEvent.setup();
     const button = await screen.findByRole('button');
-    await user.click(button)
+    await user.click(button);
 
     expect(mockHandler.mock.calls).toHaveLength(1);
   });

@@ -22,19 +22,19 @@ export default ErrorElement;
 
 // USER
 export const UserErrorElement = () => {
-  return <ErrorElement header='Error happened while loading the user' />
+  return <ErrorElement header='Error happened while loading the user' />;
 };
 
 // IMAGES
 export const ImagesErrorElement = () => {
-  return <ErrorElement header='Error happened while loading the images' />
+  return <ErrorElement header='Error happened while loading the images' />;
 };
 
 export const ImageErrorElement = () => {
-  return <ErrorElement header='Error happened while loading the image' />
+  return <ErrorElement header='Error happened while loading the image' />;
 };
 
 // RELATIONS
 export const RelationsErrorElement = () => {
-  return <ErrorElement header='Error happened while loading the relations' />
+  return <ErrorElement header='Error happened while loading the relations' />;
 };

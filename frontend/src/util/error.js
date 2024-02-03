@@ -14,6 +14,6 @@ export const createErrorMessage = (error) => {
 
   } else {
     // Something happened in setting up the request that triggered an Error
-    return 'something went wrong while setting up the request'
+    return 'something went wrong while setting up the request';
   }
 };

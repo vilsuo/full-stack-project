@@ -67,7 +67,7 @@ const authSlice = createSlice({
         const relations = state.relations.filter(relation => relation.id !== relationId);
         
         return { ...state, relations };
-      })
+      });
   },
 });
 

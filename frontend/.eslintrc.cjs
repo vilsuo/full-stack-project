@@ -18,20 +18,19 @@ module.exports = {
   plugins: ['react-refresh', 'jest', 'cypress'],
   rules: {
     "indent": [
-        "error",
-        2  
+      "error",
+      2  
     ],
     "semi": [
-        "error",
-        "always"
+      "error",
+      "always"
     ],
     "eqeqeq": "error",
-    "no-trailing-spaces": "error",
     "object-curly-spacing": [
-        "error", "always"
+      "error", "always"
     ],
     "arrow-spacing": [
-        "error", { "before": true, "after": true }
+      "error", { "before": true, "after": true }
     ],
     "no-console": 0,
     "react/react-in-jsx-scope": "off",

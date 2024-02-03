@@ -103,7 +103,7 @@ const Image = () => {
   useEffect(() => {
     if (content) setImageUrl(URL.createObjectURL(content));
 
-    return () => { if (imageUrl) URL.revokeObjectURL(imageUrl); }
+    return () => { if (imageUrl) URL.revokeObjectURL(imageUrl); };
   }, []);
 
   const canEdit = authenticatedUser && (authenticatedUser.id === image.userId);
@@ -187,17 +187,19 @@ const Image = () => {
 
       { 
         editing
-        ? <ImageEditing
-            image={image}
-            handleEdit={handleEdit}
-          />
-        : <ImageViewing
-            user={user}
-            image={image}
-            imageUrl={imageUrl}
-          />
+          ? (
+            <ImageEditing
+              image={image}
+              handleEdit={handleEdit}
+            />
+          ) : (
+            <ImageViewing
+              user={user}
+              image={image}
+              imageUrl={imageUrl}
+            />
+          )
       }
-
     </div>
   );
 };

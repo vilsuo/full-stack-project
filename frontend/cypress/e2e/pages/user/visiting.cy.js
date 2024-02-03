@@ -38,7 +38,7 @@ describe('visiting user pages', function () {
   });
 
   it('can not visit the page of a user that does not exist', function () {
-    const username = 'nonexistinguser'
+    const username = 'nonexistinguser';
     cy.visitUser(username);
 
     expectUserPageHidden('user does not exist');

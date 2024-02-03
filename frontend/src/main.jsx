@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom/client';
-import { configureStore } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import './index.css';
 import App from './App';

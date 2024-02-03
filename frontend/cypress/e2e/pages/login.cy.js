@@ -8,7 +8,7 @@ const submitLogin = function (username, password) {
   cy.get(".login form input[type='text']:first").type(username);
   cy.get(".login form input[type='password']:first").type(password);
 
-  cy.intercept('POST', '/api/auth/login').as('postLogin')
+  cy.intercept('POST', '/api/auth/login').as('postLogin');
 
   // submit the form
   cy.get('.login form button')

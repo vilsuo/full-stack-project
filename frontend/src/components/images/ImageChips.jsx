@@ -13,7 +13,7 @@ const ImageChips = ({ image, user }) => {
       }
       <div className='chip'>{privacy}</div>
     </div>
-  )
+  );
 };
 
 export default ImageChips;

@@ -14,7 +14,7 @@ const RadioGroup = ({ options, value, setValue, optionName }) => {
               value={option.value}
               id={`radio-${optionName}-${option.value}`}
               checked={value === option.value}
-              onChange={ ({ target}) => setValue(target.value) }
+              onChange={ ({ target }) => setValue(target.value) }
             />
             <label htmlFor={`radio-${optionName}-${option.value}`}>
               { option.tooltipText
@@ -26,7 +26,7 @@ const RadioGroup = ({ options, value, setValue, optionName }) => {
               }
             </label>
           </div>
-          ))}
+        ))}
       </div>
     </label>
   );

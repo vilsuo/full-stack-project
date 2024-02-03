@@ -39,8 +39,8 @@ const SideBarRelations = ({ user }) => {
       // adding relation
       dispatch(addRelation({ targetUserId: user.id, type }))
         .unwrap()
-        .then(addedRelation=> {
-          console.log('added', addedRelation)
+        .then(addedRelation => {
+          console.log('added', addedRelation);
           setLoading(false);
         })
         .catch(error => {

@@ -35,11 +35,11 @@ const SideBarPotrait = ({ user }) => {
 
     fetchPotrait();
 
-    return () => { if (potrait.url) URL.revokeObjectURL(potrait.url); }
+    return () => { if (potrait.url) URL.revokeObjectURL(potrait.url); };
   }, [username, authPotrait]);
 
   if (potrait.loading) {
-    return <Skeleton circle={true} className='avatar profile' />
+    return <Skeleton circle={true} className='avatar profile' />;
   }
 
   // if user does not have a potrait, show default

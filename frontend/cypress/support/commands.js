@@ -180,8 +180,8 @@ Cypress.Commands.add('waitForSpinners', () => {
 });
 
 Cypress.Commands.add('waitForLoadingSkeletons', () => {
-// wait for loading skeleons to disappear
-cy.get('.react-loading-skeleton').should('not.exist');
+  // wait for loading skeleons to disappear
+  cy.get('.react-loading-skeleton').should('not.exist');
 });
 
 Cypress.Commands.add('waitForSessionCookie', () => {

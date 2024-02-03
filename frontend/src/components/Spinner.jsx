@@ -1,4 +1,4 @@
-import { RotatingLines } from 'react-loader-spinner'
+import { RotatingLines } from 'react-loader-spinner';
 
 const Spinner = ({ size = '24' }) => {
   return (

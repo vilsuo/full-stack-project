@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom';
 
 const PUBLIC_ROUTES = [
-  { value: 'images', label: 'Images'},
-  { value: 'relations', label: 'Relations'},
-  { value: 'details', label: 'Details'},
+  { value: 'images', label: 'Images' },
+  { value: 'relations', label: 'Relations' },
+  { value: 'details', label: 'Details' },
 ];
 
 const PRIVATE_ROUTES = [{ value: 'settings', label: 'Settings' }];

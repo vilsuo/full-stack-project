@@ -1,5 +1,5 @@
 import { getByRole, render } from '@testing-library/react';
-import userEvent from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event';
 
 import RadioGroup from '../../src/components/RadioGroup';
 import { useState } from 'react';
@@ -69,7 +69,7 @@ describe('<RadioGroup />', () => {
   describe('user checking option', () => {
     let container;
 
-    const initialOption = options[1]
+    const initialOption = options[1];
     const optionToSelect = options[2];
 
     beforeEach(async () => {
