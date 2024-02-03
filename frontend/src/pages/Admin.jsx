@@ -92,7 +92,7 @@ const UserDisabledActions = ({ user, setUser, alert, setAlert, clearAlert, clear
       <Alert alert={alert} clearAlert={clearAlert} />
 
       <p>
-        User '<span className='italic'>{user.username}</span>' {`is ${user.disabled ? 'disabled' : 'active'}`}
+        User &quot<span className='italic'>{user.username}</span>&quot {`is ${user.disabled ? 'disabled' : 'active'}`}
       </p>
 
       <LoadingButton
@@ -105,7 +105,7 @@ const UserDisabledActions = ({ user, setUser, alert, setAlert, clearAlert, clear
   );
 };
 
-const Admin = ({}) => {
+const Admin = () => {
   const [user, setUser] = useState();
   
   // alerts
