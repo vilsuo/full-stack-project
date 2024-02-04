@@ -1,15 +1,17 @@
-const { User, Image, Potrait, Relation } = require('../../src/models');
-const { SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE, RELATION_TYPES } = require('../../src/constants');
+const {
+  User, Image, Potrait, Relation,
+} = require('../../src/models');
+const {
+  SESSION_ID, IMAGE_PUBLIC, IMAGE_PRIVATE, RELATION_TYPES,
+} = require('../../src/constants');
 
-const cookieHeader = cookie => {
-  return { 'Cookie': `${SESSION_ID}=${cookie}` };
-};
+const cookieHeader = (cookie) => ({ Cookie: `${SESSION_ID}=${cookie}` });
 
-const get_SetCookie = response => {
+const getSetCookie = (response) => {
   const cookie = response
     .get('set-cookie')
-    .find(value => value.startsWith(SESSION_ID));
-  
+    .find((value) => value.startsWith(SESSION_ID));
+
   if (cookie) {
     // remove `${SESSION_ID}=` from the start:
     return cookie.split(';')[0].substring(SESSION_ID.length + 1);
@@ -19,8 +21,8 @@ const get_SetCookie = response => {
 };
 
 /**
- * 
- * @param {*} api 
+ *
+ * @param {*} api
  * @param {*} credentials login credentials: username and password
  * @returns an authentication header to be set in authenticated requests
  */
@@ -32,48 +34,48 @@ const login = async (api, credentials) => {
     .expect('Content-Type', /application\/json/);
 
   // login was successfull, return the authentication header
-  const cookie = get_SetCookie(response);
+  const cookie = getSetCookie(response);
   return cookieHeader(cookie);
 };
 
-const createUser = async ({ name, username, password, disabled = false, admin = false }) => {
-  return await User.create({
-    name,
-    username,
-    passwordHash: password,
-    disabled,
-    admin,
-  });
-};
+const createUser = async ({
+  name, username, password, disabled = false, admin = false,
+}) => User.create({
+  name,
+  username,
+  passwordHash: password,
+  disabled,
+  admin,
+});
 
 // IMAGES
 
 /**
  * Creates a new {@link Image} from the parameters. The resulting image will
  *  have undefined 'filepath'.
- * 
- * @param {*} userId 
- * @param {*} title 
- * @param {*} caption 
+ *
+ * @param {*} userId
+ * @param {*} title
+ * @param {*} caption
  * @param {*} privacy
  * @param {*} mimetype      default 'image/jpeg'
  * @param {*} originalname  default 'test.jpeg'
  * @param {*} size          default 1000
- * 
+ *
  * @returns the created image
  */
-const createImage = async (values) => {
-  return await Image.create(values);
-};
+const createImage = async (values) => Image.create(values);
 
 const createPublicAndPrivateImage = async (userId, { publicImageValues, privateImageValues }) => {
   const publicImage = await createImage({
-    userId, privacy: IMAGE_PUBLIC,
+    userId,
+    privacy: IMAGE_PUBLIC,
     ...publicImageValues,
   });
 
   const privateImage = await createImage({
-    userId, privacy: IMAGE_PRIVATE,
+    userId,
+    privacy: IMAGE_PRIVATE,
     ...privateImageValues,
   });
 
@@ -81,18 +83,18 @@ const createPublicAndPrivateImage = async (userId, { publicImageValues, privateI
 };
 
 const findPublicAndPrivateImage = async (username) => {
-  const userId = (await User.findOne({ where: { username }})).id;
+  const userId = (await User.findOne({ where: { username } })).id;
 
   if (!userId) {
     throw new Error(`user with username ${username} does not exist`);
   }
 
-  publicImage = await Image.findOne({
-    where: { userId, privacy: IMAGE_PUBLIC }
+  const publicImage = await Image.findOne({
+    where: { userId, privacy: IMAGE_PUBLIC },
   });
 
-  privateImage = await Image.findOne({
-    where: { userId, privacy: IMAGE_PRIVATE }
+  const privateImage = await Image.findOne({
+    where: { userId, privacy: IMAGE_PRIVATE },
   });
 
   return { publicImage, privateImage };
@@ -101,36 +103,32 @@ const findPublicAndPrivateImage = async (username) => {
 // POTRAITS
 
 // missing 'filepath'
-const createPotrait = async (userId, potraitValues) => {
-  return await Potrait.create({ userId, ...potraitValues });
-};
+const createPotrait = async (userId, potraitValues) => Potrait.create({ userId, ...potraitValues });
 
 const findPotrait = async (username) => {
-  const userId = (await User.findOne({ where: { username }})).id;
+  const userId = (await User.findOne({ where: { username } })).id;
 
   if (!userId) {
     throw new Error(`user with username ${username} does not exist`);
   }
-  
-  return await Potrait.findOne({ where: { userId } });
+
+  return Potrait.findOne({ where: { userId } });
 };
 
 // RELATIONS
 
-const createRelationsOfAllTypes = async (sourceUserId, targetUserId) => {
-  return await Promise.all(RELATION_TYPES.map(async type => 
-    await Relation.create({ sourceUserId, targetUserId, type })
-  ));
-};
+const createRelationsOfAllTypes = async (sourceUserId, targetUserId) => Promise.all(
+  RELATION_TYPES.map(async (type) => Relation.create({ sourceUserId, targetUserId, type })),
+);
 
 // COMPARISONS
 
 const compareFoundArrayWithResponseArray = (foundNonSensitiveValuesArray, responseArray) => {
   expect(responseArray).toHaveLength(foundNonSensitiveValuesArray.length);
 
-  foundNonSensitiveValuesArray.forEach(nonSensitiveValue => {
+  foundNonSensitiveValuesArray.forEach((nonSensitiveValue) => {
     expect(responseArray).toEqual(
-      expect.arrayContaining([ nonSensitiveValue ])
+      expect.arrayContaining([nonSensitiveValue]),
     );
   });
 };
@@ -144,7 +142,7 @@ const compareFoundWithResponse = (foundNonSensitiveValues, response) => {
 
 module.exports = {
   cookieHeader,
-  get_SetCookie,
+  getSetCookie,
   login,
   createUser,
   createImage,

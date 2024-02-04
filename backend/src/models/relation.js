@@ -16,7 +16,7 @@ Relation.init({
     validate: {
       isIn: {
         args: [RELATION_TYPES],
-        msg: `Type must be one of [${RELATION_TYPES.join('|')}]`
+        msg: `Type must be one of [${RELATION_TYPES.join('|')}]`,
       },
     },
   },

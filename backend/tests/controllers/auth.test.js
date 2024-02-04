@@ -1,10 +1,11 @@
 const omit = require('lodash.omit');
 const supertest = require('supertest');
 const app = require('../../src/app');
-
-const { User, Potrait, Relation, Image } = require('../../src/models');
-const { 
-  get_SetCookie, compareFoundWithResponse, login,
+const {
+  User, Potrait, Relation, Image,
+} = require('../../src/models');
+const {
+  getSetCookie, compareFoundWithResponse, login,
 } = require('../helpers');
 const {
   existingUserValues,
@@ -26,30 +27,26 @@ const register = async (details, statusCode) => {
   return response.body;
 };
 
-const loginWithResponse = async (credentials, statusCode) => {
-  return await api
-    .post('/api/auth/login')
-    .send(credentials)
-    .expect(statusCode)
-    .expect('Content-Type', /application\/json/);
-};
+const loginWithResponse = async (credentials, statusCode) => api
+  .post('/api/auth/login')
+  .send(credentials)
+  .expect(statusCode)
+  .expect('Content-Type', /application\/json/);
 
-const logout = async (headers = {}, statusCode) => {
-  return await api 
-    .post('/api/auth/logout')
-    .set(headers)
-    .expect(statusCode)
-    .expect('Content-Type', /application\/json/);
-};
+const logout = async (headers, statusCode) => api
+  .post('/api/auth/logout')
+  .set(headers)
+  .expect(statusCode)
+  .expect('Content-Type', /application\/json/);
 
 const credentials = getCredentials(existingUserValues);
 
 describe('registering', () => {
   test('can register', async () => {
     const responseBody = await register(nonExistingUserValues, 201);
-  
+
     expect(responseBody.id).toBeDefined();
-  
+
     // name and username are set from the request values
     expect(responseBody.name).toBe(nonExistingUserValues.name);
     expect(responseBody.username).toBe(nonExistingUserValues.username);
@@ -85,7 +82,7 @@ describe('registering', () => {
 
   test('hashed password is not returned', async () => {
     const responseBody = await register(nonExistingUserValues, 201);
-  
+
     expect(responseBody).not.toHaveProperty('passwordHash');
   });
 
@@ -94,15 +91,15 @@ describe('registering', () => {
     const newUser = await register(nonExistingUserValues, 201);
 
     const imageCount = await Image.count({ where: { userId: newUser.id } });
-  
+
     expect(imageCount).toBe(0);
   });
 
   test('new user does not have a potrait', async () => {
     // create a new user that does not have any images
     const newUser = await register(nonExistingUserValues, 201);
-  
-    const potrait = await Potrait.findOne({ where: { userId: newUser.id }});
+
+    const potrait = await Potrait.findOne({ where: { userId: newUser.id } });
     expect(potrait).toBeFalsy();
   });
 
@@ -164,24 +161,24 @@ describe('registering', () => {
 
     test('taken username', async () => {
       const withTakenUsernameValue = {
-        ...nonExistingUserValues, 
+        ...nonExistingUserValues,
         username: takenUsername,
       };
-  
+
       const responseBody = await register(withTakenUsernameValue, 400);
-      
+
       const errorMessages = responseBody.message;
       expect(errorMessages).toContain('Username has already been taken');
     });
-  
+
     test('disabled users username', async () => {
       const withDisabledUsernameValue = {
-        ...nonExistingUserValues, 
+        ...nonExistingUserValues,
         username: disabledUsersUsername,
       };
-  
+
       const responseBody = await register(withDisabledUsernameValue, 400);
-      
+
       const errorMessages = responseBody.message;
       expect(errorMessages).toContain('Username has already been taken');
     });
@@ -197,7 +194,7 @@ describe('loggin in', () => {
     test('authentication cookie is set', async () => {
       const response = await loginWithResponse(credentials, 200);
 
-      const setCookie = get_SetCookie(response);
+      const setCookie = getSetCookie(response);
 
       expect(setCookie).toBeDefined();
       expect(setCookie).not.toBe('');
@@ -208,13 +205,13 @@ describe('loggin in', () => {
       const returnedUser = response.body;
 
       // response contains the logged in users id, name and username
-      const foundUser = await User.findOne({ where: { username: credentials.username } });
+      const foundUser = await User.findByUsername(credentials.username);
 
       compareFoundWithResponse(
-        getNonSensitiveUser(foundUser), 
-        returnedUser
+        getNonSensitiveUser(foundUser),
+        returnedUser,
       );
-      
+
       // hashed password is not included in the response
       expect(returnedUser).not.toHaveProperty('passwordHash');
     });
@@ -230,19 +227,19 @@ describe('loggin in', () => {
       expect(response.body.message).toBe('Invalid username or password');
 
       // authentication cookie is not set
-      expect(() => get_SetCookie(response)).toThrow();
+      expect(() => getSetCookie(response)).toThrow();
     });
-  
+
     test('disabled user can not login', async () => {
       const disabledCredentials = getCredentials(disabledExistingUserValues);
-  
+
       const response = await loginWithResponse(disabledCredentials, 401);
       expect(response.body.message).toBe('User has been disabled');
     });
-  
+
     test('can not log in with user that does not exist', async () => {
       const nonExistingCredentials = getCredentials(nonExistingUserValues);
-  
+
       const response = await loginWithResponse(nonExistingCredentials, 401);
       expect(response.body.message).toBe('Invalid username or password');
     });
@@ -255,18 +252,18 @@ describe('loggin out', () => {
   beforeEach(async () => {
     authHeader = await login(api, credentials);
   });
-  
+
   test('can logout with cookie set (logged in)', async () => {
     const response = await logout(authHeader, 200);
-    
+
     // cookie is cleared
-    expect(get_SetCookie(response)).toBe('');
+    expect(getSetCookie(response)).toBe('');
   });
 
   test('can logout without cookie set (not logged in)', async () => {
     const response = await logout({}, 200);
 
     // cookie is cleared
-    expect(get_SetCookie(response)).toBe('');
+    expect(getSetCookie(response)).toBe('');
   });
 });

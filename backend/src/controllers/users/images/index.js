@@ -15,18 +15,23 @@ const createImage = async (filepath, file, fields, userId) => {
   const { mimetype, size, originalname } = file;
   let { title, caption, privacy } = fields;
 
-  if (title !== undefined)    { title = parser.parseStringType(title, 'title'); }
-  if (caption !== undefined)  { caption = parser.parseTextType(caption, 'caption'); }
-  if (privacy !== undefined)  { privacy = parser.parseImagePrivacy(privacy); }
+  if (title !== undefined) { title = parser.parseStringType(title, 'title'); }
+  if (caption !== undefined) { caption = parser.parseTextType(caption, 'caption'); }
+  if (privacy !== undefined) { privacy = parser.parseImagePrivacy(privacy); }
 
   const image = await Image.create({
+    userId,
+
     // from file
-    originalname, filepath, mimetype, size,
+    originalname,
+    filepath,
+    mimetype,
+    size,
 
     // from fields
-    title, caption, privacy, 
-
-    userId,
+    title,
+    caption,
+    privacy,
   });
 
   return image;
@@ -48,12 +53,12 @@ router.get('/', isAllowedToViewUser, async (req, res) => {
 
   const images = await Image.findAll({ where });
 
-  return res.send(images.map(image => getNonSensitiveImage(image)));
+  return res.send(images.map((image) => getNonSensitiveImage(image)));
 });
 
 router.post('/', privateExtractor, async (req, res, next) => {
-  fileUpload(req, res, async (error) => {
-    if (error) return next(error);
+  fileUpload(req, res, async (uploadError) => {
+    if (uploadError) return next(uploadError);
 
     const { file, body: fields } = req;
 
@@ -71,7 +76,6 @@ router.post('/', privateExtractor, async (req, res, next) => {
       const userId = req.user.id;
       const image = await createImage(filepath, file, fields, userId);
       return res.status(201).send(getNonSensitiveImage(image));
-
     } catch (error) {
       // Image validation failed, image was already saved to the filesystem
       fileStorage.removeFile(filepath);

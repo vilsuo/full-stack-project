@@ -1,6 +1,6 @@
 const omit = require('lodash.omit');
 
-const getNonSensitiveUser = user => {
+const getNonSensitiveUser = (user) => {
   // do not return the passwordHash
   const values = omit(user.toJSON(), ['passwordHash']);
   values.createdAt = values.createdAt.toJSON();
@@ -9,7 +9,7 @@ const getNonSensitiveUser = user => {
   return values;
 };
 
-const getNonSensitiveImage = image => {
+const getNonSensitiveImage = (image) => {
   // do not return the filepath
   const values = omit(image.toJSON(), ['filepath']);
   if (values.editedAt) {
@@ -20,7 +20,7 @@ const getNonSensitiveImage = image => {
   return values;
 };
 
-const getNonSensitivePotrait = potrait => {
+const getNonSensitivePotrait = (potrait) => {
   // do not return the filepath
   const values = omit(potrait.toJSON(), ['filepath']);
   values.createdAt = values.createdAt.toJSON();

@@ -1,34 +1,33 @@
 const { User } = require('../../../src/models');
-const session = require('../../../src/util/middleware/session');
+const sessionObj = require('../../../src/util/middleware/session');
 const { adminExtractor, privateExtractor } = require('../../../src/util/middleware/auth');
 const { createUser } = require('../../helpers');
-const { 
-  existingUserValues, 
-  otherExistingUserValues, 
-  nonExistingUserValues 
+const {
+  existingUserValues,
+  otherExistingUserValues,
+  nonExistingUserValues,
 } = require('../../helpers/constants');
-const { 
-  callMiddleware, 
-  createRequest, 
-  getMessage, 
-  getStatus, 
-  createSession
+const {
+  callMiddleware,
+  createRequest,
+  getMessage,
+  getStatus,
+  createSession,
 } = require('../../helpers/middleware');
 
 const userFinderProperty = 'foundUser';
 
 const next = jest.fn();
 
-const sessionExtractorMock = jest.spyOn(session, 'sessionExtractor')
-  .mockImplementation(async (req, res, next) => {
-
+const sessionExtractorMock = jest.spyOn(sessionObj, 'sessionExtractor')
+  .mockImplementation(async (req, res, fn) => {
     // find the user in the 'session'
     const { id } = req.session.user;
     const user = await User.findByPk(id);
     req.user = user;
 
     // call next middleware
-    return next();
+    return fn();
   });
 
 describe('private extractor', () => {
@@ -37,9 +36,7 @@ describe('private extractor', () => {
     return createRequest({ session, [userFinderProperty]: foundUser });
   };
 
-  const callPrivateExtractor = async (request) => {
-    return callMiddleware(privateExtractor, request, next);
-  };
+  const callPrivateExtractor = async (request) => callMiddleware(privateExtractor, request, next);
 
   describe('when session user is the user', () => {
     let request;
@@ -87,9 +84,7 @@ describe('admin extractor', () => {
     return createRequest({ session });
   };
 
-  const callAdminExtractor = async (request) => {
-    return callMiddleware(adminExtractor, request, next);
-  };
+  const callAdminExtractor = async (request) => callMiddleware(adminExtractor, request, next);
 
   describe('when user is an admin', () => {
     beforeEach(async () => {

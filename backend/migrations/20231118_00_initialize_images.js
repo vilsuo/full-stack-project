@@ -44,7 +44,7 @@ module.exports = {
       references: { model: 'users', key: 'id' },
     });
   },
-  down: async ({ context: queryInterface}) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.dropTable('images');
   },
 };

@@ -17,16 +17,14 @@ TODO
 - implement 'all users' route with 'isAllowedToViewUser'
 */
 
-const getUserSearchFilter = (columnName, query) => {
-  return sequelize.where(
-    sequelize.fn('lower', sequelize.col(columnName)),
-    { [Op.substring] : query.toLowerCase() }
-  );
-};
+const getUserSearchFilter = (columnName, query) => sequelize.where(
+  sequelize.fn('lower', sequelize.col(columnName)),
+  { [Op.substring]: query.toLowerCase() },
+);
 
 /**
- * Implements searching based on user name and username. 
- * Does not return disabled users. Response is paginated, 
+ * Implements searching based on user name and username.
+ * Does not return disabled users. Response is paginated,
  * see {@link pagination}.
  */
 router.get('/', pagination, async (req, res) => {
@@ -37,7 +35,7 @@ router.get('/', pagination, async (req, res) => {
   if (typeof query === 'string') {
     searchFilters[Op.or] = [
       getUserSearchFilter('name', query),
-      getUserSearchFilter('username', query)
+      getUserSearchFilter('username', query),
     ];
   }
 
@@ -45,7 +43,7 @@ router.get('/', pagination, async (req, res) => {
 
   const { count, rows } = await User.findAndCountAll({
     where: searchFilters,
-    
+
     // descending: from largest to smallest
     order: [['createdAt', 'DESC']],
     // pagination
@@ -53,12 +51,14 @@ router.get('/', pagination, async (req, res) => {
     limit: pageSize,
   });
 
-  const users = rows.map(user => getNonSensitiveUser(user));
+  const users = rows.map((user) => getNonSensitiveUser(user));
 
   // total number of pages: the available pages number are [0, pages)
   const pages = Math.ceil(count / pageSize);
-  
-  return res.send({ users, page: pageNumber, pages, count });
+
+  return res.send({
+    users, page: pageNumber, pages, count,
+  });
 });
 
 router.get('/:username', userFinder, isAllowedToViewUser, async (req, res) => {

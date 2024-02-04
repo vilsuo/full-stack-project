@@ -4,12 +4,12 @@ const parser = require('../parser');
 
 /**
  * Extracts the User from request parameter 'username' to request.foundUser.
- * 
+ *
  * @param {*} req
  * @param {*} res
- * @param {*} next  
- * 
- * @returns response with status 
+ * @param {*} next
+ *
+ * @returns response with status
  *  - '404' if user does not exist
  *  - '400' if user is disabled
  */
@@ -18,32 +18,32 @@ const userFinder = async (req, res, next) => {
 
   if (typeof username !== 'string') {
     throw new IllegalStateError(
-      'Request parameter username is not a string'
+      'Request parameter username is not a string',
     );
   }
 
   const foundUser = await User.findOne({ where: { username } });
-  
+
   if (!foundUser) {
     return res.status(404).send({ message: 'User does not exist' });
-
-  } else if (foundUser.disabled) {
-    return res.status(400).send({ message: 'User is disabled' })
+  }
+  if (foundUser.disabled) {
+    return res.status(400).send({ message: 'User is disabled' });
   }
 
   req.foundUser = foundUser;
-  next();
+  return next();
 };
 
 /**
  * Extracts the Image from request parameter 'imageId' to request.image.
- * 
+ *
  * Expects the middleware {@link userFinder} to have been handled beforehand.
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- * 
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ *
  * @returns response with status
  * - '404' if the found user does not have an image with id of 'imageId'
  */
@@ -68,23 +68,23 @@ const imageFinder = async (req, res, next) => {
 
 /**
  * Extracts the {@link Potrait} of the from the request.foundUser to request.potrait.
- * 
+ *
  * Expects the middleware {@link userFinder} to have been handled beforehand.
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- * 
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ *
  * @returns response with status
  * - '404' if the found user does not have potrait
  */
 const potraitFinder = async (req, res, next) => {
-  const foundUser = req.foundUser;
+  const { foundUser } = req;
 
   if (!foundUser) {
     throw new IllegalStateError('User of the potrait to be found is not specified');
   }
-  
+
   const potrait = await Potrait.findOne({ where: { userId: foundUser.id } });
   if (potrait) {
     req.potrait = potrait;

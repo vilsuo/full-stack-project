@@ -10,20 +10,20 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       await queryInterface.renameColumn(
-        'images', 
-        'filename', 
-        'originalname', 
+        'images',
+        'filename',
+        'originalname',
         { transaction },
       );
 
       await queryInterface.changeColumn(
-        'images', 
+        'images',
         'originalname',
-        { 
+        {
           type: DataTypes.STRING,
-          allowNull: false 
+          allowNull: false,
         },
-        { transaction }
+        { transaction },
       );
 
       await transaction.commit();
@@ -36,11 +36,11 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       await queryInterface.changeColumn(
-        'images', 
+        'images',
         'originalname',
         {
           type: DataTypes.STRING,
-          allowNull: true
+          allowNull: true,
         },
         { transaction },
       );
@@ -57,5 +57,5 @@ module.exports = {
       await transaction.rollback();
       throw error;
     }
-  }
+  },
 };

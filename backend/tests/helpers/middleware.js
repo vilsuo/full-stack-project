@@ -11,28 +11,31 @@ const callMiddleware = async (middleware, request, next) => {
     return response;
   };
 
-  return await middleware(request, response, next);
+  return middleware(request, response, next);
 };
 
-const getStatus = response => response.code;
-const getMessage = response => response.body.message;
+const getStatus = (response) => response.code;
+const getMessage = (response) => response.body.message;
 
-const createSession = user => {
-  return { user: { id: user.id, username: user.username } };
-};
+const createSession = (user) => ({ user: { id: user.id, username: user.username } });
 
 /**
- * 
+ *
  * @param {Object} params request path parameters
  * @param {Object} query request query parameters
  * @param {Object} session session values
- * @returns 
+ * @returns
  */
 const createRequest = (values) => {
   const params = {};
   const query = {};
   const body = {};
-  const request = { params, query, body, ...values };
+  const request = {
+    params,
+    query,
+    body,
+    ...values,
+  };
   return request;
 };
 

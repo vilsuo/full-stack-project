@@ -1,4 +1,4 @@
-const testingRouter  = require('express').Router();
+const testingRouter = require('express').Router();
 const { User, Relation, Potrait } = require('../models');
 const { sequelize } = require('../util/db');
 const { getNonSensitiveUser } = require('../util/dto');
@@ -6,9 +6,9 @@ const parser = require('../util/parser');
 
 testingRouter.post('/reset', async (req, res) => {
   // create the tables, dropping them first if they already existed
-  //await sequelize.sync({ force: true });
+  // await sequelize.sync({ force: true });
 
-  await sequelize.truncate({ cascade: true, restartIdentity: true })
+  await sequelize.truncate({ cascade: true, restartIdentity: true });
 
   return res.status(204).end();
 });
@@ -20,7 +20,8 @@ testingRouter.post('/disabled', async (req, res) => {
   const { name, username, password } = req.body;
 
   const user = await User.create({
-    name, username,
+    name,
+    username,
 
     // beforeCreate hook encodes password so the password can be validated
     passwordHash: password,
@@ -52,12 +53,12 @@ testingRouter.delete('/relations', async (req, res) => {
 testingRouter.post('/relations', async (req, res) => {
   const type = parser.parseRelationType(req.body.type);
 
-  const sourceUser = await User.findOne({ 
-    where: { username: req.body.sourceUserUsername } 
+  const sourceUser = await User.findOne({
+    where: { username: req.body.sourceUserUsername },
   });
 
-  const targetUser = await User.findOne({ 
-    where: { username: req.body.targetUserUsername } 
+  const targetUser = await User.findOne({
+    where: { username: req.body.targetUserUsername },
   });
 
   const relation = await Relation.create({

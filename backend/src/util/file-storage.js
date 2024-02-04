@@ -30,8 +30,8 @@ const fileFilter = (req, file, cb) => {
     return cb(null, true);
   }
 
-  cb(new FiletypeError(
-    `File upload only supports the filetypes [${FILE_TYPES.join('|')}]`
+  return cb(new FiletypeError(
+    `File upload only supports the filetypes [${FILE_TYPES.join('|')}]`,
   ));
 };
 
@@ -41,7 +41,19 @@ const upload = multer({
   fileFilter,
 });
 
-const removeFile = filepath => {
+const getImageFilePath = (filepath) => {
+  if (process.env.NODE_ENV === 'test') {
+    // files are not saved on testing environment
+    return undefined;
+  }
+
+  const dirname = path.resolve();
+  const fullfilepath = path.join(dirname, filepath);
+
+  return fullfilepath;
+};
+
+const removeFile = (filepath) => {
   if (process.env.NODE_ENV === 'test') {
     // files are not saved on testing environment
     return;
@@ -53,36 +65,24 @@ const removeFile = filepath => {
     if (error) {
       logger.error('Error removing file:', error);
     } else {
-      logger.info(`Removed file:`, fullfilepath);
+      logger.info('Removed file:', fullfilepath);
     }
   });
 };
 
 const removeUserFiles = async (userId) => {
-  const imageFilepaths = await Image.findAll({ 
+  const imageFilepaths = await Image.findAll({
     attributes: ['filepath'],
-    where: { userId }
+    where: { userId },
   });
 
   const potraitPath = await Potrait.findAll({
     attributes: ['filepath'],
-    where: { userId }
+    where: { userId },
   });
 
-  imageFilepaths.forEach(image => removeFile(image.filepath));
-  potraitPath.forEach(potrait => removeFile(potrait.filepath));
-};
-
-const getImageFilePath = filepath => {
-  if (process.env.NODE_ENV === 'test') {
-    // files are not saved on testing environment
-    return;
-  }
-
-  const dirname = path.resolve();
-  const fullfilepath = path.join(dirname, filepath);
-
-  return fullfilepath;
+  imageFilepaths.forEach((image) => removeFile(image.filepath));
+  potraitPath.forEach((potrait) => removeFile(potrait.filepath));
 };
 
 module.exports = {

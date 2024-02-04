@@ -1,18 +1,18 @@
 const supertest = require('supertest');
-
 const app = require('../../../../src/app');
 const { Image, User } = require('../../../../src/models');
 const { IMAGE_PRIVACIES, IMAGE_PUBLIC } = require('../../../../src/constants');
 const fileStorage = require('../../../../src/util/file-storage');
-
-const { existingUserValues, otherExistingUserValues, getCredentials } = require('../../../helpers/constants');
-const { login, findPublicAndPrivateImage, } = require('../../../helpers');
+const {
+  existingUserValues, otherExistingUserValues, getCredentials,
+} = require('../../../helpers/constants');
+const { login, findPublicAndPrivateImage } = require('../../../helpers');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
 
 const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
-  .mockImplementation(filepath => undefined);
+  .mockImplementation(() => undefined);
 
 const deleteImage = async (username, imageId, headers, statusCode) => {
   const response = await api
@@ -25,7 +25,7 @@ const deleteImage = async (username, imageId, headers, statusCode) => {
 
 describe('deleting images', () => {
   const credentials = getCredentials(existingUserValues);
-  const username = existingUserValues.username;
+  const { username } = existingUserValues;
   const userImages = {};
 
   // find a private and a public image
@@ -67,7 +67,7 @@ describe('deleting images', () => {
       describe('after deleting an image', () => {
         let imageToDelete;
 
-        beforeEach(async () => { 
+        beforeEach(async () => {
           imageToDelete = userImages[IMAGE_PUBLIC];
           await deleteImage(username, imageToDelete.id, authHeader, 204);
         });
@@ -78,12 +78,12 @@ describe('deleting images', () => {
 
           expect(imageCountAfter).toBe(imageCountBefore - 1);
         });
-  
+
         test('image can not be found', async () => {
           const result = await Image.findByPk(imageToDelete.id);
           expect(result).toBeFalsy();
         });
-  
+
         test('attempt is made to remove file from the filesystem', async () => {
           expect(removeFileSpy).toHaveBeenCalledWith(imageToDelete.filepath);
         });
@@ -98,22 +98,24 @@ describe('deleting images', () => {
     describe('deleting other users images', () => {
       const otherUsername = otherExistingUserValues.username;
       const otherUsersImages = {};
-      
+
       beforeEach(async () => {
-        const { publicImage, privateImage }
-          = await findPublicAndPrivateImage(otherUsername);
+        const { publicImage, privateImage } = await findPublicAndPrivateImage(otherUsername);
 
         otherUsersImages.public = publicImage;
         otherUsersImages.private = privateImage;
       });
-      
+
       test.each(IMAGE_PRIVACIES)('can not delete a %s image', async (privacy) => {
         const responseBody = await deleteImage(
-          otherUsername, otherUsersImages[privacy].id, authHeader, 401
+          otherUsername,
+          otherUsersImages[privacy].id,
+          authHeader,
+          401,
         );
 
         expect(responseBody.message).toBe('Private access');
       });
     });
-  })
+  });
 });

@@ -1,5 +1,5 @@
 const { Dockest, logLevel } = require('dockest');
-import { createPostgresReadinessCheck } from 'dockest/readiness-check';
+const { createPostgresReadinessCheck } = require('dockest/readiness-check');
 
 const dockest = new Dockest({
   composeFile: ['docker-compose.test.yaml'],

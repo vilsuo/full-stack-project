@@ -4,22 +4,24 @@ module.exports = {
   up: async ({ context: queryInterface }) => {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.addColumn('images', 'privacy',
+      await queryInterface.addColumn(
+        'images',
+        'privacy',
         {
           type: DataTypes.ENUM('public', 'private'),
           defaultValue: 'public',
           allowNull: false,
         },
-        { transaction }
+        { transaction },
       );
 
       await queryInterface.sequelize.query(
         `UPDATE images 
         SET privacy = :privacy 
         WHERE private IS :private;`,
-        { 
+        {
           replacements: { privacy: 'private', private: true },
-          transaction, 
+          transaction,
         },
       );
 
@@ -34,19 +36,21 @@ module.exports = {
   down: async ({ context: queryInterface }) => {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.addColumn('images', 'private',
+      await queryInterface.addColumn(
+        'images',
+        'private',
         {
           type: DataTypes.BOOLEAN,
           defaultValue: false,
         },
-        { transaction }
+        { transaction },
       );
 
       await queryInterface.sequelize.query(
         `UPDATE images 
         SET private = :private 
         WHERE privacy = :privacy;`,
-        { 
+        {
           replacements: { privacy: 'private', private: true },
           transaction,
         },

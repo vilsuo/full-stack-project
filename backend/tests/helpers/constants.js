@@ -3,13 +3,13 @@ const pick = require('lodash.pick');
 const existingUserValues = {
   name: 'vili',
   username: 'ellivill',
-  password: 'salainen'
+  password: 'salainen',
 };
 
 const otherExistingUserValues = {
   name: 'matias',
   username: 'matsu12',
-  password: 'secret123'
+  password: 'secret123',
 };
 
 const disabledExistingUserValues = {
@@ -25,7 +25,7 @@ const nonExistingUserValues = {
   password: 'qwertyuiop',
 };
 
-const getCredentials = userValues => {
+const getCredentials = (userValues) => {
   const { username, password } = userValues;
 
   return { username, password };
@@ -88,18 +88,18 @@ const invalidImageTypes = [
 const includeInPotrait = ['filepath', 'mimetype', 'size'];
 
 const existingUserPotraitValues = pick(
-  existingUserImageValues.publicImageValues, 
-  includeInPotrait
+  existingUserImageValues.publicImageValues,
+  includeInPotrait,
 );
 
 const otherExistingUserPotraitValues = pick(
-  otherExistingUserImageValues.publicImageValues, 
-  includeInPotrait
+  otherExistingUserImageValues.publicImageValues,
+  includeInPotrait,
 );
 
 const nonExistingPotraitValues = pick(
   nonExistingImageValues,
-  includeInPotrait
+  includeInPotrait,
 );
 
 const invalidPotraitTypes = invalidImageTypes;
@@ -122,5 +122,5 @@ module.exports = {
   existingUserPotraitValues,
   otherExistingUserPotraitValues,
   nonExistingPotraitValues,
-  invalidPotraitTypes
+  invalidPotraitTypes,
 };

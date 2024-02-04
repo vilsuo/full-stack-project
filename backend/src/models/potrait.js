@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../util/db');
 
-class Potrait extends Model {};
+class Potrait extends Model {}
 
 Potrait.init({
   id: {

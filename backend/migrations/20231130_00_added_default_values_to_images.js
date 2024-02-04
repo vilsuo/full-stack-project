@@ -9,20 +9,24 @@ module.exports = {
   up: async ({ context: queryInterface }) => {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.changeColumn('images', 'title', 
-        { 
+      await queryInterface.changeColumn(
+        'images',
+        'title',
+        {
           type: DataTypes.STRING,
           defaultValue: '',
         },
         { transaction },
       );
 
-      await queryInterface.changeColumn('images', 'caption',
-        { 
+      await queryInterface.changeColumn(
+        'images',
+        'caption',
+        {
           type: DataTypes.STRING,
           defaultValue: '',
         },
-        { transaction }
+        { transaction },
       );
 
       await transaction.commit();
@@ -34,14 +38,18 @@ module.exports = {
   down: async ({ context: queryInterface }) => {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.changeColumn('images', 'title', 
+      await queryInterface.changeColumn(
+        'images',
+        'title',
         { type: DataTypes.STRING },
         { transaction },
       );
 
-      await queryInterface.changeColumn('images', 'caption',
+      await queryInterface.changeColumn(
+        'images',
+        'caption',
         { type: DataTypes.STRING },
-        { transaction }
+        { transaction },
       );
 
       await transaction.commit();
@@ -49,5 +57,5 @@ module.exports = {
       await transaction.rollback();
       throw error;
     }
-  }
+  },
 };

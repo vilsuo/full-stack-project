@@ -7,7 +7,7 @@ const parser = require('../../util/parser');
 /**
  * Only authenticated user can query for its own relation types.
  * Other users can only view relation type of {@link RELATION_FOLLOW}.
- * 
+ *
  * Also allows querying for target user by id.
  */
 router.get('/', isAllowedToViewUser, async (req, res) => {
@@ -25,7 +25,7 @@ router.get('/', isAllowedToViewUser, async (req, res) => {
   } else {
     if (type !== undefined) {
       return res.status(401).send({
-        message: 'Query parameter type is not allowed'
+        message: 'Query parameter type is not allowed',
       });
     }
     searchFilters.type = RELATION_FOLLOW;
@@ -36,18 +36,23 @@ router.get('/', isAllowedToViewUser, async (req, res) => {
   }
 
   const relations = await Relation.findAll({
-    include: { 
-      model: User, as: 'targetUser',
-      attributes: ['id', 'username']
+    include: {
+      model: User,
+      as: 'targetUser',
+      attributes: ['id', 'username'],
     },
     order: [
-      [{ model: User, as:'targetUser' }, 'username', 'ASC']
+      [
+        { model: User, as: 'targetUser' },
+        'username', 'ASC',
+      ],
     ],
-    where: { 
+    where: {
       sourceUserId: foundUser.id,
-      ...searchFilters
-    }
+      ...searchFilters,
+    },
   });
+
   return res.send(relations);
 });
 
@@ -66,24 +71,29 @@ router.get('/reverse', isAllowedToViewUser, async (req, res) => {
 
   if (type !== undefined) {
     return res.status(401).send({
-      message: 'Query parameter type is not allowed'
+      message: 'Query parameter type is not allowed',
     });
   }
 
   const relations = await Relation.findAll({
-    include: { 
-      model: User, as: 'sourceUser',
-      attributes: ['id', 'username']
+    include: {
+      model: User,
+      as: 'sourceUser',
+      attributes: ['id', 'username'],
     },
     order: [
-      [{ model: User, as:'sourceUser' }, 'username', 'ASC']
+      [
+        { model: User, as: 'sourceUser' },
+        'username', 'ASC',
+      ],
     ],
-    where: { 
+    where: {
       targetUserId: foundUser.id,
       type: RELATION_FOLLOW,
-      ...searchFilters
-    }
+      ...searchFilters,
+    },
   });
+
   return res.send(relations);
 });
 
@@ -108,7 +118,7 @@ router.post('/', privateExtractor, async (req, res) => {
   // can not create relation to self
   if (sourceUser.id === targetUser.id) {
     return res.status(400).send({
-      message: 'User can not have a relation with itself'
+      message: 'User can not have a relation with itself',
     });
   }
 
@@ -118,12 +128,12 @@ router.post('/', privateExtractor, async (req, res) => {
       sourceUserId: sourceUser.id,
       targetUserId: targetUser.id,
       type,
-    }
+    },
   });
 
   if (relationFound) {
-    return res.status(400).send({ 
-      message: 'This relation already exists'
+    return res.status(400).send({
+      message: 'This relation already exists',
     });
   }
 
@@ -142,8 +152,8 @@ router.delete('/:relationId', privateExtractor, async (req, res) => {
 
   const id = parser.parseId(relationId);
 
-  const nDestroyed = await Relation.destroy({ 
-    where: { id, sourceUserId: sourceUser.id } 
+  const nDestroyed = await Relation.destroy({
+    where: { id, sourceUserId: sourceUser.id },
   });
 
   if (!nDestroyed) {

@@ -17,11 +17,10 @@ module.exports = {
           field: 'id',
         },
         onDelete: 'CASCADE',
-        transaction
+        transaction,
       });
 
       await transaction.commit();
-
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -33,7 +32,7 @@ module.exports = {
       await queryInterface.removeConstraint(
         'potraits',
         'potraits_user_id_fkey',
-        { transaction }
+        { transaction },
       );
 
       await queryInterface.addConstraint('potraits', {
@@ -44,11 +43,10 @@ module.exports = {
           table: 'users',
           field: 'id',
         },
-        transaction
+        transaction,
       });
 
       await transaction.commit();
-
     } catch (error) {
       await transaction.rollback();
       throw error;

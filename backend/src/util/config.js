@@ -8,5 +8,5 @@ module.exports = {
   REDIS_URL: process.env.NODE_ENV === 'test'
     ? process.env.TEST_REDIS_URL
     : process.env.REDIS_URL,
-  PORT: process.env.PORT || 3001
+  PORT: process.env.PORT || 3001,
 };

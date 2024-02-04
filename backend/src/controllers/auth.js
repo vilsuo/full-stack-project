@@ -12,10 +12,11 @@ router.post('/register', async (req, res) => {
   const password = parser.parseStringType(req.body.password, 'password');
 
   const user = await User.create({
-    name, username,
+    name,
+    username,
 
     // beforeCreate hook encodes password so the password can be validated
-    passwordHash: password
+    passwordHash: password,
   });
 
   return res.status(201).send(getNonSensitiveUser(user));
@@ -43,12 +44,12 @@ router.post('/login', async (req, res) => {
   }
 
   return res.status(401).send({
-    message: 'Invalid username or password'
+    message: 'Invalid username or password',
   });
 });
 
 router.get('/auto-login', sessionExtractor, async (req, res) => {
-  const user = req.user;
+  const { user } = req;
   return res.send(getNonSensitiveUser(user));
 });
 

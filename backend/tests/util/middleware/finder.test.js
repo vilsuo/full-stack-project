@@ -12,9 +12,9 @@ const {
   createRequest,
 } = require('../../helpers/middleware');
 
-const  {
+const {
   // user values
-  existingUserValues, otherExistingUserValues, 
+  existingUserValues, otherExistingUserValues,
   disabledExistingUserValues, nonExistingUserValues,
 } = require('../../helpers/constants');
 
@@ -29,9 +29,7 @@ const potraitFinderProperty = 'potrait';
 describe('user finder', () => {
   const createUserFinderRequest = (username) => createRequest({ params: { username } });
 
-  const callUserFinder = async (request) => {
-    return callMiddleware(userFinder, request, next);
-  };
+  const callUserFinder = async (request) => callMiddleware(userFinder, request, next);
 
   describe('existing users username', () => {
     const { username } = existingUserValues;
@@ -128,33 +126,32 @@ describe('user finder', () => {
   test('missing username will throw an error', async () => {
     const request = createUserFinderRequest();
 
-    const callWithoutUsername = async () => await callUserFinder(request);
+    const callWithoutUsername = async () => callUserFinder(request);
     await expect(callWithoutUsername).rejects.toThrow(IllegalStateError);
   });
 
   test('username of type integer will throw an error', async () => {
     const request = createUserFinderRequest(123);
 
-    const callWithoutUsername = async () => await callUserFinder(request);
+    const callWithoutUsername = async () => callUserFinder(request);
     await expect(callWithoutUsername).rejects.toThrow(IllegalStateError);
   });
 });
 
 describe('image finder', () => {
   const createImageFinderRequest = (user, imageId) => {
+    let id = imageId;
     if (typeof imageId === 'number') {
-      imageId = imageId.toString()
+      id = imageId.toString();
     }
 
-    return createRequest({ 
+    return createRequest({
       [userFinderProperty]: user,
-      params: { imageId }
+      params: { imageId: id },
     });
   };
 
-  const callImageFinder = async (request) => {
-    return callMiddleware(imageFinder, request, next);
-  };
+  const callImageFinder = async (request) => callMiddleware(imageFinder, request, next);
 
   let user;
 
@@ -167,13 +164,12 @@ describe('image finder', () => {
     const request = createImageFinderRequest();
     expect(request[userFinderProperty]).toBeFalsy();
 
-    const callWithoutUserFinder = async () => await callImageFinder(request);
+    const callWithoutUserFinder = async () => callImageFinder(request);
     await expect(callWithoutUserFinder).rejects.toThrow(IllegalStateError);
   });
 
   describe('when user is set', () => {
-    describe.each(IMAGE_PRIVACIES)
-    ('when "%s" image belongs to the user', (privacy) => {
+    describe.each(IMAGE_PRIVACIES)('when "%s" image belongs to the user', (privacy) => {
       let image;
 
       let request;
@@ -200,9 +196,8 @@ describe('image finder', () => {
         expect(request[imageFinderProperty]).toStrictEqual(image);
       });
     });
-  
-    describe.each(IMAGE_PRIVACIES)
-    ('when "%s" image does not belong to the found user', (privacy) => {
+
+    describe.each(IMAGE_PRIVACIES)('when "%s" image does not belong to the found user', (privacy) => {
       let image;
 
       let request;
@@ -216,7 +211,7 @@ describe('image finder', () => {
         image = await Image.findOne({ where: { userId: otherUser.id, privacy } });
 
         // create request with parameters
-        request = createImageFinderRequest(user, image.id)
+        request = createImageFinderRequest(user, image.id);
         response = await callImageFinder(request);
       });
 
@@ -258,7 +253,7 @@ describe('image finder', () => {
         expect(next).not.toHaveBeenCalled();
       });
 
-      test(`image is not attached to the request`, () => {
+      test('image is not attached to the request', () => {
         expect(request).not.toHaveProperty(imageFinderProperty);
       });
 
@@ -271,26 +266,22 @@ describe('image finder', () => {
     test('missing image id will throw an error', async () => {
       const request = createImageFinderRequest(user);
 
-      const callWithoutImageId = async () => await callImageFinder(request);
+      const callWithoutImageId = async () => callImageFinder(request);
       await expect(callWithoutImageId).rejects.toThrow(ParseError);
     });
   });
 });
 
 describe('potrait finder', () => {
-  const createPotraitFinderRequest = (user) => {
-    return createRequest({ [userFinderProperty]: user });
-  };
+  const createPotraitFinderRequest = (user) => createRequest({ [userFinderProperty]: user });
 
-  const callPotraitFinder = async (request) => {
-    return callMiddleware(potraitFinder, request, next);
-  };
+  const callPotraitFinder = async (request) => callMiddleware(potraitFinder, request, next);
 
   test('calling without finding user first will throw an error', async () => {
     const request = createPotraitFinderRequest();
     expect(request.userFinderProperty).toBeFalsy();
 
-    const callWithoutUserFinder = async () => await callPotraitFinder(request);
+    const callWithoutUserFinder = async () => callPotraitFinder(request);
     await expect(callWithoutUserFinder).rejects.toThrow(IllegalStateError);
   });
 
@@ -310,8 +301,8 @@ describe('potrait finder', () => {
       });
 
       test('potrait is attached to the request', async () => {
-        const foundPotrait = await Potrait.findOne({ 
-          where: { userId: request.foundUser.id } 
+        const foundPotrait = await Potrait.findOne({
+          where: { userId: request.foundUser.id },
         });
 
         expect(request).toHaveProperty(potraitFinderProperty);
@@ -322,7 +313,7 @@ describe('potrait finder', () => {
     describe('when the user does not have a potrait', () => {
       let request;
       let response;
-  
+
       beforeEach(async () => {
         // create a new user
         const user = await createUser(nonExistingUserValues);
@@ -335,7 +326,7 @@ describe('potrait finder', () => {
         expect(next).not.toHaveBeenCalled();
       });
 
-      test(`potrait is not attached to the request`, () => {
+      test('potrait is not attached to the request', () => {
         expect(request).not.toHaveProperty(potraitFinderProperty);
       });
 

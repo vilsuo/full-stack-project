@@ -13,8 +13,10 @@ const createPotrait = async (filepath, file, userId, transaction = {}) => {
   const { mimetype, size } = file;
 
   const image = await Potrait.create(
-    { filepath, mimetype, size, userId },
-    transaction
+    {
+      filepath, mimetype, size, userId,
+    },
+    transaction,
   );
 
   return image;
@@ -27,17 +29,16 @@ router.get('/', isAllowedToViewUser, potraitFinder, async (req, res) => {
 
 /**
  * create/replace a {@link Potrait} to user.
- * 
+ *
  * responses with
  * - 201 if a new potrait was created
  * - 200 if old potrait was replace by a new potrait
  */
 router.put('/', privateExtractor, async (req, res, next) => {
-  fileUpload(req, res, async (error) => {
-    if (error) return next(error);
+  fileUpload(req, res, async (uploadError) => {
+    if (uploadError) return next(uploadError);
 
-    const file = req.file;
-
+    const { file } = req;
     logger.info('Potrait file:', file);
 
     if (!file) {
@@ -55,7 +56,6 @@ router.put('/', privateExtractor, async (req, res, next) => {
       let newPotrait;
       try {
         newPotrait = await createPotrait(filepath, file, userId);
-
       } catch (error) {
         // error happened but, posted file was already saved to the filesystem
         fileStorage.removeFile(filepath);
@@ -63,39 +63,37 @@ router.put('/', privateExtractor, async (req, res, next) => {
       }
       // successfull create: return '201'
       return res.status(201).send(getNonSensitivePotrait(newPotrait));
-
-    } else {
-      // user has a potrait: try to replace the old one with the new one
-      let newPotrait;
-      const transaction = await sequelize.transaction();
-      try {
-        // 1. delete old one
-        await oldPotrait.destroy({ transaction });
-
-        // 2. create a new one
-        newPotrait = await createPotrait(filepath, file, userId, { transaction });
-
-        await transaction.commit();
-
-      } catch (error) {
-        await transaction.rollback();
-
-        // error happened but, posted file was already saved to the filesystem
-        fileStorage.removeFile(filepath);
-        return next(error);
-      }
-      // transaction successfull: remove old file from the filesystem
-      fileStorage.removeFile(oldPotrait.filepath);
-
-      // successfull update: return '200'
-      return res.status(200).send(getNonSensitivePotrait(newPotrait));
     }
+
+    // user has a potrait: try to replace the old one with the new one
+    let newPotrait;
+    const transaction = await sequelize.transaction();
+    try {
+      // 1. delete old one
+      await oldPotrait.destroy({ transaction });
+
+      // 2. create a new one
+      newPotrait = await createPotrait(filepath, file, userId, { transaction });
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+
+      // error happened but, posted file was already saved to the filesystem
+      fileStorage.removeFile(filepath);
+      return next(error);
+    }
+    // transaction successfull: remove old file from the filesystem
+    fileStorage.removeFile(oldPotrait.filepath);
+
+    // successfull update: return '200'
+    return res.status(200).send(getNonSensitivePotrait(newPotrait));
   });
 });
 
 router.delete('/', potraitFinder, privateExtractor, async (req, res) => {
   const { potrait } = req;
-  
+
   await potrait.destroy();
 
   fileStorage.removeFile(potrait.filepath);

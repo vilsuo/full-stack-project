@@ -1,12 +1,10 @@
 const supertest = require('supertest');
 const path = require('path');
 const app = require('../../../../src/app');
-
 const { User, Image } = require('../../../../src/models');
 const fileStorage = require('../../../../src/util/file-storage');
 const {
   getCredentials,
-
   // users
   existingUserValues, otherExistingUserValues,
   disabledExistingUserValues, nonExistingUserValues,
@@ -15,9 +13,9 @@ const {
 } = require('../../../helpers/constants');
 const {
   login, createImage,
-  compareFoundWithResponse, compareFoundArrayWithResponseArray, 
+  compareFoundWithResponse, compareFoundArrayWithResponseArray,
   findPublicAndPrivateImage,
-  createUser
+  createUser,
 } = require('../../../helpers');
 const { getNonSensitiveImage } = require('../../../../src/util/dto');
 const { IMAGE_PUBLIC, IMAGE_PRIVATE, IMAGE_PRIVACIES } = require('../../../../src/constants');
@@ -47,43 +45,39 @@ const getImage = async (username, imageId, headers, statusCode) => {
   return response.body;
 };
 
-const getImageContent = async (username, imageId, headers, statusCode) => {
-  return await api
-    .get(`${baseUrl}/${username}/images/${imageId}/content`)
-    .set(headers)
-    .expect(statusCode);
-};
+const getImageContent = async (username, imageId, headers, statusCode) => api
+  .get(`${baseUrl}/${username}/images/${imageId}/content`)
+  .set(headers)
+  .expect(statusCode);
 
-const getWithIncrementedViews = image => {
-  return { ...image, views: image.views + 1 };
-};
+const getWithIncrementedViews = (image) => ({ ...image, views: image.views + 1 });
 
 describe('find users images', () => {
   test('can not view non-existing users images', async () => {
-    const username = nonExistingUserValues.username;
+    const { username } = nonExistingUserValues;
 
-    const responseBody = await getImages(username, {}, 404)
+    const responseBody = await getImages(username, {}, 404);
     expect(responseBody.message).toBe('User does not exist');
   });
 
   test('can not view disabled users images', async () => {
-    const username = disabledExistingUserValues.username;
+    const { username } = disabledExistingUserValues;
 
-    const responseBody = await getImages(username, {}, 400)
+    const responseBody = await getImages(username, {}, 400);
     expect(responseBody.message).toBe('User is disabled');
   });
 
   test('if user does not have any images an empty array is returned', async () => {
     // create a new user that does not have any images
     const newUser = await createUser(nonExistingUserValues);
-    
+
     const returnedImages = await getImages(newUser.username, {}, 200);
     expect(returnedImages).toHaveLength(0);
   });
 
   test('can not view an image that does not exist', async () => {
     const nonExistingImageId = 1234;
-    const username = existingUserValues.username;
+    const { username } = existingUserValues;
 
     const responseBody = await getImage(username, nonExistingImageId, {}, 404);
 
@@ -92,7 +86,7 @@ describe('find users images', () => {
 
   describe('when images have been created', () => {
     const credentials = getCredentials(existingUserValues);
-    const username = credentials.username;
+    const { username } = credentials;
     const userImages = {};
 
     // find a private and a nonprivate image
@@ -105,22 +99,22 @@ describe('find users images', () => {
     describe('without authentication', () => {
       test(`only ${IMAGE_PUBLIC} images are found`, async () => {
         const returnedImages = await getImages(username, {}, 200);
-    
+
         expect(returnedImages).toHaveLength(1);
         const returnedImage = returnedImages[0];
 
         compareFoundWithResponse(
           getNonSensitiveImage(userImages[IMAGE_PUBLIC]),
-          returnedImage
+          returnedImage,
         );
       });
 
       test(`can access a ${IMAGE_PUBLIC} image`, async () => {
         const returnedImage = await getImage(username, userImages[IMAGE_PUBLIC].id, {}, 200);
-  
+
         compareFoundWithResponse(
           getWithIncrementedViews(getNonSensitiveImage(userImages[IMAGE_PUBLIC])),
-          returnedImage
+          returnedImage,
         );
       });
 
@@ -128,7 +122,10 @@ describe('find users images', () => {
         const oldViewCount = userImages[IMAGE_PUBLIC].views;
 
         const newViewCount = (await getImage(
-          username, userImages[IMAGE_PUBLIC].id, {}, 200
+          username,
+          userImages[IMAGE_PUBLIC].id,
+          {},
+          200,
         )).views;
 
         expect(newViewCount).toBe(oldViewCount + 1);
@@ -137,9 +134,9 @@ describe('find users images', () => {
       test(`can view ${IMAGE_PUBLIC} image content`, async () => {
         const publicImage = userImages[IMAGE_PUBLIC];
 
-        getImageFilePathSpy.mockImplementationOnce(filepath => {
-          return path.join(path.resolve(), publicImage.filepath);
-        });
+        getImageFilePathSpy.mockImplementationOnce(
+          () => path.join(path.resolve(), publicImage.filepath),
+        );
 
         const response = await getImageContent(username, publicImage.id, {}, 200);
 
@@ -152,16 +149,14 @@ describe('find users images', () => {
       test(`can not view disabled users ${IMAGE_PUBLIC} image`, async () => {
         const { id: disabledUserId, username: disabledUsername } = await User
           .findOne({ where: { disabled: true } });
-    
+
         // create image to disabled user
         const disabledImage = await createImage({
           ...nonExistingImageValues, userId: disabledUserId, privacy: IMAGE_PUBLIC,
         });
-    
-        const responseBody = await getImage(
-          disabledUsername, disabledImage.id, {}, 400
-        );
-      
+
+        const responseBody = await getImage(disabledUsername, disabledImage.id, {}, 400);
+
         expect(responseBody.message).toBe('User is disabled');
       });
 
@@ -190,7 +185,7 @@ describe('find users images', () => {
         expect(getImageFilePathSpy).not.toHaveBeenCalled();
       });
     });
-  
+
     describe('with authentication', () => {
       let authHeader = {};
 
@@ -202,13 +197,13 @@ describe('find users images', () => {
         describe('accessing multiple images', () => {
           test('all images are returned', async () => {
             const returnedImages = await getImages(username, authHeader, 200);
-  
-            const user = await User.findOne({ where: { username }});
+
+            const user = await User.findOne({ where: { username } });
             const foundImages = await Image.findAll({ where: { userId: user.id } });
-  
+
             compareFoundArrayWithResponseArray(
-              foundImages.map(image => getNonSensitiveImage(image)),
-              returnedImages
+              foundImages.map((image) => getNonSensitiveImage(image)),
+              returnedImages,
             );
           });
         });
@@ -222,22 +217,22 @@ describe('find users images', () => {
 
           test(`can access a ${privacy} image`, async () => {
             const returnedImage = await getImage(username, imageToAccess.id, authHeader, 200);
-  
+
             compareFoundWithResponse(
               getWithIncrementedViews(getNonSensitiveImage(imageToAccess)),
-              returnedImage
+              returnedImage,
             );
           });
 
           test(`can view a ${privacy} image content`, async () => {
-            getImageFilePathSpy.mockImplementationOnce(filepath => {
-              return path.join(path.resolve(), imageToAccess.filepath);
-            });
-    
+            getImageFilePathSpy.mockImplementationOnce(
+              () => path.join(path.resolve(), imageToAccess.filepath),
+            );
+
             const response = await getImageContent(username, imageToAccess.id, authHeader, 200);
-    
+
             expect(getImageFilePathSpy).toHaveBeenCalledWith(imageToAccess.filepath);
-    
+
             // returned image has the correct mimetype
             expect(response.get('content-type')).toBe(imageToAccess.mimetype);
           });
@@ -247,7 +242,7 @@ describe('find users images', () => {
       describe('accessing other users images', () => {
         const otherUsername = otherExistingUserValues.username;
         const otherUserImages = {};
-        
+
         beforeEach(async () => {
           const { publicImage, privateImage } = await findPublicAndPrivateImage(otherUsername);
 
@@ -258,13 +253,13 @@ describe('find users images', () => {
         describe('accessing multiple images', () => {
           test(`only ${IMAGE_PUBLIC} images are returned`, async () => {
             const returnedImages = await getImages(otherUsername, authHeader, 200);
-          
+
             expect(returnedImages).toHaveLength(1);
             const returnedImage = returnedImages[0];
-  
+
             compareFoundWithResponse(
               getNonSensitiveImage(otherUserImages[IMAGE_PUBLIC]),
-              returnedImage
+              returnedImage,
             );
           });
         });
@@ -272,45 +267,59 @@ describe('find users images', () => {
         describe('accessing a single image', () => {
           test(`can access a ${IMAGE_PUBLIC} image`, async () => {
             const returnedImage = await getImage(
-              otherUsername, otherUserImages[IMAGE_PUBLIC].id, authHeader, 200
+              otherUsername,
+              otherUserImages[IMAGE_PUBLIC].id,
+              authHeader,
+              200,
             );
-  
+
             compareFoundWithResponse(
               getWithIncrementedViews(getNonSensitiveImage(otherUserImages[IMAGE_PUBLIC])),
-              returnedImage
+              returnedImage,
             );
           });
 
           test(`can view a ${IMAGE_PUBLIC} image content`, async () => {
-            getImageFilePathSpy.mockImplementationOnce(filepath => {
-              return path.join(path.resolve(), otherUserImages[IMAGE_PUBLIC].filepath);
-            });
-    
-            const response = await getImageContent(
-              otherUsername, otherUserImages[IMAGE_PUBLIC].id, authHeader, 200
+            getImageFilePathSpy.mockImplementationOnce(
+              () => path.join(path.resolve(), otherUserImages[IMAGE_PUBLIC].filepath),
             );
-    
-            expect(getImageFilePathSpy).toHaveBeenCalledWith(otherUserImages[IMAGE_PUBLIC].filepath);
-    
+
+            const response = await getImageContent(
+              otherUsername,
+              otherUserImages[IMAGE_PUBLIC].id,
+              authHeader,
+              200,
+            );
+
+            expect(getImageFilePathSpy).toHaveBeenCalledWith(
+              otherUserImages[IMAGE_PUBLIC].filepath,
+            );
+
             // returned image has the correct mimetype
             expect(response.get('content-type')).toBe(otherUserImages[IMAGE_PUBLIC].mimetype);
           });
-  
+
           test(`can not access a ${IMAGE_PRIVATE} image`, async () => {
             const responseBody = await getImage(
-              otherUsername, otherUserImages[IMAGE_PRIVATE].id, authHeader, 401
+              otherUsername,
+              otherUserImages[IMAGE_PRIVATE].id,
+              authHeader,
+              401,
             );
-  
+
             expect(responseBody.message).toBe('Image is private');
           });
 
           test(`can not view a ${IMAGE_PRIVATE} image content`, async () => {
             const response = await getImageContent(
-              otherUsername, otherUserImages[IMAGE_PRIVATE].id, authHeader, 401
+              otherUsername,
+              otherUserImages[IMAGE_PRIVATE].id,
+              authHeader,
+              401,
             );
-    
+
             expect(response.body.message).toBe('Image is private');
-  
+
             expect(getImageFilePathSpy).not.toHaveBeenCalled();
           });
         });

@@ -3,8 +3,8 @@ const { sequelize } = require('../util/db');
 const passwordService = require('../util/password');
 
 class User extends Model {
-  static async findByUsername (username) {
-    return await User.findOne({ where: { username }});
+  static async findByUsername(username) {
+    return User.findOne({ where: { username } });
   }
 }
 
@@ -21,8 +21,8 @@ User.init({
       notNull: { msg: 'Name can not be null' },
       len: {
         args: [2, 30],
-        msg: 'Name must be 2-30 characters long'
-      }
+        msg: 'Name must be 2-30 characters long',
+      },
     },
   },
   username: {
@@ -36,8 +36,8 @@ User.init({
       notNull: { msg: 'Username can not be null' },
       len: {
         args: [2, 30],
-        msg: 'Username must be 2-30 characters long'
-      }
+        msg: 'Username must be 2-30 characters long',
+      },
     },
   },
   passwordHash: {
@@ -47,8 +47,8 @@ User.init({
       notNull: { msg: 'Password can not be null' },
       len: {
         args: [8, 30],
-        msg: 'Password must be 8-30 characters long'
-      }
+        msg: 'Password must be 8-30 characters long',
+      },
     },
   },
   disabled: {
@@ -58,7 +58,7 @@ User.init({
   admin: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
-  }
+  },
 }, {
   hooks: {
     beforeCreate: async (user) => {

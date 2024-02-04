@@ -11,7 +11,7 @@ const sessionOptions = {
 
   // Forces the session to be saved back to the session store, even if the session
   // was never modified during the request
-  resave: false,            // required: force lightweight session keep alive (touch)
+  resave: false, // required: force lightweight session keep alive (touch)
 
   saveUninitialized: false, // recommended: only save session when data exists
 
@@ -20,7 +20,7 @@ const sessionOptions = {
   name: SESSION_ID,
 
   cookie: {
-    //maxAge: 60 * 60 * 1000, // (ms)
+    // maxAge: 60 * 60 * 1000, // (ms)
 
     // cookie is not sent on cross-site requests, but is sent when a user is
     // navigating to the origin site from an external site
@@ -29,7 +29,7 @@ const sessionOptions = {
     // cookie is inaccessible to the JavaScript Document.cookie API
     httpOnly: true,
 
-    // When truthy, the Set-Cookie Secure attribute is set (only transmit 
+    // When truthy, the Set-Cookie Secure attribute is set (only transmit
     // cookie over https)
     secure: process.env.NODE_ENV === 'production',
   },
@@ -37,30 +37,30 @@ const sessionOptions = {
 
 /**
  * Extracts the authenticated User from request session to request.user.
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- * 
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ *
  * @returns response with status
  * - '401' if authentication is not present
  * - '404' if authenticated user does not exist
  */
 const sessionExtractor = async (req, res, next) => {
-  const session = req.session;
-  if (!session.user) {
+  const currentSession = req.session;
+  if (!currentSession.user) {
     // there is no session or session is invalid/expired
     return res
       .clearCookie(SESSION_ID)
       .status(401).send({ message: 'Authentication required' });
   }
 
-  const user = await User.findByPk(session.user.id);
+  const user = await User.findByPk(currentSession.user.id);
   if (!user) {
     // session exists, but the user does not
-    return session.destroy((error) => {
+    return currentSession.destroy((error) => {
       if (error) return next(error);
-  
+
       return res
         .clearCookie(SESSION_ID)
         .status(404).send({ message: 'Session user does not exist' });

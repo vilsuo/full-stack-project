@@ -2,7 +2,7 @@ const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../util/db');
 const { IMAGE_PRIVACIES, IMAGE_PUBLIC } = require('../constants');
 
-class Image extends Model {};
+class Image extends Model {}
 
 Image.init({
   id: {
@@ -39,7 +39,7 @@ Image.init({
     validate: {
       isIn: {
         args: [IMAGE_PRIVACIES],
-        msg: `Privacy must be one of [${IMAGE_PRIVACIES.join('|')}]`
+        msg: `Privacy must be one of [${IMAGE_PRIVACIES.join('|')}]`,
       },
     },
   },
@@ -52,7 +52,7 @@ Image.init({
     type: DataTypes.DATE,
     defaultValue: null,
     allowNull: true,
-  }
+  },
 }, {
   sequelize,
   underscored: true,

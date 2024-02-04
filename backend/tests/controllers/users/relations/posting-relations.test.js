@@ -3,8 +3,8 @@ const supertest = require('supertest');
 const parser = require('../../../../src/util/parser');
 const app = require('../../../../src/app');
 const { User, Relation } = require('../../../../src/models');
-const { 
-  existingUserValues, otherExistingUserValues, getCredentials 
+const {
+  existingUserValues, otherExistingUserValues, getCredentials,
 } = require('../../../helpers/constants');
 
 const { login, compareFoundWithResponse } = require('../../../helpers');
@@ -27,27 +27,27 @@ const postRelation = async (username, relationValues, headers, statusCode) => {
 };
 
 describe('posting relations', () => {
-  const username = existingUserValues.username;
+  const { username } = existingUserValues;
   const otherUsername = otherExistingUserValues.username;
 
   let targetUserId;
 
   // find the target user id
   beforeEach(async () => {
-    const targetUser = await User.findOne({ where: { username: otherUsername } });
+    const targetUser = await User.findByUsername(otherUsername);
     targetUserId = targetUser.id;
   });
 
-  test.each(RELATION_TYPES)('can not post relation of type %s without authentication', async (type) => {
-    const responseBody = await postRelation(
-      username, { targetUserId, type }, {}, 401,
-    );
+  test.each(RELATION_TYPES)(
+    'can not post relation of type %s without authentication',
+    async (type) => {
+      const responseBody = await postRelation(username, { targetUserId, type }, {}, 401);
 
-    expect(responseBody.message).toBe('Authentication required');
-  });
+      expect(responseBody.message).toBe('Authentication required');
+    },
+  );
 
   describe('with authentication', () => {
-
     let authHeader = {};
     let sourceUserId;
 
@@ -61,23 +61,27 @@ describe('posting relations', () => {
     });
 
     describe('posting to self', () => {
-      test.each(RELATION_TYPES)
-      ('user can create a relation of type %s', async (type) => {
+      test.each(RELATION_TYPES)('user can create a relation of type %s', async (type) => {
         await postRelation(username, { targetUserId, type }, authHeader, 201);
       });
 
-      test.each(RELATION_TYPES)
-      ('user can not create a relation of type %s with a disabled user', async (type) => {
-        const disabledUser = await User.findOne({ where: { disabled: true } });
-        const responseBody = await postRelation(
-          username, { targetUserId: disabledUser.id, type }, authHeader, 400
-        );
+      test.each(RELATION_TYPES)(
+        'user can not create a relation of type %s with a disabled user',
+        async (type) => {
+          const disabledUser = await User.findOne({ where: { disabled: true } });
+          const responseBody = await postRelation(
+            username,
+            { targetUserId: disabledUser.id, type },
+            authHeader,
+            400,
+          );
 
-        expect(responseBody.message).toBe('Target user is disabled');
-      });
+          expect(responseBody.message).toBe('Target user is disabled');
+        },
+      );
 
       test('user can have multiple relations of different type with the same user', async () => {
-        await Promise.all(RELATION_TYPES.map(async type => {
+        await Promise.all(RELATION_TYPES.map(async (type) => {
           await postRelation(username, { targetUserId, type }, authHeader, 201);
         }));
       });
@@ -89,47 +93,61 @@ describe('posting relations', () => {
       });
 
       describe('after creating a relation', () => {
-        test.each(RELATION_TYPES)
-        ('response contains created relation of type %s', async (type) => {
-          const responseBody = await postRelation(
-            username, { targetUserId, type }, authHeader, 201
-          );
+        test.each(RELATION_TYPES)(
+          'response contains created relation of type %s',
+          async (type) => {
+            const responseBody = await postRelation(
+              username,
+              { targetUserId, type },
+              authHeader,
+              201,
+            );
 
-          expect(responseBody.sourceUserId).toBe(sourceUserId);
-          expect(responseBody.targetUserId).toBe(targetUserId);
-          expect(responseBody.type).toBe(type);
-        });
+            expect(responseBody.sourceUserId).toBe(sourceUserId);
+            expect(responseBody.targetUserId).toBe(targetUserId);
+            expect(responseBody.type).toBe(type);
+          },
+        );
 
-        test.each(RELATION_TYPES)
-        ('relation of type %s can be found after creating it', async (type) => {
-          const responseBody = await postRelation(
-            username, { targetUserId, type }, authHeader, 201
-          );
+        test.each(RELATION_TYPES)(
+          'relation of type %s can be found after creating it',
+          async (type) => {
+            const responseBody = await postRelation(
+              username,
+              { targetUserId, type },
+              authHeader,
+              201,
+            );
 
-          const foundRelation = await Relation.findByPk(responseBody.id);
+            const foundRelation = await Relation.findByPk(responseBody.id);
 
-          compareFoundWithResponse(foundRelation.toJSON(), responseBody);
-        });
+            compareFoundWithResponse(foundRelation.toJSON(), responseBody);
+          },
+        );
 
-        test.each(RELATION_TYPES)
-        ('relation of type %s can not be created again with same user', async (type) => {
-          // create the relation for the first time
-          await postRelation(username, { targetUserId, type }, authHeader, 201);
+        test.each(RELATION_TYPES)(
+          'relation of type %s can not be created again with same user',
+          async (type) => {
+            // create the relation for the first time
+            await postRelation(username, { targetUserId, type }, authHeader, 201);
 
-          // create the relation for the second time
-          const responseBody = await postRelation(
-            username, { targetUserId, type }, authHeader, 400
-          );
+            // create the relation for the second time
+            const responseBody = await postRelation(
+              username,
+              { targetUserId, type },
+              authHeader,
+              400,
+            );
 
-          expect(responseBody.message).toBe('This relation already exists');
-        });
+            expect(responseBody.message).toBe('This relation already exists');
+          },
+        );
 
-        test.each(RELATION_TYPES)
-        ('relation of type %s is not added the other way', async (type) => {
+        test.each(RELATION_TYPES)('relation of type %s is not added the other way', async (type) => {
           await postRelation(username, { targetUserId, type }, authHeader, 201);
 
           const relations = await Relation.findAll({
-            where: { sourceUserId: targetUserId, targetUserId: sourceUserId, type }
+            where: { sourceUserId: targetUserId, targetUserId: sourceUserId, type },
           });
 
           expect(relations).toHaveLength(0);
@@ -141,7 +159,10 @@ describe('posting relations', () => {
 
         test('missing relation type', async () => {
           const responseBody = await postRelation(
-            username, { targetUserId }, authHeader, 400
+            username,
+            { targetUserId },
+            authHeader,
+            400,
           );
 
           expect(responseBody.message).toBe('Parameter type is required');
@@ -151,7 +172,10 @@ describe('posting relations', () => {
           const invalidType = 'asdkdk';
 
           const responseBody = await postRelation(
-            username, { targetUserId, type: invalidType }, authHeader, 400
+            username,
+            { targetUserId, type: invalidType },
+            authHeader,
+            400,
           );
 
           expect(responseBody.message).toMatch(/type must be one of/i);
@@ -159,35 +183,46 @@ describe('posting relations', () => {
 
         test('missing target user id', async () => {
           const responseBody = await postRelation(
-            username, { type: validType }, authHeader, 400
+            username,
+            { type: validType },
+            authHeader,
+            400,
           );
 
           expect(responseBody.message).toMatch(/id is required/i);
         });
-  
+
         test('invalid target user id', async () => {
           const invalidTargetUserId = 1.1;
 
           const responseBody = await postRelation(
-            username, { targetUserId: invalidTargetUserId, type: validType }, authHeader, 400
+            username,
+            { targetUserId: invalidTargetUserId, type: validType },
+            authHeader,
+            400,
           );
 
           expect(typeof responseBody.message).toBe('string');
         });
-  
+
         test('target user that does not exist', async () => {
           const nonExistingUserId = 999;
           const responseBody = await postRelation(
-            username, { targetUserId: nonExistingUserId, type: validType }, authHeader, 404
+            username,
+            { targetUserId: nonExistingUserId, type: validType },
+            authHeader,
+            404,
           );
 
           expect(responseBody.message).toBe('Target user does not exist');
         });
 
-        test.each(RELATION_TYPES)
-        ('itself of type %s', async (type) => {
+        test.each(RELATION_TYPES)('itself of type %s', async (type) => {
           const responseBody = await postRelation(
-            username, { targetUserId: sourceUserId, type }, authHeader, 400
+            username,
+            { targetUserId: sourceUserId, type },
+            authHeader,
+            400,
           );
 
           expect(responseBody.message).toBe('User can not have a relation with itself');
@@ -195,13 +230,15 @@ describe('posting relations', () => {
       });
     });
 
-    test.each(RELATION_TYPES)
-    ('can not post relation of type %s to other user', async (type) => {
+    test.each(RELATION_TYPES)('can not post relation of type %s to other user', async (type) => {
       const responseBody = await postRelation(
-        otherUsername, { targetUserId, type }, authHeader, 401,
+        otherUsername,
+        { targetUserId, type },
+        authHeader,
+        401,
       );
 
       expect(responseBody.message).toBe('Private access');
     });
   });
-})
+});

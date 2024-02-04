@@ -1,7 +1,8 @@
 const router = require('express').Router();
-
 const { IMAGE_PRIVACIES, RELATION_TYPES } = require('../constants');
-const { User, Image, Potrait, Relation } = require('../models');
+const {
+  User, Image, Potrait, Relation,
+} = require('../models');
 
 const getUserCounts = async () => {
   const users = await User.count({
@@ -10,16 +11,20 @@ const getUserCounts = async () => {
   });
 
   const userCounts = Object.assign(
-    {}, 
+    {},
     ...users.map(
       ({ disabled, count }) => {
         const key = disabled ? 'disabled' : 'active';
         return ({ [key]: count });
-      }
-    )
+      },
+    ),
   );
 
-  return { 'disabled': 0, 'active': 0, ...userCounts };
+  return {
+    disabled: 0,
+    active: 0,
+    ...userCounts,
+  };
 };
 
 const getImageCounts = async () => {
@@ -29,11 +34,13 @@ const getImageCounts = async () => {
   });
 
   const imageCounts = Object.assign(
-    {}, ...images.map(({ privacy, count }) => ({ [privacy]: count }))
+    {},
+    ...images.map(({ privacy, count }) => ({ [privacy]: count })),
   );
 
   const defaultImageCounts = Object.assign(
-    {}, ...IMAGE_PRIVACIES.map(privacy => ({ [privacy]: 0 }))
+    {},
+    ...IMAGE_PRIVACIES.map((privacy) => ({ [privacy]: 0 })),
   );
 
   return { ...defaultImageCounts, ...imageCounts };
@@ -46,11 +53,13 @@ const getRelationCounts = async () => {
   });
 
   const relationCounts = Object.assign(
-    {}, ...relations.map(({ type, count }) => ({ [type]: count }))
+    {},
+    ...relations.map(({ type, count }) => ({ [type]: count })),
   );
 
   const defaultRelationCounts = Object.assign(
-    {}, ...RELATION_TYPES.map(type => ({ [type]: 0 }))
+    {},
+    ...RELATION_TYPES.map((type) => ({ [type]: 0 })),
   );
 
   return { ...defaultRelationCounts, ...relationCounts };
@@ -62,7 +71,9 @@ router.get('/count', async (req, res) => {
   const potraits = await Potrait.count();
   const relations = await getRelationCounts();
 
-  return res.status(200).json({ users, images, potraits, relations });
+  return res.status(200).json({
+    users, images, potraits, relations,
+  });
 });
 
 module.exports = router;

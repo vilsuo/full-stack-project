@@ -26,7 +26,7 @@ module.exports = {
       },
     });
   },
-  down: async ({ context: queryInterface}) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.dropTable('potraits');
   },
 };

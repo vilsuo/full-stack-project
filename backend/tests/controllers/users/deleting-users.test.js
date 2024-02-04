@@ -1,29 +1,31 @@
 const supertest = require('supertest');
-
 const app = require('../../../src/app');
 const fileStorage = require('../../../src/util/file-storage');
-const { Image, User, Potrait, Relation } = require('../../../src/models');
-const { 
+const {
+  Image, User, Potrait, Relation,
+} = require('../../../src/models');
+const {
   existingUserValues, otherExistingUserValues, nonExistingUserValues,
-  getCredentials
+  getCredentials,
 } = require('../../helpers/constants');
-const { login, createRelationsOfAllTypes } = require('../../helpers');
+const {
+  login, createRelationsOfAllTypes,
+} = require('../../helpers');
+
 const api = supertest(app);
 const baseUrl = '/api/users';
 
 const removeUserFilesSpy = jest.spyOn(fileStorage, 'removeUserFiles')
-  .mockImplementation(userId => undefined);
+  .mockImplementation(() => undefined);
 
-const deleteUser = async (username, headers, statusCode) => {
-  return await api
-    .delete(`${baseUrl}/${username}`)
-    .set(headers)
-    .expect(statusCode);
-};
+const deleteUser = async (username, headers, statusCode) => api
+  .delete(`${baseUrl}/${username}`)
+  .set(headers)
+  .expect(statusCode);
 
 describe('deleting users', () => {
   const credentials = getCredentials(existingUserValues);
-  const username = credentials.username;
+  const { username } = credentials;
 
   describe('without authentication', () => {
     test('can not delete user', async () => {
@@ -50,15 +52,12 @@ describe('deleting users', () => {
       });
 
       describe('after deleting', () => {
-
         let userId;
 
         beforeEach(async () => {
-          userId = (await User.findOne({ where: { username } })).id;
+          userId = (await User.findByUsername(username)).id;
 
-          const otherUserId = (await User.findOne({
-            where: { username: otherExistingUserValues.username }
-          })).id;
+          const otherUserId = (await User.findByUsername(otherExistingUserValues.username)).id;
 
           // create relations of all types where the user is the source
           await createRelationsOfAllTypes(userId, otherUserId);
@@ -73,7 +72,7 @@ describe('deleting users', () => {
           const foundUserPyPk = await User.findByPk(userId);
           expect(foundUserPyPk).toBeFalsy();
 
-          const foundUserByUsername = await User.findOne({ where: { username } });
+          const foundUserByUsername = await User.findByUsername(username);
           expect(foundUserByUsername).toBeFalsy();
         });
 
@@ -83,7 +82,7 @@ describe('deleting users', () => {
         });
 
         test('user potrait can not be found', async () => {
-          const foundPotrait = await Potrait.findAll({ where: { userId } })
+          const foundPotrait = await Potrait.findAll({ where: { userId } });
           expect(foundPotrait).toHaveLength(0);
         });
 
@@ -95,7 +94,7 @@ describe('deleting users', () => {
           const foundRelations = await Relation.findAll({ where: { sourceUserId: userId } });
           expect(foundRelations).toHaveLength(0);
         });
-    
+
         test('relation where the user is the target can not be found', async () => {
           const foundRelations = await Relation.findAll({ where: { targetUserId: userId } });
           expect(foundRelations).toHaveLength(0);
@@ -109,5 +108,5 @@ describe('deleting users', () => {
 
       expect(removeUserFilesSpy).not.toHaveBeenCalled();
     });
-  })
+  });
 });

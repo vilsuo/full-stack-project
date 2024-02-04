@@ -1,6 +1,5 @@
 const supertest = require('supertest');
 const app = require('../../../src/app');
-
 const { User } = require('../../../src/models');
 const {
   existingUserValues,
@@ -10,7 +9,7 @@ const {
 const {
   compareFoundWithResponse,
   compareFoundArrayWithResponseArray,
-  createUser
+  createUser,
 } = require('../../helpers');
 const { getNonSensitiveUser } = require('../../../src/util/dto');
 
@@ -56,7 +55,7 @@ describe('get users', () => {
     test('password hashes are not returned', async () => {
       const responseBody = await getAll();
 
-      responseBody.users.forEach(user => {
+      responseBody.users.forEach((user) => {
         expect(user).not.toHaveProperty('passwordHash');
       });
     });
@@ -64,15 +63,15 @@ describe('get users', () => {
     describe('pagination', () => {
       test('with large page size, all non disabled users are returned', async () => {
         const responseBody = await getAll({ size: nNonDisabledUsers });
-  
+
         expect(responseBody).toHaveProperty('users');
-  
+
         // all non disabled users are returned
-        responseBody.users.forEach(user => expect(user.disabled).toBe(false));
-  
+        responseBody.users.forEach((user) => expect(user.disabled).toBe(false));
+
         compareFoundArrayWithResponseArray(
-          nonDisabledUsers.map(user => getNonSensitiveUser(user)),
-          responseBody.users
+          nonDisabledUsers.map((user) => getNonSensitiveUser(user)),
+          responseBody.users,
         );
       });
 
@@ -90,12 +89,12 @@ describe('get users', () => {
 
         expect(secondUsers.length).toBeGreaterThan(0);
         expect(secondUsers.length).toBeLessThan(nNonDisabledUsers);
-        
+
         expect(firstUsers.length + secondUsers.length).toBe(nNonDisabledUsers);
 
         compareFoundArrayWithResponseArray(
-          nonDisabledUsers.map(user => getNonSensitiveUser(user)),
-          [ ...firstUsers, ...secondUsers ]
+          nonDisabledUsers.map((user) => getNonSensitiveUser(user)),
+          [...firstUsers, ...secondUsers],
         );
       });
     });
@@ -110,52 +109,53 @@ describe('get users', () => {
 
       test('disabled users username does not return the user', async () => {
         const disabledUsername = disabledExistingUserValues.username;
-        
+
         const responseBody = await getAll({ q: disabledUsername });
-  
+
         expect(responseBody.users).toHaveLength(0);
       });
 
       test('existing users username returns the user', async () => {
         const existingUsername = existingUserValues.username;
-        const foundUser = await User.findOne({ where: { username: existingUsername }});
-  
+        const foundUser = await User.findByUsername(existingUsername);
+
         const returnedUsers = await getAll({ q: existingUsername });
-  
+
         expect(returnedUsers.users).toContainEqual(getNonSensitiveUser(foundUser));
       });
-      
+
       test('users having the query string in their name/username are returned', async () => {
         const searchParam = 'NHER';
 
         const user1 = await createUser({
-          name:     'commonhere',     // contains 'nher'
+          name: 'commonhere', // contains 'nher'
           username: 'jaska',
-          password: 'asdpojahfipaf'
+          password: 'asdpojahfipaf',
         });
-  
+
         const user2 = await createUser({
-          name:     'afpohaf',
-          username: 'linHera',      // contains 'nHer'
-          password: 'asdpojahfipaf'
+          name: 'afpohaf',
+          username: 'linHera', // contains 'nHer'
+          password: 'asdpojahfipaf',
         });
-  
+
         await createUser({
-          name:     'dshegaega',
-          username: 'uNHERs',        // contains 'NHER', but is disabled
+          name: 'dshegaega',
+          username: 'uNHERs', // contains 'NHER', but is disabled
           password: 'oasoasugo',
           disabled: true,
         });
-  
+
         const matchingUsers = [user1, user2];
-  
-        const responseBody = await getAll({ 
-          q: searchParam, size: matchingUsers.length
+
+        const responseBody = await getAll({
+          q: searchParam,
+          size: matchingUsers.length,
         });
-  
+
         compareFoundArrayWithResponseArray(
-          matchingUsers.map(user => getNonSensitiveUser(user)),
-          responseBody.users
+          matchingUsers.map((user) => getNonSensitiveUser(user)),
+          responseBody.users,
         );
       });
     });
@@ -163,32 +163,32 @@ describe('get users', () => {
 
   describe('single', () => {
     test('can access existing user', async () => {
-      const username = existingUserValues.username;
+      const { username } = existingUserValues;
 
       const responseUser = await getOne(username);
-      const foundUser = await User.findOne({ where: { username }});
+      const foundUser = await User.findByUsername(username);
 
       compareFoundWithResponse(getNonSensitiveUser(foundUser), responseUser);
     });
 
     test('can not access disabled user', async () => {
-      const username = disabledExistingUserValues.username;
+      const { username } = disabledExistingUserValues;
       const responseBody = await getOne(username, 400);
 
       expect(responseBody.message).toBe('User is disabled');
     });
 
     test('can not access nonexisting user', async () => {
-      const username = nonExistingUserValues.username;
+      const { username } = nonExistingUserValues;
       const responseBody = await getOne(username, 404);
 
       expect(responseBody.message).toBe('User does not exist');
     });
 
     test('password hashes are not returned', async () => {
-      const username = existingUserValues.username;
+      const { username } = existingUserValues;
       const responseUser = await getOne(username);
-  
+
       expect(responseUser).not.toHaveProperty('passwordHash');
     });
   });

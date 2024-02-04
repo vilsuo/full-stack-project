@@ -16,7 +16,7 @@ const adminRouter = require('./controllers/admin');
 const app = express();
 
 // serve static content
-app.use(express.static('dist'))
+app.use(express.static('dist'));
 app.use('/static', express.static('public'));
 
 // MIDDLEWARE
@@ -37,7 +37,6 @@ if (process.env.NODE_ENV === 'test') {
   // reset route for E2E testing only!
   const testingRouter = require('./controllers/testing');
   app.use('/api/testing', testingRouter);
-  
 } else if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1); // trust first proxy
 }

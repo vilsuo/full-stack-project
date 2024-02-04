@@ -5,7 +5,7 @@ const corsOptions = {
   //
   // The Access-Control-Allow-Origin response header indicates whether the
   // response can be shared with requesting code from the given origin.
-  //origin: 'http://localhost:5173',
+  // origin: 'http://localhost:5173',
 
   // Configures the Access-Control-Allow-Credentials CORS header. Set to true
   // to pass the header.

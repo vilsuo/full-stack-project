@@ -1,17 +1,16 @@
 const supertest = require('supertest');
-
+const { ValidationError } = require('sequelize');
 const app = require('../../../../src/app');
 const { User, Potrait } = require('../../../../src/models');
 const {
   existingUserValues, otherExistingUserValues, nonExistingUserValues,
-  nonExistingPotraitValues, invalidPotraitTypes, getCredentials, 
+  nonExistingPotraitValues, invalidPotraitTypes, getCredentials,
 } = require('../../../helpers/constants');
-
-const { login, compareFoundWithResponse, findPotrait, createUser } = require('../../../helpers');
-
+const {
+  login, compareFoundWithResponse, findPotrait, createUser,
+} = require('../../../helpers');
 const { getNonSensitivePotrait } = require('../../../../src/util/dto');
 const fileStorage = require('../../../../src/util/file-storage');
-const { ValidationError } = require('sequelize');
 
 const api = supertest(app);
 const baseUrl = '/api/users';
@@ -25,7 +24,7 @@ TODO
 const putPotrait = async (username, extraHeaders, filepath, statusCode = 201) => {
   const headers = {
     'Content-Type': 'multipart/form-data',
-    ...extraHeaders
+    ...extraHeaders,
   };
 
   const response = await api
@@ -42,21 +41,19 @@ describe('putting potraits', () => {
   const { filepath, mimetype, size } = nonExistingPotraitValues;
 
   const removeFileSpy = jest.spyOn(fileStorage, 'removeFile')
-    .mockImplementation((filepath) => undefined);
+    .mockImplementation(() => undefined);
 
   test('can not put without authentication', async () => {
-    const username = existingUserValues.username;
+    const { username } = existingUserValues;
 
     const headers = {
       // there is a bug in supertest, this seems to fix it
       // https://stackoverflow.com/questions/54936185/express-mongoose-jest-error-econnaborted
       // https://github.com/ladjs/supertest/issues/230
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     };
 
-    const responseBody = await putPotrait(
-      username, headers, filepath, 401
-    );
+    const responseBody = await putPotrait(username, headers, filepath, 401);
 
     expect(responseBody.message).toBe('Authentication required');
   });
@@ -67,9 +64,9 @@ describe('putting potraits', () => {
       describe('putting first when user does not have a potrait', () => {
         const credentials = getCredentials(nonExistingUserValues);
         const postingUsersUsername = credentials.username;
-    
+
         let authHeader = {};
-    
+
         beforeEach(async () => {
           // new user does not have a potrait
           await createUser(nonExistingUserValues);
@@ -77,13 +74,9 @@ describe('putting potraits', () => {
         });
 
         test('can put a potrait', async () => {
-          const returnedPotrait = await putPotrait(
-            postingUsersUsername, authHeader, filepath
-          );
+          const returnedPotrait = await putPotrait(postingUsersUsername, authHeader, filepath);
 
-          const foundUser = await User.findOne({ 
-            where: { username: postingUsersUsername }
-          });
+          const foundUser = await User.findByUsername(postingUsersUsername);
 
           // details from the posted file are saved
           expect(returnedPotrait.mimetype).toBe(mimetype);
@@ -97,21 +90,17 @@ describe('putting potraits', () => {
           const foundPotraitBefore = await findPotrait(postingUsersUsername);
           expect(foundPotraitBefore).toBeFalsy();
 
-          const returnedPotrait = await putPotrait(
-            postingUsersUsername, authHeader, filepath
-          );
+          const returnedPotrait = await putPotrait(postingUsersUsername, authHeader, filepath);
 
           const foundPotraitAfter = await findPotrait(postingUsersUsername);
           compareFoundWithResponse(
             getNonSensitivePotrait(foundPotraitAfter),
-            returnedPotrait
+            returnedPotrait,
           );
         });
 
         test('potrait filepath is not returned', async () => {
-          const returnedPotrait = await putPotrait(
-            postingUsersUsername, authHeader, filepath
-          );
+          const returnedPotrait = await putPotrait(postingUsersUsername, authHeader, filepath);
 
           expect(returnedPotrait).not.toHaveProperty('filepath');
         });
@@ -135,13 +124,9 @@ describe('putting potraits', () => {
         });
 
         test('can put a potrait', async () => {
-          const returnedPotrait = await putPotrait(
-            puttingUsersUsername, authHeader, filepath, 200
-          );
+          const returnedPotrait = await putPotrait(puttingUsersUsername, authHeader, filepath, 200);
 
-          const foundUser = await User.findOne({ 
-            where: { username: puttingUsersUsername }
-          });
+          const foundUser = await User.findByUsername(puttingUsersUsername);
 
           // details from the posted file are saved
           expect(returnedPotrait.mimetype).toBe(mimetype);
@@ -152,7 +137,6 @@ describe('putting potraits', () => {
         });
 
         describe('on successfull put', () => {
-
           let oldPotraitBefore;
           let returnedPotrait;
 
@@ -160,9 +144,7 @@ describe('putting potraits', () => {
             oldPotraitBefore = await findPotrait(puttingUsersUsername);
             expect(oldPotraitBefore).not.toBeFalsy();
 
-            returnedPotrait = await putPotrait(
-              puttingUsersUsername, authHeader, filepath, 200
-            );
+            returnedPotrait = await putPotrait(puttingUsersUsername, authHeader, filepath, 200);
           });
 
           test('putting replaces the old potrait', async () => {
@@ -171,7 +153,7 @@ describe('putting potraits', () => {
             const foundPotrait = await findPotrait(puttingUsersUsername);
             compareFoundWithResponse(
               getNonSensitivePotrait(foundPotrait),
-              returnedPotrait
+              returnedPotrait,
             );
           });
 
@@ -199,7 +181,7 @@ describe('putting potraits', () => {
 
             beforeEach(() => {
               // mock routes 'reatePotrait' to throw error on create...
-              createPotraitSpy.mockImplementationOnce(async (values, options) => {
+              createPotraitSpy.mockImplementationOnce(async () => {
                 throw new ValidationError('mocked validation error');
               });
             });
@@ -230,21 +212,24 @@ describe('putting potraits', () => {
 
             test('text files are not allowed', async () => {
               const responseBody = await putPotrait(
-                puttingUsersUsername, authHeader, txtFilepath, 415
+                puttingUsersUsername,
+                authHeader,
+                txtFilepath,
+                415,
               );
-      
+
               expect(responseBody.message).toMatch(
-                /File upload only supports the filetypes/i
+                /File upload only supports the filetypes/i,
               );
             });
 
             test('old potrait can be found after putting invalid file', async () => {
               const potraitBefore = await findPotrait(puttingUsersUsername);
-  
+
               await putPotrait(puttingUsersUsername, authHeader, filepathToInvalidFile, 415);
-  
+
               const potraitAfter = await findPotrait(puttingUsersUsername);
-  
+
               expect(potraitAfter).toStrictEqual(potraitBefore);
             });
 
@@ -264,9 +249,7 @@ describe('putting potraits', () => {
 
       const otherUsername = otherExistingUserValues.username;
 
-      const responseBody = await putPotrait(
-        otherUsername, authHeader, filepath, 401
-      );
+      const responseBody = await putPotrait(otherUsername, authHeader, filepath, 401);
 
       expect(responseBody.message).toBe('Private access');
     });

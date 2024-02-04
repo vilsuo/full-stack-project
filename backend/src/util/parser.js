@@ -31,14 +31,19 @@ const parsePositiveInteger = (value, parameterName) => {
 /**
  * If value is a number or a string return the value as a number if it is a valid id,
  * otherwise throw a ParseError.
- * 
- * @param {*} value 
+ *
+ * @param {*} value
  * @returns the parsed value as a number
  */
-const parseId = (value, parameterName = 'id') => {
-  return parseNonNegativeInteger(value, parameterName);
-};
+const parseId = (value, parameterName = 'id') => parseNonNegativeInteger(value, parameterName);
 
+/**
+ *
+ * @param {*} value
+ * @param {string} type
+ * @param {string} parameterName
+ * @returns
+ */
 const parseType = (value, type, parameterName = 'param') => {
   parseRequired(value, parameterName);
 
@@ -49,29 +54,25 @@ const parseType = (value, type, parameterName = 'param') => {
   return value;
 };
 
-const parseBooleanType = (value, parameterName) => {
-  return parseType(value, 'boolean', parameterName);
-};
+const parseBooleanType = (value, parameterName) => parseType(value, 'boolean', parameterName);
 
 // STRINGS
 
 /**
  * Parse a string without length restriction
- * 
- * @param {*} value 
- * @param {string} parameterName 
+ *
+ * @param {*} value
+ * @param {string} parameterName
  * @returns the param value, if it is a string
  */
-const parseTextType = (value, parameterName) => {
-  return parseType(value, 'string', parameterName);
-};
+const parseTextType = (value, parameterName) => parseType(value, 'string', parameterName);
 
 /**
  * Parse a string with length restriction
- * 
- * @param {*} value 
- * @param {string} parameterName 
- * @returns the param value, if it is a string and a its length is less than 
+ *
+ * @param {*} value
+ * @param {string} parameterName
+ * @returns the param value, if it is a string and a its length is less than
  *          or equal to {@link STRING_MAX_LENGTH}
  */
 const parseStringType = (value, parameterName) => {
@@ -79,7 +80,7 @@ const parseStringType = (value, parameterName) => {
 
   if (text.length > STRING_MAX_LENGTH) {
     throw new ParseError(
-      `Parameter ${parameterName} has a max length of ${STRING_MAX_LENGTH}`
+      `Parameter ${parameterName} has a max length of ${STRING_MAX_LENGTH}`,
     );
   }
 
@@ -93,20 +94,16 @@ const parseEnumType = (value, enumValues, parameterName = 'enum') => {
 
   if (!enumValues.includes(value)) {
     throw new ParseError(
-      `Parameter ${parameterName} must be one of [${enumValues.join('|')}]`
+      `Parameter ${parameterName} must be one of [${enumValues.join('|')}]`,
     );
   }
 
   return value;
 };
 
-const parseRelationType = type => {
-  return parseEnumType(type, RELATION_TYPES, 'type');
-};
+const parseRelationType = (type) => parseEnumType(type, RELATION_TYPES, 'type');
 
-const parseImagePrivacy = privacy => {
-  return parseEnumType(privacy, IMAGE_PRIVACIES, 'privacy');
-};
+const parseImagePrivacy = (privacy) => parseEnumType(privacy, IMAGE_PRIVACIES, 'privacy');
 
 module.exports = {
   // numbers
@@ -116,9 +113,9 @@ module.exports = {
   parseBooleanType,
 
   // SEQUELIZE DATATYPES
-  parseId,          // (DATATYPES.INTEGER)
-  parseTextType,    // DATATYPES.TEXT
-  parseStringType,  // DATATYPES.STRING
+  parseId, // (DATATYPES.INTEGER)
+  parseTextType, // DATATYPES.TEXT
+  parseStringType, // DATATYPES.STRING
 
   // enums
   parseRelationType,

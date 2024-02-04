@@ -2,8 +2,8 @@ const supertest = require('supertest');
 const pick = require('lodash.pick');
 const app = require('../../../../src/app');
 const { Image } = require('../../../../src/models');
-const { 
-  getCredentials, 
+const {
+  getCredentials,
   existingUserValues, otherExistingUserValues, // users
   nonExistingImageValues, // images
 } = require('../../../helpers/constants');
@@ -36,7 +36,7 @@ const { title, caption } = newImageValues;
 
 describe('editing images', () => {
   const credentials = getCredentials(existingUserValues);
-  const username = existingUserValues.username;
+  const { username } = existingUserValues;
   const userImages = {};
 
   // find a private and a public image
@@ -52,7 +52,11 @@ describe('editing images', () => {
 
     test.each(IMAGE_PRIVACIES)('can not edit a %s image', async (privacy) => {
       const responseBody = await editImage(
-        username, userImages[privacy].id, newImageValues, headers, 401
+        username,
+        userImages[privacy].id,
+        newImageValues,
+        headers,
+        401,
       );
       expect(responseBody.message).toBe('Authentication required');
     });
@@ -69,7 +73,11 @@ describe('editing images', () => {
       test('can not edit image that does not exist', async () => {
         const nonExistingImageId = 91727149;
         const responseBody = await editImage(
-          username, nonExistingImageId, newImageValues, authHeader, 404
+          username,
+          nonExistingImageId,
+          newImageValues,
+          authHeader,
+          404,
         );
 
         expect(responseBody.message).toBe('Image does not exist');
@@ -81,10 +89,14 @@ describe('editing images', () => {
         beforeEach(() => {
           imageToEdit = userImages[privacy];
         });
-        
+
         test('can set new title', async () => {
           const responseImage = await editImage(
-            username, imageToEdit.id, { title }, authHeader, 200
+            username,
+            imageToEdit.id,
+            { title },
+            authHeader,
+            200,
           );
 
           // new title has been parsed
@@ -100,7 +112,11 @@ describe('editing images', () => {
 
         test('can set new caption', async () => {
           const responseImage = await editImage(
-            username, imageToEdit.id, { caption }, authHeader, 200
+            username,
+            imageToEdit.id,
+            { caption },
+            authHeader,
+            200,
           );
 
           // new caption has been parsed
@@ -116,12 +132,16 @@ describe('editing images', () => {
 
         test.each(IMAGE_PRIVACIES)('can set privacy as %s', async (newPrivacy) => {
           const responseImage = await editImage(
-            username, userImages[privacy].id, { privacy: newPrivacy }, authHeader, 200
+            username,
+            userImages[privacy].id,
+            { privacy: newPrivacy },
+            authHeader,
+            200,
           );
 
           // new privacy has been parsed
           expect(parseImagePrivacySpy).toHaveBeenCalledWith(newPrivacy);
-          
+
           expect(responseImage.privacy).toBe(newPrivacy);
         });
 
@@ -130,7 +150,11 @@ describe('editing images', () => {
 
           beforeEach(async () => {
             editedImage = await editImage(
-              username, imageToEdit.id, newImageValues, authHeader, 200
+              username,
+              imageToEdit.id,
+              newImageValues,
+              authHeader,
+              200,
             );
           });
 
@@ -138,15 +162,19 @@ describe('editing images', () => {
             const foundImage = await Image.findByPk(imageToEdit.id);
             compareFoundWithResponse(getNonSensitiveImage(foundImage), editedImage);
           });
-    
+
           test('editing updates the field "editedAt"', async () => {
             const newDate = editedImage.editedAt;
 
             // edit again: the 'editedAt' field of original image is null
             const newerDate = (await editImage(
-              username, imageToEdit.id, newImageValues, authHeader, 200
+              username,
+              imageToEdit.id,
+              newImageValues,
+              authHeader,
+              200,
             )).editedAt;
-            
+
             // new date is after the old date
             expect(newerDate > newDate).toBe(true);
           });
@@ -157,20 +185,24 @@ describe('editing images', () => {
     describe('editing other users images', () => {
       const otherUsername = otherExistingUserValues.username;
       const otherUsersImages = {};
-      
+
       beforeEach(async () => {
         const { publicImage, privateImage } = await findPublicAndPrivateImage(otherUsername);
 
         otherUsersImages[IMAGE_PUBLIC] = publicImage;
         otherUsersImages[IMAGE_PRIVATE] = privateImage;
       });
-      
+
       test.each(IMAGE_PRIVACIES)('can not edit a %s image', async (privacy) => {
         const responseBody = await editImage(
-          otherUsername, otherUsersImages[privacy].id, newImageValues, authHeader, 401
+          otherUsername,
+          otherUsersImages[privacy].id,
+          newImageValues,
+          authHeader,
+          401,
         );
 
-        expect(responseBody.message).toBe('Private access')
+        expect(responseBody.message).toBe('Private access');
       });
     });
   });

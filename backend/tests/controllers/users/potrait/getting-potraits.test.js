@@ -1,13 +1,10 @@
 const supertest = require('supertest');
 const path = require('path');
-
 const app = require('../../../../src/app');
 const {
   existingUserValues, disabledExistingUserValues, nonExistingUserValues,
 } = require('../../../helpers/constants');
-
 const { compareFoundWithResponse, createUser, findPotrait } = require('../../../helpers');
-
 const { getNonSensitivePotrait } = require('../../../../src/util/dto');
 const fileStorage = require('../../../../src/util/file-storage');
 
@@ -21,29 +18,27 @@ const getPotrait = async (username, statusCode = 200, headers = {}) => {
     .expect(statusCode)
     .expect('Content-Type', /application\/json/);
 
-    return response.body;
+  return response.body;
 };
 
-const getPotraitContent = async (username, statusCode = 200, headers = {}) => {
-  return await api
-    .get(`${baseUrl}/${username}/potrait/content`)
-    .set(headers)
-    .expect(statusCode);
-};
+const getPotraitContent = async (username, statusCode = 200, headers = {}) => api
+  .get(`${baseUrl}/${username}/potrait/content`)
+  .set(headers)
+  .expect(statusCode);
 
 describe('find users potrait', () => {
   const getImageFilePathSpy = jest.spyOn(fileStorage, 'getImageFilePath');
 
   test('can not get non-existing users potrait', async () => {
-    const username = nonExistingUserValues.username;
-    const responseBody = await getPotrait(username, 404)
+    const { username } = nonExistingUserValues;
+    const responseBody = await getPotrait(username, 404);
 
     expect(responseBody.message).toBe('User does not exist');
   });
 
   test('can not get disabled users potrait', async () => {
-    const username = disabledExistingUserValues.username;
-    const responseBody = await getPotrait(username, 400)
+    const { username } = disabledExistingUserValues;
+    const responseBody = await getPotrait(username, 400);
 
     expect(responseBody.message).toBe('User is disabled');
   });
@@ -53,7 +48,7 @@ describe('find users potrait', () => {
     const newUser = await createUser(nonExistingUserValues);
 
     const responseBody = await getPotrait(newUser.username, 404);
-  
+
     expect(responseBody.message).toBe('User does not have a potrait');
   });
 
@@ -61,12 +56,12 @@ describe('find users potrait', () => {
     const newUser = await createUser(nonExistingUserValues);
 
     const response = await getPotraitContent(newUser.username, 404);
-  
+
     expect(response.body.message).toBe('User does not have a potrait');
   });
 
   describe('when potraits have been created', () => {
-    const username = existingUserValues.username;
+    const { username } = existingUserValues;
 
     let foundPotrait;
     beforeEach(async () => {
@@ -78,15 +73,15 @@ describe('find users potrait', () => {
 
       compareFoundWithResponse(
         getNonSensitivePotrait(foundPotrait),
-        returnedPotrait
+        returnedPotrait,
       );
     });
 
     describe('getting potrait content', () => {
       beforeEach(async () => {
-        getImageFilePathSpy.mockImplementationOnce(filepath => {
-          return path.join(path.resolve(), foundPotrait.filepath);
-        });
+        getImageFilePathSpy.mockImplementationOnce(
+          () => path.join(path.resolve(), foundPotrait.filepath),
+        );
       });
 
       afterEach(async () => {
@@ -96,10 +91,10 @@ describe('find users potrait', () => {
       test('can view a potrait content without authentication', async () => {
         await getPotraitContent(username);
       });
-  
+
       test('potrait content response has correct content-type', async () => {
         const response = await getPotraitContent(username);
-  
+
         expect(response.get('content-type')).toBe(foundPotrait.mimetype);
       });
     });
