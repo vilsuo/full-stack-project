@@ -9,7 +9,7 @@ See saved screenshots from the App [here](https://github.com/vilsuo/full-stack-p
 ## Features
 
 ## Database
-All Entities are stored in a relational **PostgreSQL** database hosted on [ElephantSQL](https://www.elephantsql.com/).  The project uses **Sequelize** Object-Relational-Mapper.
+All Entities are stored in a relational **PostgreSQL** database hosted on [Neon](https://neon.tech/).  The project uses **Sequelize** Object-Relational-Mapper.
 
 You can view all of the database tables [here](https://dbdocs.io/vilsuo1/Fullstack-project).
 
